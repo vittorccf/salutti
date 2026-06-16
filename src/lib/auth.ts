@@ -3,6 +3,7 @@
 
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
 
@@ -90,7 +91,6 @@ export const getCurrentContext = async () => {
 export const requireContext = async () => {
   const ctx = await getCurrentContext();
   if (!ctx) {
-    const { redirect } = await import("next/navigation");
     redirect("/login");
   }
   return ctx;
