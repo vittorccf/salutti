@@ -1,0 +1,390 @@
+// Saluti — schema multi-tenant.
+// Tenant isolation: TODOS os modelos de domínio carregam workspaceId.
+// SQLite no protótipo; trocar provider para "postgresql" em produção.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------- IDENTIDADE / TENANT ------------------------
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String
+  passwordHash  String
+  avatarUrl     String?
+  createdAt     DateTime      @default(now())
+  memberships   Membership[]
+  auditEvents   AuditLog[]    @relation("AuditUser")
+}
+
+model Workspace {
+  id              String         @id @default(cuid())
+  name            String
+  slug            String         @unique
+  // tipo da operação: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
+  segment         String         @default("solo_psicologo")
+  cnpj            String?
+  legalRepName    String?
+  trialEndsAt     DateTime?
+  planTier        String         @default("trial") // trial | starter | pro | enterprise
+  createdAt       DateTime       @default(now())
+
+  memberships     Membership[]
+  patients        Patient[]
+  professionals   Professional[]
+  appointments    Appointment[]
+  clinicalNotes   ClinicalNote[]
+  anamnesisTemplates AnamnesisTemplate[]
+  receipts        Receipt[]
+  invoices        Invoice[]
+  paymentLinks    PaymentLink[]
+  subscriptions   Subscription[]
+  charges         Charge[]
+  consentRecords  ConsentRecord[]
+  auditLogs       AuditLog[]
+  aiInsights      AiInsight[]
+  dailyCards      DailyCard[]
+  notifications   NotificationLog[]
+}
+
+model Membership {
+  id           String     @id @default(cuid())
+  userId       String
+  workspaceId  String
+  role         String     @default("owner") // owner | admin | professional | financial | receptionist
+  createdAt    DateTime   @default(now())
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+// ----------------------- ATORES CLÍNICOS ----------------------------
+
+model Professional {
+  id            String        @id @default(cuid())
+  workspaceId   String
+  fullName      String
+  email         String?
+  phone         String?
+  // psicologo, psicanalista, terapeuta, psiquiatra, dentista, medico
+  professionalType String     @default("psicologo")
+  // CRP, CRM, CRO, "sem_registro" (psicanalistas/terapeutas)
+  councilType   String        @default("CRP")
+  councilNumber String?       // pode ser nulo p/ "sem_registro"
+  noCouncil     Boolean       @default(false) // flag explícita — oceano azul "Sem CRP"
+  specialty     String?
+  bio           String?
+  hourlyRate    Float?
+  active        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  clinicalNotes ClinicalNote[]
+
+  @@index([workspaceId])
+}
+
+model Patient {
+  id            String        @id @default(cuid())
+  workspaceId   String
+  fullName      String
+  email         String?
+  phone         String?
+  cpf           String?
+  birthDate     DateTime?
+  pronouns      String?
+  responsibleName String?
+  emergencyContact String?
+  address       String?
+  notes         String?       // observações não-clínicas (campo "livre" não-sensível)
+  active        Boolean       @default(true)
+  // Soft delete LGPD
+  deletedAt     DateTime?
+  anonymized    Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  clinicalNotes ClinicalNote[]
+  receipts      Receipt[]
+  invoices      Invoice[]
+  charges       Charge[]
+  consentRecords ConsentRecord[]
+  dailyCards    DailyCard[]
+  portalAccess  PatientPortalAccess?
+
+  @@index([workspaceId])
+  @@index([workspaceId, fullName])
+}
+
+// Token para acesso do paciente ao portal (App do Paciente)
+model PatientPortalAccess {
+  id          String   @id @default(cuid())
+  patientId   String   @unique
+  token       String   @unique
+  pinHash     String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+// ----------------------- AGENDA -------------------------------------
+
+model Appointment {
+  id              String        @id @default(cuid())
+  workspaceId     String
+  patientId       String
+  professionalId  String
+  startsAt        DateTime
+  endsAt          DateTime
+  modality        String        @default("presencial") // presencial | online
+  meetingUrl      String?
+  status          String        @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
+  price           Float
+  notes           String?
+  reminderSentAt  DateTime?
+  createdAt       DateTime      @default(now())
+
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient         Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional    Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  clinicalNote    ClinicalNote?
+  charge          Charge?
+
+  @@index([workspaceId, startsAt])
+}
+
+// ----------------------- PRONTUÁRIO / ANAMNESE ----------------------
+
+model AnamnesisTemplate {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  name         String
+  specialty    String?  // psicologia | psicanalise | psiquiatria | odonto
+  // schema JSON: array de seções com perguntas/typing.
+  schemaJson   String   // JSON serializado (SQLite)
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model ClinicalNote {
+  id              String       @id @default(cuid())
+  workspaceId     String
+  patientId       String
+  professionalId  String
+  appointmentId   String?      @unique
+  noteType        String       @default("evolucao") // anamnese | evolucao | plano_terapeutico | alta
+  // Conteúdo criptografado em produção; aqui texto puro p/ protótipo
+  contentMarkdown String
+  // Sumário gerado pela IA LUMA
+  aiSummary       String?
+  aiTopics        String?      // CSV de temas detectados
+  signedAt        DateTime?
+  signedHash      String?      // hash de assinatura digital (placeholder ICP-Brasil)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient         Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional    Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([workspaceId, patientId])
+}
+
+// ----------------------- FINANCEIRO ---------------------------------
+
+model Charge {
+  id              String      @id @default(cuid())
+  workspaceId     String
+  patientId       String
+  appointmentId   String?     @unique
+  amount          Float
+  status          String      @default("pending") // pending | paid | overdue | cancelled | refunded
+  method          String?     // pix | card | boleto | dinheiro
+  dueDate         DateTime
+  paidAt          DateTime?
+  externalId      String?     // id no gateway (Asaas/Stripe)
+  pixCopyPaste    String?     // payload PIX simulado
+  createdAt       DateTime    @default(now())
+
+  workspace       Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient         Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
+  paymentLink     PaymentLink?
+  invoice         Invoice?
+  receipt         Receipt?
+
+  @@index([workspaceId, dueDate])
+  @@index([workspaceId, status])
+}
+
+model PaymentLink {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  chargeId     String   @unique
+  url          String   // /pay/<token>
+  token        String   @unique
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  charge       Charge    @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  patientId     String?
+  planName      String
+  amount        Float
+  intervalDays  Int      @default(30)
+  active        Boolean  @default(true)
+  nextChargeAt  DateTime
+  createdAt     DateTime @default(now())
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ----------------------- FISCAL -------------------------------------
+
+model Receipt {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  patientId     String
+  chargeId      String?   @unique
+  receiptNumber String
+  amount        Float
+  issuedAt      DateTime  @default(now())
+  // Receita Saúde 2025
+  receitaSaudeId String?   // protocolo após emissão
+  receitaSaudeStatus String? // queued | sent | confirmed | error
+  pdfUrl        String?
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  charge        Charge?   @relation(fields: [chargeId], references: [id])
+
+  @@unique([workspaceId, receiptNumber])
+}
+
+model Invoice {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  patientId     String
+  chargeId      String?   @unique
+  invoiceNumber String
+  amount        Float
+  serviceCode   String    @default("14.01") // Serviços de saúde — código LC 116 padrão
+  issStatus     String    @default("issued") // queued | issued | rejected
+  externalId    String?   // id NFE.io
+  pdfUrl        String?
+  xmlUrl        String?
+  issuedAt      DateTime  @default(now())
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  charge        Charge?   @relation(fields: [chargeId], references: [id])
+
+  @@unique([workspaceId, invoiceNumber])
+}
+
+// ----------------------- LGPD / AUDITORIA ---------------------------
+
+model ConsentRecord {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  patientId    String
+  purpose      String   // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento
+  legalBasis   String   // consentimento | tutela_saude | obrigacao_legal | execucao_contrato
+  granted      Boolean  @default(true)
+  documentHash String?
+  grantedAt    DateTime @default(now())
+  revokedAt    DateTime?
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  userId       String?
+  action       String   // patient.create, charge.update, lgpd.export, ...
+  entity       String   // Patient | Charge | ClinicalNote ...
+  entityId     String?
+  metadata     String?  // JSON serializado
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user         User?     @relation("AuditUser", fields: [userId], references: [id])
+
+  @@index([workspaceId, createdAt])
+}
+
+// ----------------------- IA / INSIGHTS -------------------------------
+
+model AiInsight {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  kind         String   // revenue_drop | churn_risk | scheduling_gap | overdue_pattern | clinical_topic
+  severity     String   @default("info") // info | warn | critical
+  title        String
+  body         String
+  payload      String?  // JSON com métricas que sustentam o insight
+  readAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
+}
+
+// ----------------------- APP DO PACIENTE ----------------------------
+
+model DailyCard {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  patientId    String
+  date         DateTime
+  mood         Int      // 1..5
+  sleepHours   Float?
+  anxiety      Int?     // 1..5
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, date])
+}
+
+// ----------------------- NOTIFICAÇÕES (WhatsApp mock) ---------------
+
+model NotificationLog {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  channel      String   // whatsapp | email | sms
+  recipient    String
+  template     String   // reminder_24h | reminder_2h | charge_due | charge_overdue
+  payload      String   // JSON c/ variáveis
+  status       String   @default("sent") // queued | sent | failed
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
