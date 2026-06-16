@@ -72,7 +72,7 @@ export default async function TeamPage() {
           <Stethoscope className="h-6 w-6 text-primary" /> Profissionais
         </h1>
         <p className="text-sm text-muted-foreground">
-          Suporta psicanalistas, terapeutas e demais profissões <em>sem registro de conselho</em> — diferencial Salutti.
+          Suporta psicanalistas, terapeutas e demais profissões <em>sem registro de conselho</em> - diferencial Salutti.
         </p>
       </header>
 
@@ -112,7 +112,7 @@ export default async function TeamPage() {
                           `${p.councilType} ${p.councilNumber ?? ""}`
                         )}
                       </TD>
-                      <TD>{p.hourlyRate ? formatBRL(p.hourlyRate) : "—"}</TD>
+                      <TD>{p.hourlyRate ? formatBRL(p.hourlyRate) : "-"}</TD>
                       <TD>{p._count.appointments}</TD>
                       <TD>
                         <Badge variant={p.active ? "success" : "muted"}>{p.active ? "ativo" : "inativo"}</Badge>

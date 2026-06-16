@@ -141,7 +141,7 @@ export default async function FinancialPage() {
                     <TD className="font-medium">{c.patient.fullName}</TD>
                     <TD>{formatDateBR(c.dueDate)}</TD>
                     <TD>{formatBRL(c.amount)}</TD>
-                    <TD className="capitalize">{c.method ?? "—"}</TD>
+                    <TD className="capitalize">{c.method ?? "-"}</TD>
                     <TD>
                       <Badge
                         variant={

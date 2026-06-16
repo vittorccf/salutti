@@ -1,4 +1,4 @@
-// Saluti — schema multi-tenant.
+// Saluti - schema multi-tenant.
 // Tenant isolation: TODOS os modelos de domínio carregam workspaceId.
 // SQLite no protótipo; trocar provider para "postgresql" em produção.
 
@@ -81,7 +81,7 @@ model Professional {
   // CRP, CRM, CRO, "sem_registro" (psicanalistas/terapeutas)
   councilType   String        @default("CRP")
   councilNumber String?       // pode ser nulo p/ "sem_registro"
-  noCouncil     Boolean       @default(false) // flag explícita — oceano azul "Sem CRP"
+  noCouncil     Boolean       @default(false) // flag explícita - oceano azul "Sem CRP"
   specialty     String?
   bio           String?
   hourlyRate    Float?
@@ -289,7 +289,7 @@ model Invoice {
   chargeId      String?   @unique
   invoiceNumber String
   amount        Float
-  serviceCode   String    @default("14.01") // Serviços de saúde — código LC 116 padrão
+  serviceCode   String    @default("14.01") // Serviços de saúde - código LC 116 padrão
   issStatus     String    @default("issued") // queued | issued | rejected
   externalId    String?   // id NFE.io
   pdfUrl        String?

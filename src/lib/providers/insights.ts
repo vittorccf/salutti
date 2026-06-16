@@ -1,4 +1,4 @@
-// Engine de IA Preditiva Financeira — determinística.
+// Engine de IA Preditiva Financeira - determinística.
 // Calcula insights a partir dos dados do workspace.
 
 import { db } from "../db";
@@ -89,7 +89,7 @@ const revenueTrend = async (workspaceId: string) => {
       {
         kind: "revenue_drop",
         severity: "info" as const,
-        title: `Receita cresceu ${pct.toFixed(1)}% — tendência positiva`,
+        title: `Receita cresceu ${pct.toFixed(1)}% - tendência positiva`,
         body: `Boa performance do mês. Receita atual: R$ ${cur.toFixed(2)}. Reaproveite o momento ajustando preço médio dos novos atendimentos.`,
         payload: { cur, prev, pct },
       },
@@ -108,7 +108,7 @@ const overduePattern = async (workspaceId: string) => {
     {
       kind: "overdue_pattern",
       severity: overdue.length > 5 ? ("critical" as const) : ("warn" as const),
-      title: `${overdue.length} cobrança(s) em atraso — R$ ${total.toFixed(2)}`,
+      title: `${overdue.length} cobrança(s) em atraso - R$ ${total.toFixed(2)}`,
       body: `Há ${overdue.length} cobrança(s) vencida(s) totalizando R$ ${total.toFixed(2)}. Ativar régua de cobrança automática via WhatsApp deve recuperar ~70% conforme benchmark do setor.`,
       payload: { count: overdue.length, total },
     },

@@ -102,7 +102,7 @@ export default async function ProntuarioPatientPage({
                   <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <p className="text-muted-foreground">
                     Em produção: conteúdo cifrado em repouso + assinatura ICP-Brasil (A1 em nuvem · Memed/SafeID).
-                    Hash atual: <code>{n.signedHash ?? "—"}</code>
+                    Hash atual: <code>{n.signedHash ?? "-"}</code>
                   </p>
                 </div>
               </CardContent>

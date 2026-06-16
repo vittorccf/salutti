@@ -126,7 +126,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                 <div key={d.id} className="rounded-md border p-2 text-center text-xs">
                   <p className="text-muted-foreground">{formatDateBR(d.date)}</p>
                   <p className="text-2xl">{moodEmoji(d.mood)}</p>
-                  <p>Ansiedade {d.anxiety ?? "—"}/5</p>
+                  <p>Ansiedade {d.anxiety ?? "-"}/5</p>
                 </div>
               ))}
             </div>
@@ -208,7 +208,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                           {c.status}
                         </Badge>
                       </TD>
-                      <TD className="capitalize">{c.method ?? "—"}</TD>
+                      <TD className="capitalize">{c.method ?? "-"}</TD>
                     </TR>
                   ))
                 )}

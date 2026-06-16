@@ -38,7 +38,7 @@ export default async function LumaPage() {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" /> LUMA — IA preditiva &amp; clínica
+            <Sparkles className="h-6 w-6 text-primary" /> LUMA - IA preditiva &amp; clínica
           </h1>
           <p className="text-sm text-muted-foreground">
             Núcleo de inteligência da Salutti. Calcula insights determinísticos dos seus dados; opera com OpenAI quando

@@ -50,7 +50,7 @@ async function sendChargeReminder(formData: FormData) {
       patient: charge.patient.fullName.split(" ")[0],
       amount: formatBRL(charge.amount),
       due: formatDateBR(charge.dueDate),
-      pix: charge.pixCopyPaste ?? "—",
+      pix: charge.pixCopyPaste ?? "-",
       link: charge.paymentLink ? `https://saluti.app${charge.paymentLink.url}` : "",
     },
   });

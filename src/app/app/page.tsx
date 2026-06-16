@@ -85,7 +85,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold">Bom dia, {ctx.user.name.split(" ")[0]} 👋</h1>
           <p className="text-muted-foreground">
-            Resumo do workspace <strong>{ctx.workspace.name}</strong> — {ctx.workspace.segment.replace("_", " ")}
+            Resumo do workspace <strong>{ctx.workspace.name}</strong> - {ctx.workspace.segment.replace("_", " ")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" /> LUMA — insights financeiros &amp; clínicos
+              <Sparkles className="h-5 w-5 text-primary" /> LUMA - insights financeiros &amp; clínicos
             </CardTitle>
             <CardDescription>Gerados a partir dos seus dados em tempo real.</CardDescription>
           </div>
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
         <CardContent className="grid gap-3 md:grid-cols-2">
           {liveInsights.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Sem insights ainda — comece registrando sessões e cobranças.
+              Sem insights ainda - comece registrando sessões e cobranças.
             </p>
           ) : (
             liveInsights.map((insight) => (

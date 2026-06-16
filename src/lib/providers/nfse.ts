@@ -1,4 +1,4 @@
-// Provider NFS-e — MOCK (estilo NFE.io / Focus NF-e / Nuvem Fiscal).
+// Provider NFS-e - MOCK (estilo NFE.io / Focus NF-e / Nuvem Fiscal).
 // Em produção: chamada async + webhook quando prefeitura responder.
 
 export const nfse = {

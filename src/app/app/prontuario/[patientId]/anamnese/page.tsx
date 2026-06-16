@@ -127,7 +127,7 @@ export default async function AnamnesisPage({
                       <Textarea id={q.key} name={q.key} rows={3} />
                     ) : q.type === "select" ? (
                       <Select id={q.key} name={q.key}>
-                        <option value="">—</option>
+                        <option value="">-</option>
                         {q.options?.map((o) => (
                           <option key={o} value={o}>
                             {o}

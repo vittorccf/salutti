@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 // MODO DEMO (Vercel): o filesystem serverless é somente-leitura, exceto /tmp.
 // Copiamos o banco SQLite empacotado (prisma/seed.db) para /tmp a cada cold
 // start e apontamos o Prisma para lá. Escritas funcionam, mas NÃO persistem
-// entre instâncias — os dados resetam para o seed periodicamente.
+// entre instâncias - os dados resetam para o seed periodicamente.
 function resolveDemoDatasourceUrl(): string | undefined {
   if (!process.env.VERCEL) return undefined; // local: usa DATABASE_URL do .env
   const tmpDb = "/tmp/app.db";

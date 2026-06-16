@@ -1,4 +1,4 @@
-// Provider Pix — MOCK (estilo Asaas / Iugu).
+// Provider Pix - MOCK (estilo Asaas / Iugu).
 // Em produção: API real para criar QRCode dinâmico + webhook de liquidação.
 
 export const pix = {

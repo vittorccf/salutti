@@ -185,7 +185,7 @@ export default async function PatientPortalPage({
                 <Input type="date" name="date" defaultValue={new Date().toISOString().slice(0, 10)} required />
               </div>
               <div className="space-y-1">
-                <Label>Humor (1–5)</Label>
+                <Label>Humor (1-5)</Label>
                 <Select name="mood" defaultValue="3" required>
                   {[1, 2, 3, 4, 5].map((n) => (
                     <option key={n} value={n}>
@@ -199,7 +199,7 @@ export default async function PatientPortalPage({
                 <Input type="number" step="0.5" name="sleepHours" defaultValue={7} />
               </div>
               <div className="space-y-1">
-                <Label>Ansiedade (1–5)</Label>
+                <Label>Ansiedade (1-5)</Label>
                 <Select name="anxiety" defaultValue="3">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <option key={n} value={n}>

@@ -1,4 +1,4 @@
-// Receita Saúde — MOCK
+// Receita Saúde - MOCK
 // A partir de 01/2025: emissão obrigatória de recibos de serviços de saúde PF
 // via app oficial da Receita Federal. Saluti mock simula protocolo + status.
 
