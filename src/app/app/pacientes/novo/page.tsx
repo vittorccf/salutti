@@ -74,7 +74,7 @@ export default function NewPatientPage() {
         <CardHeader>
           <CardTitle>Novo paciente</CardTitle>
           <CardDescription>
-            CPF/CRP/registro não são obrigatórios — Salutti cobre psicanalistas e terapeutas que outros sistemas
+            CPF/CRP/registro não são obrigatórios - Salutti cobre psicanalistas e terapeutas que outros sistemas
             rejeitam.
           </CardDescription>
         </CardHeader>
@@ -95,7 +95,7 @@ export default function NewPatientPage() {
               </div>
               <div className="col-span-2">
                 <Label htmlFor="notes">Observações administrativas</Label>
-                <Textarea id="notes" name="notes" placeholder="Não usar para conteúdo clínico — registre evolução no Prontuário." />
+                <Textarea id="notes" name="notes" placeholder="Não usar para conteúdo clínico - registre evolução no Prontuário." />
               </div>
             </div>
             <div className="rounded-md border p-3 bg-accent/30 text-sm flex gap-3 items-start">

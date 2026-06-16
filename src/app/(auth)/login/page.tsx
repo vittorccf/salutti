@@ -72,8 +72,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div className="mt-6 rounded-md bg-muted/40 p-3 text-xs space-y-1">
             <p className="font-semibold">Demos prontas (senha: <code>saluti123</code>):</p>
             <ul className="list-disc pl-4 text-muted-foreground">
-              <li>guilherme@saluti.dev — psicólogo autônomo (Goiânia)</li>
-              <li>kris@saluti.dev — clínica odontológica UBS Turvânia</li>
+              <li>guilherme@saluti.dev - psicólogo autônomo (Goiânia)</li>
+              <li>kris@saluti.dev - clínica odontológica UBS Turvânia</li>
             </ul>
           </div>
           <p className="mt-4 text-center text-sm">

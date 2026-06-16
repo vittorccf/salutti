@@ -111,7 +111,7 @@ export default async function NewAppointmentPage({
         <CardHeader>
           <CardTitle>Nova sessão</CardTitle>
           <CardDescription>
-            Gera link de videoconsulta (modalidade online) e — opcionalmente — cobrança Pix vinculada.
+            Gera link de videoconsulta (modalidade online) e - opcionalmente - cobrança Pix vinculada.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -135,7 +135,7 @@ export default async function NewAppointmentPage({
                   {professionals.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.fullName} ({p.councilType}
-                      {p.councilNumber ? ` ${p.councilNumber}` : " — sem registro"})
+                      {p.councilNumber ? ` ${p.councilNumber}` : " - sem registro"})
                     </option>
                   ))}
                 </Select>

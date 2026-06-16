@@ -45,7 +45,7 @@ export default async function FiscalPage() {
         <CardContent className="p-4 flex items-start gap-3 text-sm">
           <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
           <div>
-            <p className="font-semibold text-warning-foreground">Receita Saúde 2025 — gatilho de venda</p>
+            <p className="font-semibold text-warning-foreground">Receita Saúde 2025 - gatilho de venda</p>
             <p className="text-muted-foreground">
               A partir de Jan/2025, profissionais de saúde PF devem emitir recibos via app Receita Saúde da Receita
               Federal. Salutti envia o protocolo automaticamente quando o recibo é gerado.
@@ -93,7 +93,7 @@ export default async function FiscalPage() {
                       <TD>{formatBRL(r.amount)}</TD>
                       <TD>
                         <Badge variant={r.receitaSaudeStatus === "confirmed" ? "success" : "warning"}>
-                          {r.receitaSaudeStatus ?? "—"}
+                          {r.receitaSaudeStatus ?? "-"}
                         </Badge>
                       </TD>
                     </TR>

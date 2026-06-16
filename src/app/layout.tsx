@@ -2,9 +2,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Salutti — ERP de Saúde com IA Financeira",
+  title: "Salutti - ERP de Saúde com IA Financeira",
   description:
-    "ERP SaaS para profissionais de saúde mental. Agenda, prontuário, automação financeira, fiscal e IA preditiva — em conformidade com LGPD.",
+    "ERP SaaS para profissionais de saúde mental. Agenda, prontuário, automação financeira, fiscal e IA preditiva - em conformidade com LGPD.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

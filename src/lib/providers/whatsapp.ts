@@ -1,4 +1,4 @@
-// Provider WhatsApp Business — MOCK
+// Provider WhatsApp Business - MOCK
 // Em produção: WhatsApp Cloud API (Meta) c/ templates aprovados.
 
 import { db } from "../db";

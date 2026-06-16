@@ -66,7 +66,7 @@ export default async function SettingsPage() {
             <p><strong>Nome:</strong> {ctx.workspace.name}</p>
             <p><strong>Slug:</strong> {ctx.workspace.slug}</p>
             <p><strong>Segmento:</strong> {ctx.workspace.segment}</p>
-            <p><strong>CNPJ:</strong> {ctx.workspace.cnpj ?? "—"}</p>
+            <p><strong>CNPJ:</strong> {ctx.workspace.cnpj ?? "-"}</p>
             <p><strong>Plano:</strong> <Badge>{ctx.workspace.planTier}</Badge></p>
           </CardContent>
         </Card>
@@ -136,15 +136,15 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-3 text-sm">
             <div className="rounded-md border p-3">
-              <p className="font-semibold">Starter — R$ 49/mês</p>
+              <p className="font-semibold">Starter - R$ 49/mês</p>
               <p className="text-muted-foreground">Solo · até 50 pacientes ativos</p>
             </div>
             <div className="rounded-md border p-3 border-primary">
-              <p className="font-semibold">Pro — R$ 129/mês</p>
+              <p className="font-semibold">Pro - R$ 129/mês</p>
               <p className="text-muted-foreground">Solo + IA preditiva ilimitada</p>
             </div>
             <div className="rounded-md border p-3">
-              <p className="font-semibold">Clínica — sob consulta</p>
+              <p className="font-semibold">Clínica - sob consulta</p>
               <p className="text-muted-foreground">Multi-profissional · TISS · multi-CNPJ</p>
             </div>
           </CardContent>

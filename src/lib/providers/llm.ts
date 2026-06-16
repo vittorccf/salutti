@@ -1,4 +1,4 @@
-// LUMA — núcleo de IA da Saluti.
+// LUMA - núcleo de IA da Saluti.
 // Implementa interface estável; usa OPENAI_API_KEY se presente, senão fallback
 // determinístico baseado em heurísticas. Permite demonstração end-to-end
 // sem dependência de chave de API.

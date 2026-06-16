@@ -33,13 +33,13 @@ const features = [
   },
   {
     icon: <Brain className="h-5 w-5" />,
-    title: "LUMA — IA clínica + preditiva",
+    title: "LUMA - IA clínica + preditiva",
     desc: "Sumarização de sessões em segundos, insights financeiros (\"sua receita caiu 12%\") e detecção de churn.",
   },
   {
     icon: <MessageSquareText className="h-5 w-5" />,
     title: "WhatsApp Business API",
-    desc: "100% dos profissionais usam WhatsApp — Salutti o transforma em canal oficial com templates aprovados.",
+    desc: "100% dos profissionais usam WhatsApp - Salutti o transforma em canal oficial com templates aprovados.",
   },
   {
     icon: <ShieldCheck className="h-5 w-5" />,
@@ -51,7 +51,7 @@ const features = [
 const differentiators = [
   {
     title: "Sem CRP? Sem problema.",
-    desc: "Psicanalistas e terapeutas com formação não-regulamentada são bem-vindos — diferente da concorrência.",
+    desc: "Psicanalistas e terapeutas com formação não-regulamentada são bem-vindos - diferente da concorrência.",
   },
   {
     title: "ERP, não \"agenda bonita\".",
@@ -93,7 +93,7 @@ export default function Home() {
           O <span className="text-primary">ERP de Saúde</span> que automatiza o que ninguém quer fazer.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas — não de planilha.
+          Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas - não de planilha.
           Agenda + Pix + NF-e + WhatsApp + IA preditiva em um único sistema.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

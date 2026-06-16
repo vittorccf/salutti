@@ -72,7 +72,7 @@ export default async function PatientsPage({
         <EmptyState
           icon={<Users className="h-8 w-8" />}
           title="Nenhum paciente cadastrado"
-          description="Comece criando o primeiro registro — sem exigência de CPF nem CRP."
+          description="Comece criando o primeiro registro - sem exigência de CPF nem CRP."
           action={
             <Button asChild>
               <Link href="/app/pacientes/novo">
@@ -104,11 +104,11 @@ export default async function PatientsPage({
                       </Link>
                     </TD>
                     <TD className="text-muted-foreground text-sm">
-                      {p.phone ?? "—"}
+                      {p.phone ?? "-"}
                       <br />
                       {p.email ?? ""}
                     </TD>
-                    <TD>{p.birthDate ? formatDateBR(p.birthDate) : "—"}</TD>
+                    <TD>{p.birthDate ? formatDateBR(p.birthDate) : "-"}</TD>
                     <TD>{p._count.appointments}</TD>
                     <TD>
                       {p.consentRecords.length > 0 ? (
