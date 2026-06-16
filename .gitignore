@@ -6,5 +6,7 @@ node_modules
 *.db-journal
 *.db-wal
 *.db-shm
+# Exceção: banco demo empacotado para o deploy (modo demo no Vercel)
+!prisma/seed.db
 *.log
 .DS_Store
