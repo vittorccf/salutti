@@ -7,12 +7,21 @@ import { EmailInput } from "@/components/forms/email-input";
 import { PhoneInput } from "@/components/forms/phone-input";
 import { AddressFields } from "@/components/forms/address-fields";
 import { dateKeySP } from "@/lib/dates";
+import { ImageUpload } from "@/components/forms/image-upload";
+import { mediaUrl } from "@/lib/media";
 
 // Campos do paciente, usados no cadastro e na edição.
 export function PatientFields({ patient, plans }: { patient?: Patient | null; plans: InsurancePlan[] }) {
   const p = patient;
   return (
     <div className="space-y-6">
+      <ImageUpload
+        name="photo"
+        label="Foto do paciente (opcional)"
+        shape="square"
+        currentUrl={mediaUrl(p?.photoId)}
+        hint="Ajuda a reconhecer quem chega. Fica visível só para a equipe deste consultório."
+      />
       <fieldset className="grid gap-3 sm:grid-cols-2">
         <legend className="sr-only">Dados pessoais</legend>
         <div className="space-y-1">

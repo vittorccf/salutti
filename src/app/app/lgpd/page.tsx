@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { media } from "@/lib/providers/media";
 import { recordAudit } from "@/lib/audit";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,8 @@ async function anonymizeAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const patientId = formData.get("patientId") as string;
+  const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
+  // Tudo o que identifica a pessoa sai: contato, documentos, endereço completo, nascimento e foto.
   const anonymized = await db.patient.updateMany({
     where: { id: patientId, workspaceId: ctx.workspace.id },
     data: {
@@ -54,12 +57,24 @@ async function anonymizeAction(formData: FormData) {
       phone: null,
       cpf: null,
       address: null,
+      cep: null,
+      street: null,
+      addressNumber: null,
+      complement: null,
+      district: null,
+      city: null,
+      state: null,
+      birthDate: null,
+      responsibleName: null,
+      emergencyContact: null,
+      photoId: null,
       notes: null,
       anonymized: true,
       active: false,
     },
   });
   ensureAffected(anonymized);
+  await media.remove(before?.photoId);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

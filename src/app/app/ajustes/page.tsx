@@ -20,6 +20,8 @@ import { AddressFields } from "@/components/forms/address-fields";
 import { Input } from "@/components/ui/input";
 import { ACCOUNT_TYPES, autonomoBlockers, isAccountType } from "@/lib/account";
 import { dateKeySP } from "@/lib/dates";
+import { ImageUpload } from "@/components/forms/image-upload";
+import { mediaUrl } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -108,6 +110,13 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </CardHeader>
           <CardContent>
             <ActionForm action={updateProfileAction} className="space-y-3">
+              <ImageUpload
+                name="avatar"
+                label="Foto de perfil"
+                shape="square"
+                currentUrl={mediaUrl(ctx.user.avatarId)}
+                hint="Aparece no menu e, se você escolher, no lugar da marca Salutti."
+              />
               <div className="space-y-1">
                 <Label htmlFor="profile-name">Nome</Label>
                 <Input id="profile-name" name="name" required defaultValue={ctx.user.name} autoComplete="name" />
@@ -200,6 +209,28 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <fieldset className="space-y-2">
                   <legend className="text-sm font-medium">Endereço</legend>
                   <AddressFields idPrefix="ws-" defaultValue={ws} />
+                </fieldset>
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-medium">No topo do menu</legend>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                    {[
+                      { v: "salutti", l: "Marca Salutti" },
+                      { v: "photo", l: "Foto de perfil de quem está usando" },
+                      { v: "banner", l: isClinic ? "Banner da clínica" : "Banner profissional" },
+                    ].map((o) => (
+                      <label key={o.v} className="flex items-center gap-2">
+                        <input type="radio" name="brandDisplay" value={o.v} defaultChecked={ws.brandDisplay === o.v} className="h-4 w-4 accent-primary" />
+                        {o.l}
+                      </label>
+                    ))}
+                  </div>
+                  <ImageUpload
+                    name="banner"
+                    label={isClinic ? "Banner da clínica" : "Banner profissional"}
+                    shape="banner"
+                    currentUrl={mediaUrl(ws.bannerId)}
+                    hint="Imagem larga (logo ou banner), até 1200×400. Sem foto de perfil, aparece a marca Salutti."
+                  />
                 </fieldset>
                 <Button type="submit" variant="outline" size="sm">Salvar dados</Button>
               </ActionForm>

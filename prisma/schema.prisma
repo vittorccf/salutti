@@ -20,6 +20,8 @@ model User {
   name          String
   passwordHash  String
   avatarUrl     String?
+  // Foto de perfil enviada pelo usuário (MediaFile).
+  avatarId      String?
   // Aniversário do próprio usuário (lembrete no painel). Só dia e mês importam para o lembrete.
   birthDate     DateTime?
   // Lembrete de aniversário de pacientes no painel (cada profissional decide; equipe e o próprio sempre aparecem).
@@ -42,6 +44,9 @@ model Workspace {
   slug            String         @unique
   // Tipo de conta, escolhido no cadastro e trocável em Ajustes: autonomo (um profissional) | clinica (equipe).
   accountType     String         @default("autonomo")
+  // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
+  brandDisplay    String         @default("salutti")
+  bannerId        String?
   // área de atendimento: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
   segment         String         @default("solo_psicologo")
   cnpj            String?
@@ -149,6 +154,8 @@ model Patient {
   // Soft delete LGPD
   deletedAt     DateTime?
   anonymized    Boolean       @default(false)
+  // Foto do paciente (opcional, MediaFile). Sai na anonimização.
+  photoId       String?
   // Convênio (TISS)
   insurancePlanId     String?
   insuranceCardNumber String?   // número da carteirinha
@@ -488,4 +495,23 @@ model TissGuide {
   appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
+}
+
+// Imagens enviadas (foto de perfil, banner, foto de paciente), guardadas no banco e servidas por
+// /api/media/[id] só a quem tem acesso. Já chegam reduzidas pelo navegador (no máximo algumas centenas de KB).
+// Trocar para um storage de objetos (ex.: Vercel Blob privado) muda só src/lib/providers/media.ts.
+model MediaFile {
+  id          String    @id @default(cuid())
+  // user_avatar | workspace_banner | patient_photo
+  kind        String
+  // Dono da imagem: usuário (foto de perfil) ou consultório (banner, foto de paciente).
+  userId      String?
+  workspaceId String?
+  mime        String
+  size        Int
+  bytes       Bytes
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId])
+  @@index([userId])
 }

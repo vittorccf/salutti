@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Avatar } from "@/components/ui/avatar";
+import { mediaUrl } from "@/lib/media";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
@@ -106,7 +108,8 @@ export default async function PatientsPage({
                 {patients.map((p) => (
                   <TR key={p.id}>
                     <TD className="font-medium">
-                      <Link className="hover:underline" href={`/app/pacientes/${p.id}`}>
+                      <Link className="flex items-center gap-2 hover:underline" href={`/app/pacientes/${p.id}`}>
+                        <Avatar src={mediaUrl(p.photoId)} name={p.fullName} className="h-7 w-7 text-[10px]" />
                         {p.fullName}
                       </Link>
                     </TD>

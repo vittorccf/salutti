@@ -8,6 +8,8 @@ import { parseDateOnly } from "@/lib/dates";
 import { assertInsurancePlan, assertInWorkspace } from "@/lib/tenant";
 import { ContactError, readAddress, validEmail, validPhone } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
+import { UploadError } from "@/lib/media";
+import { replaceImage } from "@/lib/media-store";
 
 const text = (max = 200) => z.string().trim().max(max).optional();
 const schema = z.object({
@@ -22,7 +24,7 @@ const schema = z.object({
   insuranceCardNumber: text(20),
 });
 
-type Previous = { email: string | null; phone: string | null; address: string | null } | null;
+type Previous = { email: string | null; phone: string | null; address: string | null; photoId: string | null } | null;
 
 async function readPatient(formData: FormData, workspaceId: string, previous: Previous = null) {
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
@@ -54,7 +56,7 @@ async function readPatient(formData: FormData, workspaceId: string, previous: Pr
 }
 
 const fail = (e: unknown): FormResult => {
-  if (e instanceof ContactError) return { erro: e.message };
+  if (e instanceof ContactError || e instanceof UploadError) return { erro: e.message };
   throw e;
 };
 
@@ -66,10 +68,17 @@ export async function createPatientAction(_prev: FormResult, formData: FormData)
   } catch (e) {
     return fail(e);
   }
+  let photoId: string | null;
+  try {
+    photoId = await replaceImage(formData, "photo", null, "patient_photo", { workspaceId: ctx.workspace.id });
+  } catch (e) {
+    return fail(e);
+  }
   const patient = await db.patient.create({
     data: {
       workspaceId: ctx.workspace.id,
       ...data,
+      photoId,
       ...(formData.get("consent") === "on"
         ? {
             consentRecords: {
@@ -95,15 +104,17 @@ export async function updatePatientAction(_prev: FormResult, formData: FormData)
   await assertInWorkspace(ctx.workspace.id, { patientId });
   const previous = await db.patient.findFirst({
     where: { id: patientId, workspaceId: ctx.workspace.id },
-    select: { email: true, phone: true, address: true },
+    select: { email: true, phone: true, address: true, photoId: true },
   });
   let data: Awaited<ReturnType<typeof readPatient>>;
+  let photoId: string | null;
   try {
     data = await readPatient(formData, ctx.workspace.id, previous);
+    photoId = await replaceImage(formData, "photo", previous?.photoId ?? null, "patient_photo", { workspaceId: ctx.workspace.id });
   } catch (e) {
     return fail(e);
   }
-  await db.patient.updateMany({ where: { id: patientId, workspaceId: ctx.workspace.id }, data });
+  await db.patient.updateMany({ where: { id: patientId, workspaceId: ctx.workspace.id }, data: { ...data, photoId } });
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
