@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { dateKeySP, parseDateOnly, parseDateTimeLocal, toDateTimeLocalSP } from "@/lib/dates";
 import { assertInWorkspace } from "@/lib/tenant";
-import { video } from "@/lib/providers/video";
+import { createSessionMeeting, MeetAccountError, type MeetIssue } from "@/lib/video-connections";
 import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -45,21 +45,26 @@ async function createAppointmentAction(formData: FormData) {
   const price = plan ? plan.sessionPrice : data.price;
   const startsAt = parseDateTimeLocal(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
-  let meetingUrl: string | null = null;
-  let videoFailed = false;
+  let meeting: { url: string; eventId: string | null; ownerId: string | null } | null = null;
+  let videoIssue: MeetIssue | null = null;
   if (data.modality === "online" && data.videoProvider !== "none") {
     try {
-      const meeting = await video.createMeeting({
+      meeting = await createSessionMeeting({
+        workspaceId: ctx.workspace.id,
+        professionalId: data.professionalId,
+        userId: ctx.user.id,
         provider: data.videoProvider,
         topic: MEETING_TOPIC,
         startsAt,
         durationMinutes: data.durationMinutes,
       });
-      meetingUrl = meeting.url;
     } catch (e) {
       // A sessão é criada mesmo assim; o link pode ser gerado depois na tela da sessão.
-      console.error("[video] falha ao criar reunião", e);
-      videoFailed = true;
+      if (e instanceof MeetAccountError) videoIssue = e.issue;
+      else {
+        console.error("[video] falha ao criar reunião", e);
+        videoIssue = "video";
+      }
     }
   }
 
@@ -71,7 +76,9 @@ async function createAppointmentAction(formData: FormData) {
       startsAt,
       endsAt,
       modality: data.modality,
-      meetingUrl,
+      meetingUrl: meeting?.url ?? null,
+      meetingEventId: meeting?.eventId ?? null,
+      meetingOwnerId: meeting?.ownerId ?? null,
       price,
       insurancePlanId,
       notes: data.notes || null,
@@ -114,7 +121,7 @@ async function createAppointmentAction(formData: FormData) {
     entityId: appointment.id,
   });
 
-  redirect(`/app/agenda/${appointment.id}${videoFailed ? "?aviso=video" : ""}`);
+  redirect(`/app/agenda/${appointment.id}${videoIssue ? `?aviso=${videoIssue}` : ""}`);
 }
 
 export default async function NewAppointmentPage({

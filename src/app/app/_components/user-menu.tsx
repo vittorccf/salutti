@@ -2,7 +2,7 @@
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { ChevronsUpDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
-import { initials } from "@/lib/utils";
+import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,18 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Props = { name: string; email: string };
+type Props = { name: string; email: string; avatarUrl?: string | null };
 
-export const UserMenu = ({ name, email }: Props) => {
+export const UserMenu = ({ name, email, avatarUrl }: Props) => {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-        <span className="grid h-9 w-9 shrink-0 place-content-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-          {initials(name)}
-        </span>
+        <Avatar src={avatarUrl} name={name} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium leading-tight">{name}</span>
           <span className="block truncate text-xs text-muted-foreground">{email}</span>

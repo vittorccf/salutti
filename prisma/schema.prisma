@@ -19,11 +19,15 @@ model User {
   email         String        @unique
   name          String
   passwordHash  String
-  avatarUrl     String?
+  avatarUrl     String? // legado, sem uso (a foto de perfil é avatarId)
+  // Foto de perfil enviada pelo usuário (MediaFile).
+  avatarId      String?
   // Aniversário do próprio usuário (lembrete no painel). Só dia e mês importam para o lembrete.
   birthDate     DateTime?
   // Lembrete de aniversário de pacientes no painel (cada profissional decide; equipe e o próprio sempre aparecem).
   showPatientBirthdays Boolean @default(true)
+  // Idioma da interface: pt-BR | pt-PT | es | en. Nulo = automático (cookie ou idioma do navegador).
+  locale        String?
   createdAt     DateTime      @default(now())
   // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
   // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.
@@ -34,6 +38,7 @@ model User {
   totpLockedUntil    DateTime?
   memberships   Membership[]
   auditEvents   AuditLog[]    @relation("AuditUser")
+  connections   IntegrationConnection[]
 }
 
 model Workspace {
@@ -42,6 +47,9 @@ model Workspace {
   slug            String         @unique
   // Tipo de conta, escolhido no cadastro e trocável em Ajustes: autonomo (um profissional) | clinica (equipe).
   accountType     String         @default("autonomo")
+  // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
+  brandDisplay    String         @default("salutti")
+  bannerId        String?
   // área de atendimento: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
   segment         String         @default("solo_psicologo")
   cnpj            String?
@@ -108,6 +116,8 @@ model Professional {
   // CRP, CRM, CRO, "sem_registro" (psicanalistas/terapeutas)
   councilType   String        @default("CRP")
   councilNumber String?       // pode ser nulo p/ "sem_registro"
+  // Usuário da Salutti que é este profissional (o Meet nasce na conta Google dele). Nulo para quem não acessa o sistema.
+  userId        String?
   councilUF     String?       // UF do conselho, código IBGE (TISS Tabela 59), ex.: "52" = GO
   noCouncil     Boolean       @default(false) // flag explícita - oceano azul "Sem CRP"
   specialty     String?
@@ -149,6 +159,8 @@ model Patient {
   // Soft delete LGPD
   deletedAt     DateTime?
   anonymized    Boolean       @default(false)
+  // Foto do paciente (opcional, MediaFile). Sai na anonimização.
+  photoId       String?
   // Convênio (TISS)
   insurancePlanId     String?
   insuranceCardNumber String?   // número da carteirinha
@@ -192,6 +204,9 @@ model Appointment {
   endsAt          DateTime
   modality        String        @default("presencial") // presencial | online
   meetingUrl      String?
+  // Evento do Google Agenda que contém o Meet, e de quem é a agenda (para apagar ao cancelar a sessão).
+  meetingEventId String?
+  meetingOwnerId String?
   status          String        @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
   price           Float
   notes           String?
@@ -354,7 +369,7 @@ model ConsentRecord {
   id           String   @id @default(cuid())
   workspaceId  String
   patientId    String
-  purpose      String   // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento
+  purpose      String   // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento | foto_identificacao
   legalBasis   String   // consentimento | tutela_saude | obrigacao_legal | execucao_contrato
   granted      Boolean  @default(true)
   documentHash String?
@@ -488,4 +503,40 @@ model TissGuide {
   appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
+}
+
+// Imagens enviadas (foto de perfil, banner, foto de paciente), guardadas no banco e servidas por
+// /api/media/[id] só a quem tem acesso. Já chegam reduzidas pelo navegador (no máximo algumas centenas de KB).
+// Trocar para um storage de objetos (ex.: Vercel Blob privado) muda só src/lib/providers/media.ts.
+model MediaFile {
+  id          String    @id @default(cuid())
+  // user_avatar | workspace_banner | patient_photo
+  kind        String
+  // Dono da imagem: usuário (foto de perfil) ou consultório (banner, foto de paciente).
+  userId      String?
+  workspaceId String?
+  mime        String
+  size        Int
+  bytes       Bytes
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+// Conta externa conectada por cada usuário (hoje: Google, para criar o Meet no Google Agenda da própria pessoa).
+// O refresh token fica cifrado (AES-256-GCM, mesma chave do 2FA em src/lib/totp.ts).
+model IntegrationConnection {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String   // google
+  accountEmail String?
+  scopes       String
+  refreshToken String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
 }

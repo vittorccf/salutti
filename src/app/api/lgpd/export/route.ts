@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentContext } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { media } from "@/lib/providers/media";
 
 export const GET = async (req: Request) => {
   const ctx = await getCurrentContext();
@@ -23,8 +24,10 @@ export const GET = async (req: Request) => {
   });
   if (!patient) return NextResponse.json({ error: "not found" }, { status: 404 });
 
+  const photoFile = patient.photoId ? await media.read(patient.photoId) : null;
+  const photo = photoFile ? { mime: photoFile.mime, dataUrl: `data:${photoFile.mime};base64,${Buffer.from(photoFile.bytes).toString("base64")}` } : null;
   const filename = `salutti-portabilidade-${patient.fullName.replaceAll(" ", "_")}.json`;
-  return new NextResponse(JSON.stringify(patient, null, 2), {
+  return new NextResponse(JSON.stringify({ ...patient, photo }, null, 2), {
     headers: {
       "content-type": "application/json",
       "content-disposition": `attachment; filename="${filename}"`,

@@ -19,6 +19,8 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
 import { formatAddress } from "@/lib/address";
+import { mediaUrl } from "@/lib/media";
+import { Avatar } from "@/components/ui/avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +74,8 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
   return (
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
+        <div className="flex items-start gap-4">
+        <Avatar src={mediaUrl(patient.photoId)} name={patient.fullName} className="h-16 w-16 text-base" />
         <div>
           <h1 className="text-2xl font-bold">Paciente · {patient.fullName}</h1>
           {age !== null ? <p className="text-sm text-muted-foreground">{age} anos</p> : null}
@@ -87,6 +91,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
               {patient.address ? <p>Endereço anterior: {patient.address}</p> : null}
             </div>
           </details>
+        </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" asChild>

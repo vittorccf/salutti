@@ -48,6 +48,7 @@ async function createFirstProfessionalAction(formData: FormData) {
       workspaceId: ctx.workspace.id,
       fullName: data.fullName,
       email: ctx.user.email,
+      userId: ctx.user.id,
       birthDate: ctx.user.birthDate,
       professionalType: data.professionalType,
       noCouncil,
