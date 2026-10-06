@@ -9,8 +9,8 @@ import { SidebarNav } from "./_components/sidebar-nav";
 import { UserMenu } from "./_components/user-menu";
 import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
-import { planTierLabel, segmentLabel } from "@/lib/labels";
-import { accountTypeLabel } from "@/lib/account";
+import { getTranslations } from "next-intl/server";
+import { labeler } from "@/i18n/labels";
 import { mediaUrl } from "@/lib/media";
 import { Avatar } from "@/components/ui/avatar";
 
@@ -22,6 +22,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? Math.max(0, differenceInDays(ctx.workspace.trialEndsAt, new Date()))
     : null;
 
+  const t = await getTranslations("common.layout");
+  const label = labeler(await getTranslations("common.labels"));
   const avatarUrl = mediaUrl(ctx.user.avatarId);
   const bannerUrl = mediaUrl(ctx.workspace.bannerId);
   const brand = ctx.workspace.brandDisplay;
@@ -59,11 +61,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="p-3 space-y-3 text-sm">
         {trialDays !== null ? (
           <div className="rounded-md bg-warning/10 p-3 text-xs">
-            <p className="font-semibold text-warning-strong">
-              Teste grátis: {trialDays} {trialDays === 1 ? "dia restante" : "dias restantes"}
-            </p>
+            <p className="font-semibold text-warning-strong">{t("trialDays", { days: trialDays })}</p>
             <p className="text-foreground/80">
-              Plano <strong className="text-foreground">{planTierLabel(ctx.workspace.planTier)}</strong>
+              {t("plan")} <strong className="text-foreground">{label("planTier", ctx.workspace.planTier)}</strong>
             </p>
           </div>
         ) : null}
@@ -81,14 +81,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <MobileNav>{sidebar}</MobileNav>
-              <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Início">
+              <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t("home")}>
                 <Logo size={20} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
-                {accountTypeLabel(ctx.workspace.accountType)} · {segmentLabel(ctx.workspace.segment)}
+                {label("accountType", ctx.workspace.accountType)} · {label("segment", ctx.workspace.segment)}
               </Badge>
               <p className="hidden truncate text-sm text-muted-foreground lg:block">
-                LGPD ativo · auditoria habilitada · multi-tenant
+                {t("compliance")}
               </p>
             </div>
           </div>

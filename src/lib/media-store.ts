@@ -27,7 +27,7 @@ export async function stageImage(
   const upload = await readImageUpload(formData, field);
   if (upload === null) return { id: currentId, changed: false, commit: noop, rollback: noop };
   if (upload !== "remove" && requireConsent && formData.get(`${field}Consent`) !== "on") {
-    throw new UploadError("Confirme que o paciente (ou o responsável) autorizou o uso da foto.");
+    throw new UploadError("photoConsent");
   }
   const newId = upload === "remove" ? null : await media.save(kind, owner, upload);
   return {

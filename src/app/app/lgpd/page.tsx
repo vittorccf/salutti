@@ -10,23 +10,14 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ShieldCheck, FileDown, Trash2, EyeOff } from "lucide-react";
-import { formatDateTimeBR } from "@/lib/utils";
-import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { assertInWorkspace, ensureAffected } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
-const rights = [
-  "Confirmação da existência de tratamento",
-  "Acesso aos dados",
-  "Correção de dados incompletos",
-  "Anonimização, bloqueio ou eliminação",
-  "Portabilidade",
-  "Eliminação dos dados consentidos",
-  "Informação sobre compartilhamento",
-  "Informação sobre negativa de consentimento",
-  "Revogação do consentimento",
-];
+// Os 9 direitos do art. 18 (texto em settings.lgpd.rights.r1…r9).
+const rights = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"] as const;
 
 async function exportDataAction(formData: FormData) {
   "use server";
@@ -127,29 +118,31 @@ export default async function LgpdPage() {
       orderBy: { fullName: "asc" },
     }),
   ]);
+  const t = await getTranslations("settings.lgpd");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-primary-strong" aria-hidden /> LGPD e conformidade
+          <ShieldCheck className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Você é o controlador dos dados e a Salutti é a operadora. Bases legais usadas: consentimento, tutela da
-          saúde, execução de contrato e obrigação legal.
+          {t("intro")}
         </p>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Os 9 direitos do titular (art. 18 da LGPD)</CardTitle>
-          <CardDescription>Cada direito é atendido pelas ações abaixo, incluindo a exportação dos dados.</CardDescription>
+          <CardTitle>{t("rightsTitle")}</CardTitle>
+          <CardDescription>{t("rightsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 md:grid-cols-3 text-sm">
           {rights.map((r, idx) => (
             <div key={r} className="rounded-md border bg-card p-3">
-              <p className="text-xs text-muted-foreground">Direito {idx + 1}</p>
-              <p className="font-medium leading-tight">{r}</p>
+              <p className="text-xs text-muted-foreground">{t("right", { n: idx + 1 })}</p>
+              <p className="font-medium leading-tight">{t(`rights.${r}`)}</p>
             </div>
           ))}
         </CardContent>
@@ -157,17 +150,17 @@ export default async function LgpdPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Exercer direitos por paciente</CardTitle>
+          <CardTitle>{t("exerciseTitle")}</CardTitle>
           <CardDescription>
-            Exporte os dados em JSON, anonimize (mantém só dados agregados) ou elimine (respeitando o prazo legal de guarda).
+            {t("exerciseDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end" action={exportDataAction}>
             <div className="space-y-1">
-              <Label htmlFor="patientId">Paciente</Label>
+              <Label htmlFor="patientId">{t("patient")}</Label>
               <Select name="patientId" id="patientId" required>
-                <option value="">Selecione…</option>
+                <option value="">{t("select")}</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.fullName}
@@ -176,13 +169,13 @@ export default async function LgpdPage() {
               </Select>
             </div>
             <Button formAction={exportDataAction} type="submit" variant="outline">
-              <FileDown className="h-4 w-4" /> Exportar dados
+              <FileDown className="h-4 w-4" /> {t("export")}
             </Button>
             <Button formAction={anonymizeAction} type="submit" variant="outline">
-              <EyeOff className="h-4 w-4" /> Anonimizar
+              <EyeOff className="h-4 w-4" /> {t("anonymize")}
             </Button>
             <Button formAction={softDeleteAction} type="submit" variant="destructive">
-              <Trash2 className="h-4 w-4" /> Eliminar dados
+              <Trash2 className="h-4 w-4" /> {t("delete")}
             </Button>
           </form>
         </CardContent>
@@ -191,34 +184,34 @@ export default async function LgpdPage() {
       <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
-            <CardTitle>Consentimentos recentes</CardTitle>
+            <CardTitle>{t("consentsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <THead>
                 <TR>
-                  <TH>Paciente</TH>
-                  <TH>Finalidade</TH>
-                  <TH>Base legal</TH>
-                  <TH>Status</TH>
+                  <TH>{t("patient")}</TH>
+                  <TH>{t("purpose")}</TH>
+                  <TH>{t("legalBasis")}</TH>
+                  <TH>{t("status")}</TH>
                 </TR>
               </THead>
               <TBody>
                 {consents.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Nenhum consentimento registrado.
+                      {t("noConsents")}
                     </TD>
                   </TR>
                 ) : (
                   consents.map((c) => (
                     <TR key={c.id}>
                       <TD>{c.patient.fullName}</TD>
-                      <TD>{consentPurposeLabel(c.purpose)}</TD>
-                      <TD>{legalBasisLabel(c.legalBasis)}</TD>
+                      <TD>{label("consentPurpose", c.purpose)}</TD>
+                      <TD>{label("legalBasis", c.legalBasis)}</TD>
                       <TD>
                         <Badge variant={c.granted && !c.revokedAt ? "success" : "muted"}>
-                          {c.granted && !c.revokedAt ? "Concedido" : "Revogado"}
+                          {c.granted && !c.revokedAt ? t("granted") : t("revoked")}
                         </Badge>
                       </TD>
                     </TR>
@@ -231,31 +224,31 @@ export default async function LgpdPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Trilha de auditoria · últimos 30 eventos</CardTitle>
-            <CardDescription>Registros imutáveis de quem fez o quê e quando.</CardDescription>
+            <CardTitle>{t("auditTitle")}</CardTitle>
+            <CardDescription>{t("auditDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <THead>
                 <TR>
-                  <TH>Quando</TH>
-                  <TH>Usuário</TH>
-                  <TH>Ação</TH>
-                  <TH>Entidade</TH>
+                  <TH>{t("when")}</TH>
+                  <TH>{t("user")}</TH>
+                  <TH>{t("action")}</TH>
+                  <TH>{t("entity")}</TH>
                 </TR>
               </THead>
               <TBody>
                 {auditLog.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Nenhum evento registrado.
+                      {t("noEvents")}
                     </TD>
                   </TR>
                 ) : (
                   auditLog.map((l) => (
                     <TR key={l.id}>
-                      <TD className="whitespace-nowrap text-xs">{formatDateTimeBR(l.createdAt)}</TD>
-                      <TD className="text-xs">{l.user?.name ?? "Sistema"}</TD>
+                      <TD className="whitespace-nowrap text-xs">{f.dateTime(l.createdAt)}</TD>
+                      <TD className="text-xs">{l.user?.name ?? t("system")}</TD>
                       <TD className="font-mono text-xs">{l.action}</TD>
                       <TD className="font-mono text-xs">{l.entity}</TD>
                     </TR>

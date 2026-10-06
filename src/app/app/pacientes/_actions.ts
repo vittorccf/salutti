@@ -1,4 +1,6 @@
 "use server";
+import { errorMessage } from "@/i18n/errors";
+import { getTranslations } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
@@ -17,11 +19,14 @@ const recordPhotoConsent = (workspaceId: string, patientId: string) =>
     data: { workspaceId, patientId, purpose: "foto_identificacao", legalBasis: "consentimento", granted: true },
   });
 
-const text = (max = 200) => z.string().trim().max(max).optional();
+// As mensagens do schema são chaves de patients.errors, traduzidas em `fail`.
+class PatientFormError extends Error {}
+
+const text = (max = 200) => z.string().trim().max(max, "tooLong").optional();
 const schema = z.object({
-  fullName: z.string().trim().min(2, "Informe o nome completo.").max(120),
+  fullName: z.string().trim().min(2, "fullNameRequired").max(120, "tooLong"),
   cpf: text(20),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "birthDateInvalid").optional().or(z.literal("")),
   pronouns: text(40),
   responsibleName: text(120),
   emergencyContact: text(160),
@@ -34,7 +39,7 @@ type Previous = { email: string | null; phone: string | null; address: string | 
 
 async function readPatient(formData: FormData, workspaceId: string, previous: Previous = null) {
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) throw new ContactError(parsed.error.issues[0].message);
+  if (!parsed.success) throw new PatientFormError(parsed.error.issues[0].message);
   const d = parsed.data;
   if (d.insurancePlanId) await assertInsurancePlan(workspaceId, d.insurancePlanId);
   // O select de convênio só aparece quando há planos; sem ele, o convênio atual fica como está.
@@ -61,8 +66,12 @@ async function readPatient(formData: FormData, workspaceId: string, previous: Pr
   };
 }
 
-const fail = (e: unknown): FormResult => {
-  if (e instanceof ContactError || e instanceof UploadError) return { erro: e.message };
+const fail = async (e: unknown): Promise<FormResult> => {
+  if (e instanceof ContactError || e instanceof UploadError) return { erro: await errorMessage(e) };
+  if (e instanceof PatientFormError) {
+    const t = await getTranslations("patients.errors");
+    return { erro: t.has(e.message) ? t(e.message) : t("invalid") };
+  }
   throw e;
 };
 

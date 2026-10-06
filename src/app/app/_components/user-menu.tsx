@@ -2,6 +2,7 @@
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { ChevronsUpDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ type Props = { name: string; email: string; avatarUrl?: string | null };
 export const UserMenu = ({ name, email, avatarUrl }: Props) => {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const t = useTranslations("common.userMenu");
 
   return (
     <DropdownMenu>
@@ -36,18 +38,18 @@ export const UserMenu = ({ name, email, avatarUrl }: Props) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
           {isDark ? <Sun /> : <Moon />}
-          {isDark ? "Ativar tema claro" : "Ativar tema escuro"}
+          {isDark ? t("lightTheme") : t("darkTheme")}
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/app/conta/seguranca">
-            <ShieldCheck /> Segurança da conta
+            <ShieldCheck /> {t("security")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action="/logout" method="post">
           <DropdownMenuItem asChild>
             <button type="submit">
-              <LogOut /> Sair
+              <LogOut /> {t("logout")}
             </button>
           </DropdownMenuItem>
         </form>

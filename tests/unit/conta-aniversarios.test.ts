@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { upcomingBirthdays, whenLabel } from "@/lib/birthdays";
+import { upcomingBirthdays } from "@/lib/birthdays";
 import { parseDateOnly } from "@/lib/dates";
 import { autonomoBlockers, segmentAfterMigration, segmentAllowed } from "@/lib/account";
 import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
@@ -34,9 +34,6 @@ describe("aniversários", () => {
       ["Bruno", 7],
     ]);
     expect(list[1]).toMatchObject({ turning: 36, dayMonth: "06/10" });
-    expect(whenLabel(0)).toBe("Hoje");
-    expect(whenLabel(1)).toBe("Amanhã");
-    expect(whenLabel(5)).toBe("Em 5 dias");
   });
 
   it("virada do ano e 29/02 em ano não bissexto (lembrado em 28/02)", () => {

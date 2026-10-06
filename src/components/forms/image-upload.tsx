@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ImagePlus, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   name: string;
@@ -53,6 +54,9 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
   const [remove, setRemove] = useState(false);
   const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null);
   const id = `${name}-arquivo`;
+  const t = useTranslations("common.image");
+  // Rótulo sem o "(opcional)" do fim, em qualquer idioma, para completar o nome acessível dos botões.
+  const shortLabel = label.replace(/ \([^)]*\)$/, "").toLowerCase();
 
   // Libera a URL temporária da prévia ao trocar de imagem ou sair da tela.
   useEffect(() => () => {
@@ -62,7 +66,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setStatus({ text: "Preparando a imagem…" });
+    setStatus({ text: t("preparing") });
     try {
       const small = await shrink(file, shape);
       const dt = new DataTransfer();
@@ -71,11 +75,11 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
       setPreview(URL.createObjectURL(small));
       setPicked(true);
       setRemove(false);
-      setStatus({ text: "Imagem pronta. Salve para aplicar." });
+      setStatus({ text: t("ready") });
     } catch {
       e.target.value = "";
       setPicked(false);
-      setStatus({ text: "Não foi possível ler essa imagem. Tente JPG ou PNG.", error: true });
+      setStatus({ text: t("unreadable"), error: true });
     }
   }
 
@@ -118,8 +122,8 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
               onClick={() => fileRef.current?.click()}
               aria-describedby={`${id}-dica`}
             >
-              <ImagePlus className="h-4 w-4" aria-hidden /> {preview ? "Trocar imagem" : "Enviar imagem"}
-              <span className="sr-only"> ({label.replace(/ \(opcional\)$/, "").toLowerCase()})</span>
+              <ImagePlus className="h-4 w-4" aria-hidden /> {preview ? t("replace") : t("upload")}
+              <span className="sr-only"> ({shortLabel})</span>
             </Button>
             {currentUrl ? (
               <label className="flex items-center gap-2 text-sm">
@@ -131,7 +135,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
                   className="h-4 w-4 accent-primary"
                 />
                 <span>
-                  Remover<span className="sr-only"> {label.replace(/ \(opcional\)$/, "").toLowerCase()}</span>
+                  {t("remove")}<span className="sr-only"> {shortLabel}</span>
                 </span>
               </label>
             ) : null}

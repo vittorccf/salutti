@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActionForm } from "@/components/forms/action-form";
 import { PatientFields } from "../../_components/patient-form";
 import { updatePatientAction } from "../../_actions";
+import { getTranslations } from "@/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -23,21 +24,22 @@ export default async function EditPatientPage({ params }: { params: Promise<{ id
     },
     orderBy: { name: "asc" },
   });
+  const [t, tActions] = await Promise.all([getTranslations("patients.edit"), getTranslations("common.actions")]);
 
   return (
     <div className="max-w-3xl space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Editar · {patient.fullName}</CardTitle>
+          <CardTitle>{t("title", { name: patient.fullName })}</CardTitle>
         </CardHeader>
         <CardContent>
           <ActionForm action={updatePatientAction} className="space-y-6">
             <input type="hidden" name="patientId" value={patient.id} />
             <PatientFields patient={patient} plans={plans} />
             <div className="flex flex-wrap gap-2">
-              <Button type="submit">Salvar alterações</Button>
+              <Button type="submit">{tActions("saveChanges")}</Button>
               <Button variant="outline" asChild>
-                <Link href={`/app/pacientes/${patient.id}`}>Cancelar</Link>
+                <Link href={`/app/pacientes/${patient.id}`}>{tActions("cancel")}</Link>
               </Button>
             </div>
           </ActionForm>

@@ -8,11 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/logo";
+import { getTranslations } from "@/i18n/server";
+
+// Erros vindos por ?error= (código curto; o texto fica nas mensagens auth.login.errors).
+const ERRORS = ["dados", "credenciais", "expirou"] as const;
 
 const schema = z.object({
   // Aceita email OU nome de usuário (ex.: "admin"). O valor é casado contra a coluna `email`.
-  email: z.string().min(1, "Informe o email ou usuário"),
-  password: z.string().min(1, "Informe a senha"),
+  email: z.string().min(1),
+  password: z.string().min(1),
 });
 
 async function loginAction(formData: FormData) {
@@ -21,15 +25,15 @@ async function loginAction(formData: FormData) {
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return redirect(`/login?error=${encodeURIComponent("Dados inválidos")}`);
+  if (!parsed.success) return redirect("/login?error=dados");
 
   const user = await db.user.findUnique({
     where: { email: parsed.data.email },
     include: { memberships: true },
   });
-  if (!user) return redirect("/login?error=Credenciais+inválidas");
+  if (!user) return redirect("/login?error=credenciais");
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
-  if (!ok) return redirect("/login?error=Credenciais+inválidas");
+  if (!ok) return redirect("/login?error=credenciais");
 
   // Com verificação em duas etapas, a sessão só nasce depois do código.
   if (user.totpEnabledAt) {
@@ -47,43 +51,47 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const session = await getSession();
   if (session) redirect("/app");
   const params = await searchParams;
+  const t = await getTranslations("auth.login");
+  const error = ERRORS.find((e) => e === params.error);
 
   return (
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <Logo variant="icon" size={48} className="mx-auto" />
-          <CardTitle>Entrar na Salutti</CardTitle>
-          <CardDescription>Acesse seu consultório</CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={loginAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail ou usuário</Label>
-              <Input id="email" name="email" type="text" required placeholder="voce@clinica.com.br" defaultValue="guilherme@salutti.dev" />
+              <Label htmlFor="email">{t("email")}</Label>
+              <Input id="email" name="email" type="text" required placeholder={t("emailPlaceholder")} defaultValue="guilherme@salutti.dev" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input id="password" name="password" type="password" required defaultValue="salutti123" />
             </div>
-            {params.error ? (
-              <p className="text-sm text-destructive-strong" role="alert">{params.error}</p>
+            {error ? (
+              <p className="text-sm text-destructive-strong" role="alert">{t(`errors.${error}`)}</p>
             ) : null}
             <Button type="submit" className="w-full">
-              Entrar
+              {t("submit")}
             </Button>
           </form>
           <div className="mt-6 rounded-md bg-muted/40 p-3 text-xs space-y-1">
-            <p className="font-semibold">Contas de demonstração (senha <code>salutti123</code>):</p>
+            <p className="font-semibold">
+              {t.rich("demoTitle", { password: "salutti123", code: (chunks) => <code>{chunks}</code> })}
+            </p>
             <ul className="list-disc pl-4 text-muted-foreground">
-              <li>guilherme@salutti.dev - psicólogo autônomo (Goiânia)</li>
-              <li>kris@salutti.dev - clínica odontológica UBS Turvânia</li>
+              <li>{t("demoAutonomo", { email: "guilherme@salutti.dev" })}</li>
+              <li>{t("demoClinica", { email: "kris@salutti.dev" })}</li>
             </ul>
           </div>
           <p className="mt-4 text-center text-sm">
-            Novo por aqui?{" "}
+            {t("newHere")}{" "}
             <Link className="text-primary-strong underline-offset-4 hover:underline" href="/signup">
-              Criar conta
+              {t("createAccount")}
             </Link>
           </p>
         </CardContent>

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { chargeDisplayStatus } from "@/lib/labels";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { formatBRL, formatDateBR, plural } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { formatters } from "@/i18n/format";
 import { MessageSquareText, Sparkles } from "lucide-react";
 import { daysBetweenSP, startOfTodaySP } from "@/lib/dates";
 
@@ -24,6 +25,8 @@ async function runDunningAction() {
     },
     include: { patient: true, paymentLink: true },
   });
+  // O modelo da mensagem ao paciente é em pt-BR (lib/providers/whatsapp), então o valor vai no mesmo idioma.
+  const br = formatters("pt-BR");
   let sent = 0;
   for (const c of overdueCharges) {
     if (!c.patient.phone) continue;
@@ -33,7 +36,7 @@ async function runDunningAction() {
       template: "charge_overdue",
       vars: {
         patient: c.patient.fullName.split(" ")[0],
-        amount: formatBRL(c.amount),
+        amount: br.money(c.amount),
         link: c.paymentLink ? `https://salutti.app${c.paymentLink.url}` : "",
       },
     });
@@ -49,6 +52,8 @@ export default async function DunningPage({
   searchParams: Promise<{ sent?: string }>;
 }) {
   const ctx = await requireContext();
+  const t = await getTranslations("finance.dunning");
+  const f = await getFormat();
   const params = await searchParams;
   const overdue = await db.charge.findMany({
     where: {
@@ -65,22 +70,20 @@ export default async function DunningPage({
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> Régua de cobrança
+          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Envia um lembrete no WhatsApp para cada cobrança vencida. A régua costuma recuperar cerca de 70% do valor.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
       </header>
 
       <Card>
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>{plural(overdue.length, "cobrança em atraso", "cobranças em atraso")}</CardTitle>
-            <CardDescription>Total: {formatBRL(total)}</CardDescription>
+            <CardTitle>{t("overdueCount", { count: overdue.length })}</CardTitle>
+            <CardDescription>{t("total", { amount: f.money(total) })}</CardDescription>
           </div>
           <form action={runDunningAction}>
             <Button type="submit" disabled={overdue.length === 0}>
-              <Sparkles className="h-4 w-4" /> Enviar lembretes
+              <Sparkles className="h-4 w-4" /> {t("send")}
             </Button>
           </form>
         </CardHeader>
@@ -88,34 +91,34 @@ export default async function DunningPage({
           {params.sent ? (
             <div className="bg-success/10 text-success-strong px-4 py-2 text-sm" role="status">
               {Number.isFinite(Number(params.sent))
-                ? `${plural(Number(params.sent), "lembrete enviado", "lembretes enviados")} (simulação).`
-                : "Lembretes enviados (simulação)."}
+                ? t("sent", { count: Number(params.sent) })
+                : t("sentGeneric")}
             </div>
           ) : null}
           <Table>
             <THead>
               <TR>
-                <TH>Paciente</TH>
-                <TH>Vencimento</TH>
-                <TH>Atraso</TH>
-                <TH className="text-right">Valor</TH>
-                <TH>Status</TH>
+                <TH>{t("patient")}</TH>
+                <TH>{t("dueDate")}</TH>
+                <TH>{t("delay")}</TH>
+                <TH className="text-right">{t("amount")}</TH>
+                <TH>{t("status")}</TH>
               </TR>
             </THead>
             <TBody>
               {overdue.length === 0 ? (
                 <TR>
                   <TD colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma cobrança em atraso. Quando um vencimento passar, ela aparece aqui.
+                    {t("empty")}
                   </TD>
                 </TR>
               ) : (
                 overdue.map((c) => (
                   <TR key={c.id}>
                     <TD className="font-medium">{c.patient.fullName}</TD>
-                    <TD>{formatDateBR(c.dueDate)}</TD>
-                    <TD>{plural(daysBetweenSP(c.dueDate, new Date()), "dia", "dias")}</TD>
-                    <TD className="text-right">{formatBRL(c.amount)}</TD>
+                    <TD>{f.date(c.dueDate)}</TD>
+                    <TD>{t("days", { count: daysBetweenSP(c.dueDate, new Date()) })}</TD>
+                    <TD className="text-right">{f.money(c.amount)}</TD>
                     <TD>
                       <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate)} />
                     </TD>

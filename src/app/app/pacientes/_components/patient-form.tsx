@@ -9,52 +9,54 @@ import { AddressFields } from "@/components/forms/address-fields";
 import { dateKeySP } from "@/lib/dates";
 import { ImageUpload } from "@/components/forms/image-upload";
 import { mediaUrl } from "@/lib/media";
+import { getTranslations } from "@/i18n/server";
 
 // Campos do paciente, usados no cadastro e na edição.
-export function PatientFields({ patient, plans }: { patient?: Patient | null; plans: InsurancePlan[] }) {
+export async function PatientFields({ patient, plans }: { patient?: Patient | null; plans: InsurancePlan[] }) {
   const p = patient;
+  const [t, tAddress] = await Promise.all([getTranslations("patients.form"), getTranslations("common.address")]);
   return (
     <div className="space-y-6">
       <fieldset className="grid gap-3 sm:grid-cols-2">
-        <legend className="sr-only">Dados pessoais</legend>
+        <legend className="sr-only">{t("personalData")}</legend>
         <div className="space-y-1">
-          <Label htmlFor="fullName">Nome completo *</Label>
+          <Label htmlFor="fullName">{t("fullName")}</Label>
           <Input id="fullName" name="fullName" required defaultValue={p?.fullName ?? ""} autoComplete="off" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="pronouns">Pronomes</Label>
-          <Input id="pronouns" name="pronouns" defaultValue={p?.pronouns ?? ""} placeholder="ele/dele, ela/dela, elu/delu…" />
+          <Label htmlFor="pronouns">{t("pronouns")}</Label>
+          <Input id="pronouns" name="pronouns" defaultValue={p?.pronouns ?? ""} placeholder={t("pronounsPlaceholder")} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="email">E-mail</Label>
+          <Label htmlFor="email">{t("email")}</Label>
           <EmailInput id="email" name="email" defaultValue={p?.email} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="phone">Telefone</Label>
+          <Label htmlFor="phone">{t("phone")}</Label>
           <PhoneInput id="phone" name="phone" defaultValue={p?.phone} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="cpf">CPF (opcional)</Label>
+          <Label htmlFor="cpf">{t("cpf")}</Label>
           <Input id="cpf" name="cpf" defaultValue={p?.cpf ?? ""} placeholder="000.000.000-00" inputMode="numeric" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="birthDate">Data de nascimento</Label>
+          <Label htmlFor="birthDate">{t("birthDate")}</Label>
           <Input id="birthDate" name="birthDate" type="date" defaultValue={p?.birthDate ? dateKeySP(p.birthDate) : ""} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="responsibleName">Responsável (se menor)</Label>
+          <Label htmlFor="responsibleName">{t("responsible")}</Label>
           <Input id="responsibleName" name="responsibleName" defaultValue={p?.responsibleName ?? ""} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="emergencyContact">Contato de emergência</Label>
-          <Input id="emergencyContact" name="emergencyContact" defaultValue={p?.emergencyContact ?? ""} placeholder="Nome e telefone" />
+          <Label htmlFor="emergencyContact">{t("emergencyContact")}</Label>
+          <Input id="emergencyContact" name="emergencyContact" defaultValue={p?.emergencyContact ?? ""} placeholder={t("emergencyContactPlaceholder")} />
         </div>
         {plans.length > 0 ? (
           <>
             <div className="space-y-1">
-              <Label htmlFor="insurancePlanId">Convênio</Label>
+              <Label htmlFor="insurancePlanId">{t("insurance")}</Label>
               <Select id="insurancePlanId" name="insurancePlanId" defaultValue={p?.insurancePlanId ?? ""}>
-                <option value="">Particular</option>
+                <option value="">{t("private")}</option>
                 {plans.map((plan) => (
                   <option key={plan.id} value={plan.id}>
                     {plan.name}
@@ -63,21 +65,21 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="insuranceCardNumber">Número da carteirinha</Label>
-              <Input id="insuranceCardNumber" name="insuranceCardNumber" maxLength={20} defaultValue={p?.insuranceCardNumber ?? ""} placeholder="Só para convênio" />
+              <Label htmlFor="insuranceCardNumber">{t("cardNumber")}</Label>
+              <Input id="insuranceCardNumber" name="insuranceCardNumber" maxLength={20} defaultValue={p?.insuranceCardNumber ?? ""} placeholder={t("cardNumberPlaceholder")} />
             </div>
           </>
         ) : null}
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Endereço</legend>
+        <legend className="text-sm font-medium">{tAddress("legend")}</legend>
         {p?.address ? (
           <div className="rounded-md border p-3 text-xs text-muted-foreground space-y-1">
-            <p>Endereço anterior (texto livre): {p.address}</p>
+            <p>{t("legacyAddress", { address: p.address })}</p>
             <label className="flex items-center gap-2">
               <input type="checkbox" name="clearLegacyAddress" className="h-4 w-4 accent-primary" />
-              Apagar o endereço anterior ao salvar
+              {t("clearLegacyAddress")}
             </label>
           </div>
         ) : null}
@@ -85,16 +87,16 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
       </fieldset>
 
       <div className="space-y-1">
-        <Label htmlFor="notes">Observações administrativas</Label>
-        <Textarea id="notes" name="notes" defaultValue={p?.notes ?? ""} placeholder="Só dados administrativos. A evolução clínica vai no prontuário." />
+        <Label htmlFor="notes">{t("notes")}</Label>
+        <Textarea id="notes" name="notes" defaultValue={p?.notes ?? ""} placeholder={t("notesPlaceholder")} />
       </div>
       <ImageUpload
         name="photo"
-        label="Foto do paciente (opcional)"
+        label={t("photo")}
         shape="square"
         currentUrl={mediaUrl(p?.photoId)}
-        hint="Ajuda a reconhecer quem chega. Aparece só na ficha, para a equipe deste consultório."
-        consentLabel="O paciente (ou o responsável, se for menor de idade) autorizou o uso da foto para identificação."
+        hint={t("photoHint")}
+        consentLabel={t("photoConsent")}
       />
     </div>
   );

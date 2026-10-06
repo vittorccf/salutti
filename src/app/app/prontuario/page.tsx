@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ClipboardList, FilePlus2 } from "lucide-react";
-import { formatDateTimeBR } from "@/lib/utils";
-import { noteTypeLabel } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -20,29 +20,29 @@ export default async function ProntuarioListPage() {
     orderBy: { updatedAt: "desc" },
     take: 50,
   });
+  const [t, tLabels, f] = await Promise.all([getTranslations("patients.records"), getTranslations("common.labels"), getFormat()]);
+  const label = labeler(tLabels);
 
   return (
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ClipboardList className="h-6 w-6 text-primary-strong" aria-hidden /> Prontuário
+            <ClipboardList className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Evoluções e anamneses dos seus pacientes. O TOBI resume cada evolução ao salvar.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
       </header>
 
       {notes.length === 0 ? (
         <EmptyState
           icon={<ClipboardList className="h-6 w-6" />}
-          title="Nenhuma evolução registrada"
-          description="Abra a ficha de um paciente para registrar a primeira evolução."
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
           action={
             <Button asChild>
               <Link href="/app/pacientes">
-                <FilePlus2 className="h-4 w-4" /> Selecionar paciente
+                <FilePlus2 className="h-4 w-4" /> {t("selectPatient")}
               </Link>
             </Button>
           }
@@ -53,11 +53,11 @@ export default async function ProntuarioListPage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>Paciente</TH>
-                  <TH>Profissional</TH>
-                  <TH>Tipo</TH>
-                  <TH>Atualizado</TH>
-                  <TH>TOBI</TH>
+                  <TH>{t("patient")}</TH>
+                  <TH>{t("professional")}</TH>
+                  <TH>{t("type")}</TH>
+                  <TH>{t("updated")}</TH>
+                  <TH>{t("tobi")}</TH>
                   <TH></TH>
                 </TR>
               </THead>
@@ -66,18 +66,18 @@ export default async function ProntuarioListPage() {
                   <TR key={n.id}>
                     <TD className="font-medium">{n.patient.fullName}</TD>
                     <TD>{n.professional.fullName}</TD>
-                    <TD>{noteTypeLabel(n.noteType)}</TD>
-                    <TD className="whitespace-nowrap">{formatDateTimeBR(n.updatedAt)}</TD>
+                    <TD>{label("noteType", n.noteType)}</TD>
+                    <TD className="whitespace-nowrap">{f.dateTime(n.updatedAt)}</TD>
                     <TD>
                       {n.aiSummary ? (
-                        <Badge variant="success">Resumida</Badge>
+                        <Badge variant="success">{t("summarized")}</Badge>
                       ) : (
-                        <Badge variant="muted">Pendente</Badge>
+                        <Badge variant="muted">{t("pending")}</Badge>
                       )}
                     </TD>
                     <TD>
                       <Button size="sm" variant="ghost" asChild>
-                        <Link href={`/app/prontuario/${n.patient.id}`}>Abrir</Link>
+                        <Link href={`/app/prontuario/${n.patient.id}`}>{t("open")}</Link>
                       </Button>
                     </TD>
                   </TR>

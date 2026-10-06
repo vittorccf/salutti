@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { assertInWorkspace } from "@/lib/tenant";
+import { getTranslations } from "@/i18n/server";
 
 type AnamnesisSchema = {
   sections: {
@@ -30,6 +31,8 @@ async function applyAnamnesisAction(formData: FormData) {
   if (!template) redirect(`/app/prontuario/${patientId}`);
   await assertInWorkspace(ctx.workspace.id, { patientId, professionalId });
   const schema = JSON.parse(template.schemaJson) as AnamnesisSchema;
+  // O texto gerado fica salvo no idioma de quem aplicou a anamnese.
+  const t = await getTranslations("patients.anamnesis");
 
   const answers: Record<string, string> = {};
   for (const section of schema.sections) {
@@ -39,13 +42,13 @@ async function applyAnamnesisAction(formData: FormData) {
   }
 
   const markdown =
-    `# Anamnese: ${template.name}\n\n` +
+    `# ${t("markdownTitle", { name: template.name })}\n\n` +
     schema.sections
       .map(
         (s) =>
           `## ${s.title}\n\n` +
           s.questions
-            .map((q) => `**${q.label}:**\n${answers[q.key] || "_(não respondido)_"}\n`)
+            .map((q) => `**${q.label}:**\n${answers[q.key] || t("unanswered")}\n`)
             .join("\n"),
       )
       .join("\n");
@@ -83,13 +86,14 @@ export default async function AnamnesisPage({
     db.professional.findMany({ where: { workspaceId: ctx.workspace.id, active: true } }),
   ]);
   if (!patient) notFound();
+  const t = await getTranslations("patients.anamnesis");
 
   const defaultTpl = templates.find((t) => t.isDefault) ?? templates[0];
   if (!defaultTpl) {
     return (
       <Card>
         <CardContent className="p-6">
-          <p>Sem templates de anamnese. Crie um em <code>/app/ajustes</code>.</p>
+          <p>{t.rich("noTemplates", { code: (chunks) => <code>{chunks}</code> })}</p>
         </CardContent>
       </Card>
     );
@@ -100,9 +104,12 @@ export default async function AnamnesisPage({
     <div className="max-w-3xl">
       <Card>
         <CardHeader>
-          <CardTitle>Anamnese · {patient.fullName}</CardTitle>
+          <CardTitle>{t("title", { name: patient.fullName })}</CardTitle>
           <CardDescription>
-            Modelo: <strong className="text-foreground">{defaultTpl.name}</strong>. Edite seções e perguntas em Ajustes.
+            {t.rich("template", {
+              name: defaultTpl.name,
+              strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,7 +117,7 @@ export default async function AnamnesisPage({
             <input type="hidden" name="patientId" value={patient.id} />
             <input type="hidden" name="templateId" value={defaultTpl.id} />
             <div className="space-y-1">
-              <Label htmlFor="professionalId">Profissional responsável</Label>
+              <Label htmlFor="professionalId">{t("professional")}</Label>
               <Select name="professionalId" id="professionalId" required>
                 {professionals.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -143,7 +150,7 @@ export default async function AnamnesisPage({
                 ))}
               </fieldset>
             ))}
-            <Button type="submit">Salvar anamnese</Button>
+            <Button type="submit">{t("submit")}</Button>
           </form>
         </CardContent>
       </Card>

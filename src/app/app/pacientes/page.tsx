@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Plus, UserPlus, Users } from "lucide-react";
-import { formatDateBR, plural } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
 import { PhoneText } from "@/components/ui/phone";
 
 export const dynamic = "force-dynamic";
@@ -43,47 +43,49 @@ export default async function PatientsPage({
     },
     take: 100,
   });
+  const [t, tc, tActions, f] = await Promise.all([
+    getTranslations("patients.list"),
+    getTranslations("common.count"),
+    getTranslations("common.actions"),
+    getFormat(),
+  ]);
 
   return (
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary-strong" aria-hidden /> Pacientes
+            <Users className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {q
-              ? `${plural(patients.length, "resultado", "resultados")} para “${q}”`
-              : plural(patients.length, "paciente", "pacientes")}
+            {q ? t("resultsFor", { count: patients.length, query: q }) : tc("patients", { count: patients.length })}
           </p>
         </div>
         <Button asChild>
           <Link href="/app/pacientes/novo">
-            <UserPlus className="h-4 w-4" /> Novo paciente
+            <UserPlus className="h-4 w-4" /> {t("new")}
           </Link>
         </Button>
       </header>
 
       <form className="flex gap-2">
-        <Input name="q" defaultValue={q} placeholder="Nome, e-mail ou CPF" aria-label="Buscar pacientes" />
+        <Input name="q" defaultValue={q} placeholder={t("searchPlaceholder")} aria-label={t("searchLabel")} />
         <Button type="submit" variant="outline">
-          Buscar
+          {tActions("search")}
         </Button>
       </form>
 
       {patients.length === 0 ? (
         <EmptyState
           icon={<Users className="h-6 w-6" />}
-          title={q ? "Nenhum paciente encontrado" : "Nenhum paciente cadastrado"}
+          title={q ? t("emptySearchTitle") : t("emptyTitle")}
           description={
-            q
-              ? "Confira a grafia ou busque pelo CPF ou e-mail."
-              : "Cadastre o primeiro paciente. CPF e registro profissional são opcionais."
+            q ? t("emptySearchDescription") : t("emptyDescription")
           }
           action={
             <Button asChild>
               <Link href="/app/pacientes/novo">
-                <Plus className="h-4 w-4" /> Cadastrar paciente
+                <Plus className="h-4 w-4" /> {t("create")}
               </Link>
             </Button>
           }
@@ -94,11 +96,11 @@ export default async function PatientsPage({
             <Table>
               <THead>
                 <TR>
-                  <TH>Nome</TH>
-                  <TH>Contato</TH>
-                  <TH>Nascimento</TH>
-                  <TH className="text-right">Sessões</TH>
-                  <TH>Consentimento</TH>
+                  <TH>{t("name")}</TH>
+                  <TH>{t("contact")}</TH>
+                  <TH>{t("birthDate")}</TH>
+                  <TH className="text-right">{t("sessions")}</TH>
+                  <TH>{t("consent")}</TH>
                   <TH></TH>
                 </TR>
               </THead>
@@ -115,18 +117,18 @@ export default async function PatientsPage({
                       <br />
                       {p.email ?? ""}
                     </TD>
-                    <TD>{p.birthDate ? formatDateBR(p.birthDate) : "-"}</TD>
+                    <TD>{p.birthDate ? f.date(p.birthDate) : "-"}</TD>
                     <TD className="text-right">{p._count.appointments}</TD>
                     <TD>
                       {p.consentRecords.length > 0 ? (
-                        <Badge variant="success">Consentido</Badge>
+                        <Badge variant="success">{t("consented")}</Badge>
                       ) : (
-                        <Badge variant="warning">Pendente</Badge>
+                        <Badge variant="warning">{t("pending")}</Badge>
                       )}
                     </TD>
                     <TD>
                       <Button size="sm" variant="ghost" asChild>
-                        <Link href={`/app/pacientes/${p.id}`}>Abrir</Link>
+                        <Link href={`/app/pacientes/${p.id}`}>{t("open")}</Link>
                       </Button>
                     </TD>
                   </TR>
