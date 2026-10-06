@@ -2,14 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentContext } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/brand/logo";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
 import { SidebarNav } from "./_components/sidebar-nav";
 import { UserMenu } from "./_components/user-menu";
 import { MobileNav } from "./_components/mobile-nav";
-import { Sparkles } from "lucide-react";
 import { differenceInDays } from "date-fns";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -75,11 +73,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 LGPD ativo · auditoria habilitada · multi-tenant
               </p>
             </div>
-            <Button size="sm" variant="outline" asChild>
-              <Link href="/app/luma">
-                <Sparkles className="h-4 w-4" /> LUMA
-              </Link>
-            </Button>
           </div>
         </header>
         <div className="p-4 md:p-6">{children}</div>
