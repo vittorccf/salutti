@@ -4,6 +4,7 @@ const consentPurposeLabels: Record<string, string> = {
   comunicacao_marketing: "Comunicação e marketing",
   telemedicina: "Telemedicina",
   compartilhamento: "Compartilhamento de dados",
+  foto_identificacao: "Foto para identificação",
 };
 
 export const consentPurposeLabel = (value: string) =>

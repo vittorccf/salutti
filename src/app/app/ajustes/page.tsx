@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { ACCOUNT_TYPES, autonomoBlockers, isAccountType } from "@/lib/account";
 import { dateKeySP } from "@/lib/dates";
 import { ImageUpload } from "@/components/forms/image-upload";
+import { googleOAuthConfigured } from "@/lib/providers/google-oauth";
+import { disconnectGoogleAction } from "../_actions/integrations";
 import { mediaUrl } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
@@ -32,9 +34,26 @@ const AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
   "sem-permissao": { tone: "erro", text: "Só quem é dono do consultório pode mudar o plano." },
 };
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ assinatura?: string }> }) {
+const GOOGLE_AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
+  ok: { tone: "ok", text: "Google conectado. As próximas sessões online com Meet nascem na sua agenda." },
+  desconectado: { tone: "ok", text: "Google desconectado. O acesso da Salutti à sua agenda foi revogado." },
+  escopo: {
+    tone: "erro",
+    text: "A permissão do Google Agenda não foi marcada. Conecte de novo e deixe marcada a opção de ver e editar eventos.",
+  },
+  negado: { tone: "erro", text: "Conexão cancelada no Google. Nada foi alterado." },
+  erro: { tone: "erro", text: "Não foi possível conectar o Google. Tente de novo." },
+  indisponivel: { tone: "erro", text: "A conexão com o Google ainda não foi ativada na Salutti." },
+};
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ assinatura?: string; google?: string }> }) {
   const ctx = await requireContext();
-  const { assinatura } = await searchParams;
+  const { assinatura, google } = await searchParams;
+  const googleAviso = google && Object.hasOwn(GOOGLE_AVISOS, google) ? GOOGLE_AVISOS[google] : null;
+  const googleConn = await db.integrationConnection.findUnique({
+    where: { userId_provider: { userId: ctx.user.id, provider: "google" } },
+    select: { accountEmail: true, createdAt: true },
+  });
   const aviso = assinatura && Object.hasOwn(AVISOS, assinatura) ? AVISOS[assinatura] : null;
   const isOwner = ctx.role === "owner";
   const ws = ctx.workspace;
@@ -53,11 +72,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       name: "Stripe Billing",
       desc: "Assinaturas SaaS + cartão recorrente",
       status: billingConfigured() ? "real" : "sandbox",
-    },
-    {
-      name: "Google Meet",
-      desc: "Link de videochamada pelo Google Agenda",
-      status: videoStatus.google_meet(),
     },
     {
       name: "Zoom",
@@ -229,7 +243,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                     label={isClinic ? "Banner da clínica" : "Banner profissional"}
                     shape="banner"
                     currentUrl={mediaUrl(ws.bannerId)}
-                    hint="Imagem larga (logo ou banner), até 1200×400. Sem foto de perfil, aparece a marca Salutti."
+                    hint="Imagem larga (logo ou banner), até 1200×400. Sem banner enviado, aparece a marca Salutti."
                   />
                 </fieldset>
                 <Button type="submit" variant="outline" size="sm">Salvar dados</Button>
@@ -240,6 +254,63 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <p><strong>CNPJ:</strong> {ws.cnpj ?? "-"}</p>
                 <p className="text-muted-foreground">Só o dono ou um administrador altera estes dados.</p>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card id="conexoes" className="scroll-mt-20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> Google Meet
+            </CardTitle>
+            <CardDescription>
+              Conecte a sua conta Google para que o link do Meet das suas sessões seja criado na sua própria agenda.
+              Cada pessoa da equipe conecta a própria conta.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {googleAviso ? (
+              <p
+                role={googleAviso.tone === "erro" ? "alert" : "status"}
+                className={
+                  googleAviso.tone === "erro"
+                    ? "rounded-md bg-destructive/10 p-3 text-destructive-strong"
+                    : "rounded-md bg-success/10 p-3 text-success-strong"
+                }
+              >
+                {googleAviso.text}
+              </p>
+            ) : null}
+            {googleConn ? (
+              <>
+                <p>
+                  <StatusBadge kind="integration" status="real" /> Conectado como{" "}
+                  <strong>{googleConn.accountEmail ?? "conta Google"}</strong>
+                </p>
+                <p className="text-muted-foreground">
+                  O evento é criado sem convidados e com o título genérico “Sessão · Salutti”: o nome do paciente não vai
+                  para o Google.
+                </p>
+                <form action={disconnectGoogleAction}>
+                  <Button type="submit" variant="outline" size="sm">Desconectar Google</Button>
+                </form>
+              </>
+            ) : googleOAuthConfigured() ? (
+              <>
+                <p className="text-muted-foreground">
+                  Na tela do Google, deixe marcada a permissão de ver e editar eventos da agenda. A Salutti só cria o
+                  evento da sessão com o link do Meet.
+                </p>
+                <Button size="sm" asChild>
+                  {/* Navegação completa (não prefetch): a rota redireciona para o Google. */}
+                  <a href="/api/integracoes/google/iniciar">Conectar Google</a>
+                </Button>
+              </>
+            ) : (
+              <p className="text-muted-foreground">
+                <StatusBadge kind="integration" status="sandbox" /> A conexão com o Google ainda não foi ativada na
+                Salutti. Enquanto isso, as sessões online recebem um link simulado.
+              </p>
             )}
           </CardContent>
         </Card>

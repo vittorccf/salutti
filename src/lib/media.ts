@@ -17,6 +17,34 @@ export function sniffImage(bytes: Uint8Array): "image/jpeg" | "image/png" | "ima
   return null;
 }
 
+export const MAX_IMAGE_SIDE = 4000;
+
+// Largura e altura lidas do cabeçalho do arquivo (PNG IHDR, JPEG SOF, WebP VP8/VP8L/VP8X), sem decodificar.
+export function imageSize(b: Uint8Array): { w: number; h: number } | null {
+  const be16 = (i: number) => (b[i] << 8) | b[i + 1];
+  const le16 = (i: number) => b[i] | (b[i + 1] << 8);
+  const le24 = (i: number) => b[i] | (b[i + 1] << 8) | (b[i + 2] << 16);
+  const type = sniffImage(b);
+  if (type === "image/png" && b.length >= 24) return { w: (b[16] << 24) | (b[17] << 16) | be16(18), h: (b[20] << 24) | (b[21] << 16) | be16(22) };
+  if (type === "image/jpeg") {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) return null;
+      const marker = b[i + 1];
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return { h: be16(i + 5), w: be16(i + 7) };
+      i += 2 + be16(i + 2);
+    }
+    return null;
+  }
+  if (type === "image/webp" && b.length >= 30) {
+    const chunk = String.fromCharCode(b[12], b[13], b[14], b[15]);
+    if (chunk === "VP8 ") return { w: le16(26) & 0x3fff, h: le16(28) & 0x3fff };
+    if (chunk === "VP8L") return { w: 1 + (((b[22] & 0x3f) << 8) | b[21]), h: 1 + (((b[24] & 0xf) << 10) | (b[23] << 2) | ((b[22] & 0xc0) >> 6)) };
+    if (chunk === "VP8X") return { w: 1 + le24(24), h: 1 + le24(27) };
+  }
+  return null;
+}
+
 // null = nada enviado; "remove" = pediu para tirar a imagem atual.
 export async function readImageUpload(formData: FormData, name: string): Promise<{ mime: string; bytes: Buffer } | "remove" | null> {
   if (formData.get(`${name}Remove`) === "on") return "remove";
@@ -26,6 +54,8 @@ export async function readImageUpload(formData: FormData, name: string): Promise
   const bytes = Buffer.from(await file.arrayBuffer());
   const mime = sniffImage(bytes);
   if (!mime) throw new UploadError("Formato não aceito. Envie JPG, PNG ou WebP.");
+  const size = imageSize(bytes);
+  if (!size || size.w > MAX_IMAGE_SIDE || size.h > MAX_IMAGE_SIDE) throw new UploadError("Imagem com dimensões inválidas ou grandes demais.");
   return { mime, bytes };
 }
 

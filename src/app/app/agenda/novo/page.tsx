@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { dateKeySP, parseDateOnly, parseDateTimeLocal, toDateTimeLocalSP } from "@/lib/dates";
 import { assertInWorkspace } from "@/lib/tenant";
+import { googleRefreshTokenFor } from "@/lib/video-connections";
 import { video } from "@/lib/providers/video";
 import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
@@ -51,6 +52,10 @@ async function createAppointmentAction(formData: FormData) {
     try {
       const meeting = await video.createMeeting({
         provider: data.videoProvider,
+        googleRefreshToken:
+          data.videoProvider === "google_meet"
+            ? await googleRefreshTokenFor({ workspaceId: ctx.workspace.id, professionalId: data.professionalId, userId: ctx.user.id })
+            : null,
         topic: MEETING_TOPIC,
         startsAt,
         durationMinutes: data.durationMinutes,

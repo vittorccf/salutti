@@ -19,7 +19,7 @@ model User {
   email         String        @unique
   name          String
   passwordHash  String
-  avatarUrl     String?
+  avatarUrl     String? // legado, sem uso (a foto de perfil é avatarId)
   // Foto de perfil enviada pelo usuário (MediaFile).
   avatarId      String?
   // Aniversário do próprio usuário (lembrete no painel). Só dia e mês importam para o lembrete.
@@ -36,6 +36,7 @@ model User {
   totpLockedUntil    DateTime?
   memberships   Membership[]
   auditEvents   AuditLog[]    @relation("AuditUser")
+  connections   IntegrationConnection[]
 }
 
 model Workspace {
@@ -361,7 +362,7 @@ model ConsentRecord {
   id           String   @id @default(cuid())
   workspaceId  String
   patientId    String
-  purpose      String   // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento
+  purpose      String   // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento | foto_identificacao
   legalBasis   String   // consentimento | tutela_saude | obrigacao_legal | execucao_contrato
   granted      Boolean  @default(true)
   documentHash String?
@@ -514,4 +515,21 @@ model MediaFile {
 
   @@index([workspaceId])
   @@index([userId])
+}
+
+// Conta externa conectada por cada usuário (hoje: Google, para criar o Meet no Google Agenda da própria pessoa).
+// O refresh token fica cifrado (AES-256-GCM, mesma chave do 2FA em src/lib/totp.ts).
+model IntegrationConnection {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String   // google
+  accountEmail String?
+  scopes       String
+  refreshToken String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
 }

@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Link href="/app" className="block space-y-1.5 rounded-md pr-10 md:pr-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {brand === "banner" && bannerUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- imagem privada servida por /api/media
-            <img src={bannerUrl} alt={ctx.workspace.name} className="max-h-16 w-full rounded-md object-contain object-left" />
+            <img src={bannerUrl} alt="" className="max-h-16 w-full rounded-md object-contain object-left" />
           ) : brand === "photo" && avatarUrl ? (
             <span className="flex items-center gap-2.5">
               <Avatar src={avatarUrl} name={ctx.user.name} className="h-10 w-10" />

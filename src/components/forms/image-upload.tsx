@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImagePlus, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ type Props = {
   shape: "square" | "banner";
   currentUrl?: string | null;
   hint?: string;
+  /** exige marcar a autorização ao escolher uma imagem nova (ex.: foto de paciente) */
+  consentLabel?: string;
 };
 
 const SIZES = { square: { w: 320, h: 320 }, banner: { w: 1200, h: 400 } };
@@ -44,28 +46,36 @@ async function shrink(file: File, shape: Props["shape"]): Promise<File> {
   return new File([out], out.type === "image/webp" ? "imagem.webp" : "imagem.jpg", { type: out.type });
 }
 
-export function ImageUpload({ name, label, shape, currentUrl, hint }: Props) {
+export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
+  const [picked, setPicked] = useState(false);
   const [remove, setRemove] = useState(false);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null);
   const id = `${name}-arquivo`;
+
+  // Libera a URL temporária da prévia ao trocar de imagem ou sair da tela.
+  useEffect(() => () => {
+    if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+  }, [preview]);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = e.target.files?.[0];
     if (!picked) return;
-    setStatus("Preparando a imagem…");
+    setStatus({ text: "Preparando a imagem…" });
     try {
       const small = await shrink(picked, shape);
       const dt = new DataTransfer();
       dt.items.add(small);
       e.target.files = dt.files;
       setPreview(URL.createObjectURL(small));
+      setPicked(true);
       setRemove(false);
-      setStatus("Imagem pronta. Salve para aplicar.");
+      setStatus({ text: "Imagem pronta. Salve para aplicar." });
     } catch {
       e.target.value = "";
-      setStatus("Não foi possível ler essa imagem. Tente JPG ou PNG.");
+      setPicked(false);
+      setStatus({ text: "Não foi possível ler essa imagem. Tente JPG ou PNG.", error: true });
     }
   }
 
@@ -94,13 +104,21 @@ export function ImageUpload({ name, label, shape, currentUrl, hint }: Props) {
             id={id}
             type="file"
             name={name}
-            accept="image/jpeg,image/png,image/webp,image/heic"
+            accept="image/jpeg,image/png,image/webp"
             className="sr-only"
+            tabIndex={-1}
             aria-labelledby={`${id}-rotulo`}
             onChange={onPick}
           />
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileRef.current?.click()}
+              aria-label={`${preview ? "Trocar" : "Enviar"} ${label.replace(/ \(opcional\)$/, "").toLowerCase()}`}
+              aria-describedby={`${id}-dica`}
+            >
               <ImagePlus className="h-4 w-4" /> {preview ? "Trocar imagem" : "Enviar imagem"}
             </Button>
             {currentUrl ? (
@@ -112,13 +130,21 @@ export function ImageUpload({ name, label, shape, currentUrl, hint }: Props) {
                   onChange={(e) => setRemove(e.target.checked)}
                   className="h-4 w-4 accent-primary"
                 />
-                Remover
+                <span>
+                  Remover<span className="sr-only"> {label.replace(/ \(opcional\)$/, "").toLowerCase()}</span>
+                </span>
               </label>
             ) : null}
           </div>
-          <p className="text-xs text-muted-foreground" role="status">
-            {status || hint}
+          <p id={`${id}-dica`} className={cn("text-xs", status?.error ? "text-destructive-strong" : "text-muted-foreground")} role="status">
+            {status?.text ?? hint}
           </p>
+          {consentLabel && picked && !remove ? (
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" name={`${name}Consent`} required className="mt-0.5 h-4 w-4 accent-primary" />
+              <span>{consentLabel}</span>
+            </label>
+          ) : null}
         </div>
       </div>
     </div>

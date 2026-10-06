@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { modalityLabel } from "@/lib/labels";
 import { ensureAffected } from "@/lib/tenant";
 import { isSimulatedMeeting, meetingPlatform, video } from "@/lib/providers/video";
+import { googleRefreshTokenFor } from "@/lib/video-connections";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
@@ -49,6 +50,10 @@ async function createMeetingAction(formData: FormData) {
   try {
     const meeting = await video.createMeeting({
       provider,
+      googleRefreshToken:
+        provider === "google_meet"
+          ? await googleRefreshTokenFor({ workspaceId: ctx.workspace.id, professionalId: appt.professionalId, userId: ctx.user.id })
+          : null,
       topic: "Sessão · Salutti",
       startsAt: appt.startsAt,
       durationMinutes: Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000),

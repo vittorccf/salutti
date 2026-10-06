@@ -9,7 +9,13 @@ import { assertInsurancePlan, assertInWorkspace } from "@/lib/tenant";
 import { ContactError, readAddress, validEmail, validPhone } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
 import { UploadError } from "@/lib/media";
-import { replaceImage } from "@/lib/media-store";
+import { stageImage, type StagedImage } from "@/lib/media-store";
+
+// Foto do paciente só com autorização registrada (finalidade própria: identificação na recepção).
+const recordPhotoConsent = (workspaceId: string, patientId: string) =>
+  db.consentRecord.create({
+    data: { workspaceId, patientId, purpose: "foto_identificacao", legalBasis: "consentimento", granted: true },
+  });
 
 const text = (max = 200) => z.string().trim().max(max).optional();
 const schema = z.object({
@@ -68,9 +74,9 @@ export async function createPatientAction(_prev: FormResult, formData: FormData)
   } catch (e) {
     return fail(e);
   }
-  let photoId: string | null;
+  let photo: StagedImage;
   try {
-    photoId = await replaceImage(formData, "photo", null, "patient_photo", { workspaceId: ctx.workspace.id });
+    photo = await stageImage(formData, "photo", null, "patient_photo", { workspaceId: ctx.workspace.id }, { requireConsent: true });
   } catch (e) {
     return fail(e);
   }
@@ -78,7 +84,7 @@ export async function createPatientAction(_prev: FormResult, formData: FormData)
     data: {
       workspaceId: ctx.workspace.id,
       ...data,
-      photoId,
+      photoId: photo.id,
       ...(formData.get("consent") === "on"
         ? {
             consentRecords: {
@@ -88,12 +94,14 @@ export async function createPatientAction(_prev: FormResult, formData: FormData)
         : {}),
     },
   });
+  if (photo.id) await recordPhotoConsent(ctx.workspace.id, patient.id);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
     action: "patient.create",
     entity: "Patient",
     entityId: patient.id,
+    metadata: photo.id ? { photo: "added" } : undefined,
   });
   redirect(`/app/pacientes/${patient.id}`);
 }
@@ -107,20 +115,28 @@ export async function updatePatientAction(_prev: FormResult, formData: FormData)
     select: { email: true, phone: true, address: true, photoId: true },
   });
   let data: Awaited<ReturnType<typeof readPatient>>;
-  let photoId: string | null;
+  let photo: StagedImage;
   try {
     data = await readPatient(formData, ctx.workspace.id, previous);
-    photoId = await replaceImage(formData, "photo", previous?.photoId ?? null, "patient_photo", { workspaceId: ctx.workspace.id });
+    photo = await stageImage(formData, "photo", previous?.photoId ?? null, "patient_photo", { workspaceId: ctx.workspace.id }, { requireConsent: true });
   } catch (e) {
     return fail(e);
   }
-  await db.patient.updateMany({ where: { id: patientId, workspaceId: ctx.workspace.id }, data: { ...data, photoId } });
+  await db.patient
+    .updateMany({ where: { id: patientId, workspaceId: ctx.workspace.id }, data: { ...data, photoId: photo.id } })
+    .catch(async (e) => {
+      await photo.rollback();
+      throw e;
+    });
+  await photo.commit();
+  if (photo.changed && photo.id) await recordPhotoConsent(ctx.workspace.id, patientId);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
     action: "patient.update",
     entity: "Patient",
     entityId: patientId,
+    metadata: photo.changed ? { photo: photo.id ? "replaced" : "removed" } : undefined,
   });
   redirect(`/app/pacientes/${patientId}`);
 }
