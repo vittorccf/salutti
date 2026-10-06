@@ -20,7 +20,7 @@ test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", as
   await page.goto("/app/pacientes");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("link", { name: "Patients" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Settings" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Schedule" }).first()).toBeVisible();
 
   // Espanhol.
   await page.goto("/app/ajustes");
@@ -37,7 +37,7 @@ test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", as
   await expect(page.getByText("Perfil guardado.")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
   await page.goto("/app");
-  await expect(page.getByRole("link", { name: "Definições" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Processo clínico" }).first()).toBeVisible();
 
   // Outro navegador (idioma pt-BR): ao entrar, vale o idioma salvo no perfil.
   const other = await (await browser.newContext({ locale: "pt-BR" })).newPage();

@@ -13,7 +13,6 @@ import {
   Sparkles,
   Stethoscope,
   Users,
-  UserSquare2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -30,7 +29,6 @@ const nav = [
   { href: "/app/comunicacao", label: "communication", icon: MessageSquareText },
   { href: "/app/equipe", label: "team", icon: Stethoscope },
   { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck },
-  { href: "/app/ajustes", label: "settings", icon: UserSquare2 },
 ] as const;
 
 export const SidebarNav = ({ clinical = true }: { clinical?: boolean }) => {
