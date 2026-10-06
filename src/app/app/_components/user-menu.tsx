@@ -1,7 +1,8 @@
 "use client";
+import { supportMailto } from "@/lib/contact";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { ChevronDown, LogOut, Moon, Settings, ShieldCheck, Sun } from "lucide-react";
+import { ChevronDown, LifeBuoy, LogOut, Moon, Settings, ShieldCheck, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import {
@@ -50,6 +51,11 @@ export const UserMenu = ({ name, email, avatarUrl }: Props) => {
           <Link href="/app/conta/seguranca">
             <ShieldCheck /> {t("security")}
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a href={supportMailto("Suporte Salutti")}>
+            <LifeBuoy /> {t("support")}
+          </a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action="/logout" method="post">
