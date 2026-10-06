@@ -1,4 +1,4 @@
-# Saluti · Arquitetura do Protótipo
+# Salutti · Arquitetura do Protótipo
 
 Este documento explica decisões técnicas, trade-offs e o caminho para produção. Foi mantido enxuto: cada seção responde **o que**, **por quê** e **como evoluir**.
 
@@ -37,7 +37,7 @@ Este documento explica decisões técnicas, trade-offs e o caminho para produç�
 
 ## 2. Multi-tenant - modelo "shared schema"
 
-**Decisão:** todas as tabelas de domínio carregam `workspaceId` (não usamos schemas por tenant nem DBs separados). Auth fixa um workspace ativo em cookie `saluti_ws`; todas as queries de página chamam `requireContext()` e usam `ctx.workspace.id` no `where`.
+**Decisão:** todas as tabelas de domínio carregam `workspaceId` (não usamos schemas por tenant nem DBs separados). Auth fixa um workspace ativo em cookie `salutti_ws`; todas as queries de página chamam `requireContext()` e usam `ctx.workspace.id` no `where`.
 
 **Porquê:** o público-alvo (psicólogos autônomos + clínicas pequenas) ainda comporta isolamento lógico bem aplicado. DB-per-tenant traria custo desproporcional na fase de aquisição.
 
@@ -137,7 +137,7 @@ Roda no `/app/luma` (botão "Recalcular") e no startup quando não há insights 
 2. **Memed / SafeID** - receituário digital com assinatura ICP-Brasil real
 3. **Offline-first** para UBS - service worker + IndexedDB-mirror do Patient/Appointment (caso Kris Fellipe)
 4. **WhatsApp Cloud API** - substituir o mock; aprovar templates `reminder_24h`, `charge_due`, `receipt_issued`
-5. **Stripe Billing** - assinatura SaaS da própria Saluti (tier Pro R$ 129/mês)
+5. **Stripe Billing** - assinatura SaaS da própria Salutti (tier Pro R$ 129/mês)
 6. **Onboarding wizard** - após signup, walkthrough de 5 passos (workspace, profissional, anamnese, integrações, paciente piloto)
 7. **Mobile (React Native)** - app nativo do paciente reutilizando endpoints de `/portal/[token]`
 8. **TCC, anamneses por especialidade** - biblioteca pública de templates (psicanálise lacaniana, junguiana, etc.)

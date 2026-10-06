@@ -51,7 +51,7 @@ async function sendChargeReminder(formData: FormData) {
       amount: formatBRL(charge.amount),
       due: formatDateBR(charge.dueDate),
       pix: charge.pixCopyPaste ?? "-",
-      link: charge.paymentLink ? `https://saluti.app${charge.paymentLink.url}` : "",
+      link: charge.paymentLink ? `https://salutti.app${charge.paymentLink.url}` : "",
     },
   });
   await recordAudit({

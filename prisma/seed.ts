@@ -37,7 +37,7 @@ const defaultAnamnesis = {
 const txid = (i: number) => `pix_seed_${Math.random().toString(36).slice(2, 6)}${i}`;
 
 const pixCopy = (amount: number, id: string) =>
-  `00020126360014BR.GOV.BCB.PIX0114SALUTI-DEMO0208${id}5204000053039865404${amount.toFixed(2).replace(".", "")}5802BR5915SALUTI SAUDE LTDA6009GOIANIA62070503***6304ABCD`;
+  `00020126360014BR.GOV.BCB.PIX0114SALUTTI-DEMO0208${id}5204000053039865404${amount.toFixed(2).replace(".", "")}5802BR5915SALUTTI SAUDE LTDA6009GOIANIA62070503***6304ABCD`;
 
 async function main() {
   console.log("🌱 Limpando dados existentes…");
@@ -65,16 +65,16 @@ async function main() {
   const [guilherme, kris] = await Promise.all([
     db.user.create({
       data: {
-        email: "guilherme@saluti.dev",
+        email: "guilherme@salutti.dev",
         name: "Guilherme Quintino",
-        passwordHash: hash("saluti123"),
+        passwordHash: hash("salutti123"),
       },
     }),
     db.user.create({
       data: {
-        email: "kris@saluti.dev",
+        email: "kris@salutti.dev",
         name: "Kris Fellipe",
-        passwordHash: hash("saluti123"),
+        passwordHash: hash("salutti123"),
       },
     }),
   ]);
@@ -152,7 +152,7 @@ async function main() {
     data: {
       workspaceId: wsGuilherme.id,
       fullName: "Guilherme Quintino",
-      email: "guilherme@saluti.dev",
+      email: "guilherme@salutti.dev",
       phone: "(62) 9 9111-2233",
       professionalType: "psicologo",
       councilType: "CRP",
@@ -166,7 +166,7 @@ async function main() {
     data: {
       workspaceId: wsGuilherme.id,
       fullName: "Larissa Mendes",
-      email: "larissa@saluti.dev",
+      email: "larissa@salutti.dev",
       phone: "(62) 9 9222-3344",
       professionalType: "psicanalista",
       noCouncil: true,
@@ -179,7 +179,7 @@ async function main() {
     data: {
       workspaceId: wsKris.id,
       fullName: "Kris Fellipe",
-      email: "kris@saluti.dev",
+      email: "kris@salutti.dev",
       phone: "(62) 9 9333-4455",
       professionalType: "dentista",
       councilType: "CRO",
@@ -286,7 +286,7 @@ async function main() {
         startsAt,
         endsAt,
         modality: isOnline ? "online" : "presencial",
-        meetingUrl: isOnline ? `https://meet.saluti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null,
+        meetingUrl: isOnline ? `https://meet.salutti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null,
         status: isPast ? (i % 11 === 0 ? "no_show" : "done") : i % 3 === 0 ? "confirmed" : "scheduled",
         price,
         reminderSentAt: isPast ? subDays(startsAt, 1) : null,
@@ -411,8 +411,8 @@ async function main() {
 
   console.log("✅ Seed concluído.");
   console.log("\nLogins:");
-  console.log("  guilherme@saluti.dev / saluti123 → Consultório psicólogo (Goiânia)");
-  console.log("  kris@saluti.dev / saluti123      → UBS odonto Turvânia");
+  console.log("  guilherme@salutti.dev / salutti123 → Consultório psicólogo (Goiânia)");
+  console.log("  kris@salutti.dev / salutti123      → UBS odonto Turvânia");
   console.log("\nPortal do paciente: /portal/ana-demo-token-please-rotate");
 }
 
