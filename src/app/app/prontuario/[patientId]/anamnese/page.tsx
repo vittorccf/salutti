@@ -100,7 +100,7 @@ export default async function AnamnesisPage({
         <CardHeader>
           <CardTitle>Anamnese · {patient.fullName}</CardTitle>
           <CardDescription>
-            Template aplicável: <strong>{defaultTpl.name}</strong>. Personalize seções e perguntas nos Ajustes.
+            Modelo: <strong className="text-foreground">{defaultTpl.name}</strong>. Edite seções e perguntas em Ajustes.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,8 +108,8 @@ export default async function AnamnesisPage({
             <input type="hidden" name="patientId" value={patient.id} />
             <input type="hidden" name="templateId" value={defaultTpl.id} />
             <div className="space-y-1">
-              <Label>Profissional responsável</Label>
-              <Select name="professionalId" required>
+              <Label htmlFor="professionalId">Profissional responsável</Label>
+              <Select name="professionalId" id="professionalId" required>
                 {professionals.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.fullName}
@@ -118,8 +118,8 @@ export default async function AnamnesisPage({
               </Select>
             </div>
             {schema.sections.map((s) => (
-              <div key={s.title} className="space-y-3 border-l-2 border-primary/30 pl-4">
-                <h3 className="text-sm font-semibold">{s.title}</h3>
+              <fieldset key={s.title} className="space-y-3 rounded-lg border p-4">
+                <legend className="px-1 font-sans text-sm font-semibold">{s.title}</legend>
                 {s.questions.map((q) => (
                   <div key={q.key} className="space-y-1">
                     <Label htmlFor={q.key}>{q.label}</Label>
@@ -139,7 +139,7 @@ export default async function AnamnesisPage({
                     )}
                   </div>
                 ))}
-              </div>
+              </fieldset>
             ))}
             <Button type="submit">Salvar anamnese</Button>
           </form>
