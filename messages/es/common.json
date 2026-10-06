@@ -27,6 +27,7 @@
     "workspace": "Consultorio activo"
   },
   "userMenu": {
+    "open": "Menú de la cuenta de {name}",
     "lightTheme": "Activar tema claro",
     "darkTheme": "Activar tema oscuro",
     "security": "Seguridad de la cuenta",

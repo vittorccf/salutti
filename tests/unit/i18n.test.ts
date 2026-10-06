@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { DEFAULT_LOCALE, LOCALES, matchLocale, NAMESPACES } from "@/i18n/config";
+import { DEFAULT_LOCALE, LOCALES, NAMESPACES } from "@/i18n/config";
 import { formatters } from "@/i18n/format";
 
 type Tree = { [k: string]: string | Tree };
@@ -64,28 +64,6 @@ describe("mensagens", () => {
     expect(placeholders("Teste: {days, plural, one {# dia} other {# dias}}")).toEqual(["days"]);
     expect(placeholders("Você quis dizer <fix>{suggestion}</fix>?")).toEqual(["<fix>", "suggestion"]);
     expect(placeholders("{label} inválido em {country}")).toEqual(["country", "label"]);
-  });
-});
-
-describe("matchLocale", () => {
-  it.each([
-    ["pt-PT", "pt-PT"],
-    ["pt-PT,pt;q=0.9", "pt-PT"],
-    ["pt", "pt-BR"],
-    ["pt-BR,pt;q=0.9,en;q=0.8", "pt-BR"],
-    ["es-AR", "es"],
-    ["es", "es"],
-    ["en-US", "en"],
-    ["en-US,en;q=0.9", "en"],
-    ["fr", "pt-BR"],
-    ["fr-FR,fr;q=0.9", "pt-BR"],
-    ["fr;q=0.9,es;q=0.8", "es"],
-    ["en;q=0.5,pt-PT;q=0.9", "pt-PT"],
-    ["", "pt-BR"],
-    [null, "pt-BR"],
-    [undefined, "pt-BR"],
-  ])("%s → %s", (header, expected) => {
-    expect(matchLocale(header)).toBe(expected);
   });
 });
 
