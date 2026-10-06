@@ -14,56 +14,22 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { getTranslations } from "@/i18n/server";
 
+// Textos em public.home.features.<chave> e public.home.differentiators.<chave>.
 const features = [
-  {
-    icon: <CalendarCheck className="h-5 w-5" />,
-    title: "Agenda integrada Meet/Zoom",
-    desc: "Confirmação automática via WhatsApp, lembretes 24h/2h, link de teleconsulta criptografado.",
-  },
-  {
-    icon: <Banknote className="h-5 w-5" />,
-    title: "Automação financeira completa",
-    desc: "Pix Automático, links de pagamento, recorrência, recuperação de inadimplência via régua de cobrança.",
-  },
-  {
-    icon: <FileSignature className="h-5 w-5" />,
-    title: "Fiscal sem fricção",
-    desc: "NFS-e por município, recibos digitais e Receita Saúde 2025 emitidos com 1 clique.",
-  },
-  {
-    icon: <Brain className="h-5 w-5" />,
-    title: "TOBI - IA clínica + preditiva",
-    desc: "Sumarização de sessões em segundos, insights financeiros (\"sua receita caiu 12%\") e detecção de churn.",
-  },
-  {
-    icon: <MessageSquareText className="h-5 w-5" />,
-    title: "WhatsApp Business API",
-    desc: "100% dos profissionais usam WhatsApp - Salutti o transforma em canal oficial com templates aprovados.",
-  },
-  {
-    icon: <ShieldCheck className="h-5 w-5" />,
-    title: "LGPD by design",
-    desc: "Mapeamento de dados sensíveis, consent management, audit log e exercício dos 9 direitos do titular.",
-  },
+  { key: "schedule", icon: <CalendarCheck className="h-5 w-5" /> },
+  { key: "finance", icon: <Banknote className="h-5 w-5" /> },
+  { key: "tax", icon: <FileSignature className="h-5 w-5" /> },
+  { key: "tobi", icon: <Brain className="h-5 w-5" /> },
+  { key: "whatsapp", icon: <MessageSquareText className="h-5 w-5" /> },
+  { key: "lgpd", icon: <ShieldCheck className="h-5 w-5" /> },
 ];
 
-const differentiators = [
-  {
-    title: "Sem CRP? Sem problema.",
-    desc: "Psicanalistas e terapeutas com formação não-regulamentada são bem-vindos - diferente da concorrência.",
-  },
-  {
-    title: "ERP, não \"agenda bonita\".",
-    desc: "Foco no fluxo administrativo que consome 2h a 20h semanais do profissional.",
-  },
-  {
-    title: "Offline-first opcional",
-    desc: "Para UBS e clínicas com infraestrutura instável (caso Kris Fellipe / Turvânia).",
-  },
-];
+const differentiators = ["noCrp", "erp", "offline"];
 
-export default function Home() {
+export default async function Home() {
+  const t = await getTranslations("public.home");
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-accent/30">
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
@@ -73,10 +39,10 @@ export default function Home() {
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
-              <Link href="/login">Entrar</Link>
+              <Link href="/login">{t("login")}</Link>
             </Button>
             <Button asChild>
-              <Link href="/signup">Testar grátis</Link>
+              <Link href="/signup">{t("tryFree")}</Link>
             </Button>
           </div>
         </div>
@@ -84,39 +50,38 @@ export default function Home() {
 
       <section className="container py-20 text-center">
         <Badge variant="muted" className="mb-4">
-          <Sparkles className="h-3 w-3" aria-hidden /> Em dia com a LGPD e o Receita Saúde
+          <Sparkles className="h-3 w-3" aria-hidden /> {t("badge")}
         </Badge>
         <h1 className="mx-auto max-w-3xl text-4xl md:text-6xl font-bold tracking-tight">
-          O <span className="text-primary">ERP de Saúde</span> que automatiza o que ninguém quer fazer.
+          {t.rich("headline", { hl: (chunks) => <span className="text-primary">{chunks}</span> })}
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas, não de planilhas.
-          Agenda, Pix, nota fiscal, WhatsApp e IA preditiva em um só sistema.
+          {t("subtitle")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button size="lg" asChild>
             <Link href="/signup">
-              Criar meu consultório <ArrowRight className="h-4 w-4" />
+              {t("ctaCreate")} <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
-            <Link href="/login">Ver demonstração</Link>
+            <Link href="/login">{t("ctaDemo")}</Link>
           </Button>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          15 dias grátis · Sem cartão · Cancele quando quiser
+          {t("fineprint")}
         </p>
       </section>
 
       <section className="container pb-20 grid gap-4 md:grid-cols-3">
         {features.map((f) => (
-          <Card key={f.title} className="border-primary/10">
+          <Card key={f.key} className="border-primary/10">
             <CardContent className="p-6">
               <div className="grid h-10 w-10 place-content-center rounded-lg bg-accent text-accent-foreground">
                 {f.icon}
               </div>
-              <h3 className="mt-4 font-semibold">{f.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{f.desc}</p>
+              <h3 className="mt-4 font-semibold">{t(`features.${f.key}.title`)}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t(`features.${f.key}.desc`)}</p>
             </CardContent>
           </Card>
         ))}
@@ -125,10 +90,10 @@ export default function Home() {
       <section className="bg-primary-strong text-primary-foreground py-16">
         <div className="container grid gap-8 md:grid-cols-3">
           {differentiators.map((d) => (
-            <div key={d.title}>
+            <div key={d}>
               <Activity className="h-6 w-6" aria-hidden />
-              <h3 className="mt-3 text-lg font-semibold">{d.title}</h3>
-              <p className="mt-1 text-sm opacity-90">{d.desc}</p>
+              <h3 className="mt-3 text-lg font-semibold">{t(`differentiators.${d}.title`)}</h3>
+              <p className="mt-1 text-sm opacity-90">{t(`differentiators.${d}.desc`)}</p>
             </div>
           ))}
         </div>
@@ -136,9 +101,9 @@ export default function Home() {
 
       <footer className="container py-10 text-sm text-muted-foreground text-center">
         <p>
-          Salutti · ERP para quem cuida da saúde mental ·{" "}
+          {t("footer")}{" "}
           <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
-            Entrar
+            {t("login")}
           </Link>
         </p>
       </footer>

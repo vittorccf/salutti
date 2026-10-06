@@ -1,22 +1,24 @@
 import Link from "next/link";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { formatBRL, formatDateBR } from "@/lib/utils";
-import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
+import { chargeDisplayStatus } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { Banknote, MessageSquareText, Receipt as ReceiptIcon, PlusCircle } from "lucide-react";
 import { CashflowChart } from "./_components/cashflow-chart";
-import { inSP, isPastDue, startOfMonthSP } from "@/lib/dates";
+import { isPastDue, startOfMonthSP, TZ } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export default async function FinancialPage() {
   const ctx = await requireContext();
+  const t = await getTranslations("finance.list");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
   const wsId = ctx.workspace.id;
   const now = new Date();
 
@@ -41,7 +43,7 @@ export default async function FinancialPage() {
           _sum: { amount: true },
         });
         return {
-          label: format(inSP(m), "MMM/yy", { locale: ptBR }),
+          label: monthLabel(f.locale, m),
           paid: paid._sum.amount ?? 0,
           expected: expected._sum.amount ?? 0,
         };
@@ -63,21 +65,19 @@ export default async function FinancialPage() {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Banknote className="h-6 w-6 text-primary-strong" aria-hidden /> Financeiro
+            <Banknote className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Pix automático, links de pagamento, recorrência e régua de cobrança no WhatsApp.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <Link href="/app/financeiro/regua">
-              <MessageSquareText className="h-4 w-4" /> Régua de cobrança
+              <MessageSquareText className="h-4 w-4" /> {t("dunning")}
             </Link>
           </Button>
           <Button asChild>
             <Link href="/app/financeiro/novo">
-              <PlusCircle className="h-4 w-4" /> Nova cobrança
+              <PlusCircle className="h-4 w-4" /> {t("newCharge")}
             </Link>
           </Button>
         </div>
@@ -86,28 +86,28 @@ export default async function FinancialPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Recebido (últimas 50 cobranças)</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-success-strong">{formatBRL(totals.paid)}</p>
+            <p className="text-sm text-muted-foreground">{t("received")}</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-success-strong">{f.money(totals.paid)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Em aberto</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">{formatBRL(totals.pending)}</p>
+            <p className="text-sm text-muted-foreground">{t("open")}</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums">{f.money(totals.pending)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Atrasado</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-warning-strong">{formatBRL(totals.overdue)}</p>
+            <p className="text-sm text-muted-foreground">{t("overdue")}</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-warning-strong">{f.money(totals.overdue)}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Fluxo de caixa · últimos 6 meses</CardTitle>
-          <CardDescription>Recebido em cada mês e previsto pelos vencimentos.</CardDescription>
+          <CardTitle>{t("cashflowTitle")}</CardTitle>
+          <CardDescription>{t("cashflowDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <CashflowChart data={monthBuckets} />
@@ -116,17 +116,17 @@ export default async function FinancialPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Cobranças recentes</CardTitle>
+          <CardTitle>{t("recent")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <THead>
               <TR>
-                <TH>Paciente</TH>
-                <TH>Vencimento</TH>
-                <TH className="text-right">Valor</TH>
-                <TH>Forma de pagamento</TH>
-                <TH>Status</TH>
+                <TH>{t("patient")}</TH>
+                <TH>{t("dueDate")}</TH>
+                <TH className="text-right">{t("amount")}</TH>
+                <TH>{t("method")}</TH>
+                <TH>{t("status")}</TH>
                 <TH></TH>
               </TR>
             </THead>
@@ -134,27 +134,27 @@ export default async function FinancialPage() {
               {charges.length === 0 ? (
                 <TR>
                   <TD colSpan={6} className="text-center text-muted-foreground">
-                    Nenhuma cobrança ainda. Crie a primeira em Nova cobrança.
+                    {t("empty")}
                   </TD>
                 </TR>
               ) : (
                 charges.map((c) => (
                   <TR key={c.id}>
                     <TD className="font-medium">{c.patient.fullName}</TD>
-                    <TD>{formatDateBR(c.dueDate)}</TD>
-                    <TD className="text-right">{formatBRL(c.amount)}</TD>
-                    <TD>{paymentMethodLabel(c.method)}</TD>
+                    <TD>{f.date(c.dueDate)}</TD>
+                    <TD className="text-right">{f.money(c.amount)}</TD>
+                    <TD>{label("paymentMethod", c.method)}</TD>
                     <TD>
                       <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate, now)} />
                     </TD>
                     <TD>
                       <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" asChild>
-                        <Link href={`/app/financeiro/${c.id}`}>Abrir</Link>
+                        <Link href={`/app/financeiro/${c.id}`}>{t("openCharge")}</Link>
                       </Button>
                       {c.paymentLink ? (
                         <Button size="sm" variant="ghost" asChild>
-                          <Link href={`/pay/${c.paymentLink.token}`} target="_blank" aria-label="Abrir link de pagamento">
+                          <Link href={`/pay/${c.paymentLink.token}`} target="_blank" aria-label={t("openPaymentLink")}>
                             <ReceiptIcon className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -171,3 +171,10 @@ export default async function FinancialPage() {
     </div>
   );
 }
+
+// "out/26", "Oct/26": mês abreviado no idioma da interface e ano com dois dígitos.
+const monthLabel = (locale: string, d: Date) => {
+  const month = new Intl.DateTimeFormat(locale, { month: "short", timeZone: TZ }).format(d).replace(".", "");
+  const year = new Intl.DateTimeFormat(locale, { year: "2-digit", timeZone: TZ }).format(d);
+  return `${month}/${year}`;
+};

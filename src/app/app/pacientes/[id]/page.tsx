@@ -6,12 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { CalendarPlus, FilePlus2, Pencil, Receipt as ReceiptIcon, ShieldCheck, Smartphone } from "lucide-react";
 import { differenceInYears } from "date-fns";
-import { moodLabel } from "@/lib/mood";
-import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
-import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
+import { chargeDisplayStatus } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { recordAudit } from "@/lib/audit";
 import { assertInWorkspace, assertInsurancePlan } from "@/lib/tenant";
 import { Input } from "@/components/ui/input";
@@ -70,6 +69,13 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
     .filter((c) => c.status === "pending" || c.status === "overdue")
     .reduce((s, c) => s + c.amount, 0);
   const age = patient.birthDate ? differenceInYears(new Date(), patient.birthDate) : null;
+  const [t, tActions, tLabels, f] = await Promise.all([
+    getTranslations("patients.detail"),
+    getTranslations("common.actions"),
+    getTranslations("common.labels"),
+    getFormat(),
+  ]);
+  const label = labeler(tLabels);
 
   return (
     <div className="space-y-6">
@@ -77,18 +83,18 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <div className="flex items-start gap-4">
         <Avatar src={mediaUrl(patient.photoId)} name={patient.fullName} className="h-16 w-16 text-base" />
         <div>
-          <h1 className="text-2xl font-bold">Paciente · {patient.fullName}</h1>
-          {age !== null ? <p className="text-sm text-muted-foreground">{age} anos</p> : null}
+          <h1 className="text-2xl font-bold">{t("title", { name: patient.fullName })}</h1>
+          {age !== null ? <p className="text-sm text-muted-foreground">{t("age", { age })}</p> : null}
           {/* Contato e endereço recolhidos: a ficha costuma ficar aberta em telas compartilhadas (sigilo, art. 9º do Código de Ética). */}
           <details className="mt-1 text-sm text-muted-foreground">
-            <summary className="cursor-pointer w-fit text-primary-strong">Ver contato e endereço</summary>
+            <summary className="cursor-pointer w-fit text-primary-strong">{t("showContact")}</summary>
             <div className="mt-1 space-y-0.5">
               <p className="flex flex-wrap items-center gap-x-1.5">
-                <PhoneText value={patient.phone} fallback="sem telefone" />
-                <span>· {patient.email ?? "sem e-mail"}</span>
+                <PhoneText value={patient.phone} fallback={t("noPhone")} />
+                <span>· {patient.email ?? t("noEmail")}</span>
               </p>
               {formatAddress(patient) ? <p>{formatAddress(patient)}</p> : null}
-              {patient.address ? <p>Endereço anterior: {patient.address}</p> : null}
+              {patient.address ? <p>{t("legacyAddress", { address: patient.address })}</p> : null}
             </div>
           </details>
         </div>
@@ -96,51 +102,51 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" asChild>
             <Link href={`/app/pacientes/${patient.id}/editar`}>
-              <Pencil className="h-4 w-4" /> Editar
+              <Pencil className="h-4 w-4" /> {tActions("edit")}
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href={`/app/agenda/novo?patientId=${patient.id}`}>
-              <CalendarPlus className="h-4 w-4" /> Agendar sessão
+              <CalendarPlus className="h-4 w-4" /> {t("schedule")}
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href={`/app/financeiro/novo?patientId=${patient.id}`}>
-              <ReceiptIcon className="h-4 w-4" /> Nova cobrança
+              <ReceiptIcon className="h-4 w-4" /> {t("newCharge")}
             </Link>
           </Button>
           <Button asChild>
             <Link href={`/app/prontuario/${patient.id}/nova-evolucao`}>
-              <FilePlus2 className="h-4 w-4" /> Nova evolução
+              <FilePlus2 className="h-4 w-4" /> {t("newNote")}
             </Link>
           </Button>
         </div>
       </header>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <SmallCard label="Total recebido" value={formatBRL(totalPaid)} />
-        <SmallCard label="A receber em aberto" value={formatBRL(totalOpen)} tone="warn" />
-        <SmallCard label="Sessões registradas" value={String(patient.appointments.length)} />
-        <SmallCard label="Anotações clínicas" value={String(patient.clinicalNotes.length)} />
+        <SmallCard label={t("totalPaid")} value={f.money(totalPaid)} />
+        <SmallCard label={t("totalOpen")} value={f.money(totalOpen)} tone="warn" />
+        <SmallCard label={t("sessionsCount")} value={f.number(patient.appointments.length)} />
+        <SmallCard label={t("notesCount")} value={f.number(patient.clinicalNotes.length)} />
       </div>
 
       {plans.length > 0 || patient.insurancePlan ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Convênio</CardTitle>
+            <CardTitle className="text-base">{t("insuranceTitle")}</CardTitle>
             <CardDescription>
               {patient.insurancePlan
-                ? `${patient.insurancePlan.name} · carteirinha ${patient.insuranceCardNumber ?? "não informada"}`
-                : "Atendimento particular."}
+                ? t("insuranceSummary", { plan: patient.insurancePlan.name, card: patient.insuranceCardNumber ?? t("cardMissing") })
+                : t("privateCare")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={updateInsuranceAction} className="flex flex-wrap items-end gap-2">
               <input type="hidden" name="patientId" value={patient.id} />
               <div className="space-y-1">
-                <Label htmlFor="insurancePlanId">Convênio</Label>
+                <Label htmlFor="insurancePlanId">{t("insurance")}</Label>
                 <Select id="insurancePlanId" name="insurancePlanId" defaultValue={patient.insurancePlanId ?? ""} className="w-56">
-                  <option value="">Particular</option>
+                  <option value="">{t("private")}</option>
                   {plans.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
@@ -149,11 +155,11 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="insuranceCardNumber">Carteirinha</Label>
+                <Label htmlFor="insuranceCardNumber">{t("card")}</Label>
                 <Input id="insuranceCardNumber" name="insuranceCardNumber" defaultValue={patient.insuranceCardNumber ?? ""} maxLength={20} className="w-56" />
               </div>
               <Button type="submit" variant="outline">
-                Salvar convênio
+                {t("saveInsurance")}
               </Button>
             </form>
           </CardContent>
@@ -165,18 +171,18 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-primary-strong" aria-hidden /> Portal do paciente · Cartões diários
+              <Smartphone className="h-5 w-5 text-primary-strong" aria-hidden /> {t("portalTitle")}
             </CardTitle>
             <CardDescription>
               {patient.portalAccess ? (
                 <>
-                  Link de acesso:{" "}
+                  {t("portalLink")}{" "}
                   <Link className="text-primary-strong underline-offset-4 hover:underline" href={`/portal/${patient.portalAccess.token}`}>
                     /portal/{patient.portalAccess.token.slice(0, 8)}…
                   </Link>
                 </>
               ) : (
-                "O portal ainda não foi liberado para este paciente."
+                t("portalNotGranted")
               )}
             </CardDescription>
           </div>
@@ -200,23 +206,21 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
             );
           }}>
             <Button size="sm" variant="outline" type="submit">
-              {patient.portalAccess ? "Renovar link" : "Gerar link do portal"}
+              {patient.portalAccess ? t("portalRenew") : t("portalGenerate")}
             </Button>
           </form>
         </CardHeader>
         <CardContent>
           {patient.dailyCards.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum cartão diário ainda. Quando o paciente registrar o humor no portal, ele aparece aqui.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("dailyCardsEmpty")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
               {patient.dailyCards.map((d) => (
                 <div key={d.id} className="rounded-md border p-2 text-center text-xs">
-                  <p className="text-muted-foreground">{formatDateBR(d.date)}</p>
+                  <p className="text-muted-foreground">{f.date(d.date)}</p>
                   <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{d.mood}/5</p>
-                  <p className="font-medium">{moodLabel(d.mood)}</p>
-                  <p className="text-muted-foreground">Ansiedade {d.anxiety ?? "-"}/5</p>
+                  <p className="font-medium">{label("mood", d.mood)}</p>
+                  <p className="text-muted-foreground">{t("anxiety", { value: d.anxiety ?? "-" })}</p>
                 </div>
               ))}
             </div>
@@ -227,34 +231,34 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
-            <CardTitle>Histórico de sessões</CardTitle>
+            <CardTitle>{t("sessionsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <THead>
                 <TR>
-                  <TH>Data</TH>
-                  <TH>Profissional</TH>
-                  <TH>Status</TH>
-                  <TH className="text-right">Valor</TH>
+                  <TH>{t("date")}</TH>
+                  <TH>{t("professional")}</TH>
+                  <TH>{t("status")}</TH>
+                  <TH className="text-right">{t("amount")}</TH>
                 </TR>
               </THead>
               <TBody>
                 {patient.appointments.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Nenhuma sessão registrada.
+                      {t("sessionsEmpty")}
                     </TD>
                   </TR>
                 ) : (
                   patient.appointments.map((a) => (
                     <TR key={a.id}>
-                      <TD className="whitespace-nowrap">{formatDateTimeBR(a.startsAt)}</TD>
+                      <TD className="whitespace-nowrap">{f.dateTime(a.startsAt)}</TD>
                       <TD>{a.professional.fullName}</TD>
                       <TD>
                         <StatusBadge kind="appointment" status={a.status} />
                       </TD>
-                      <TD className="text-right">{formatBRL(a.price)}</TD>
+                      <TD className="text-right">{f.money(a.price)}</TD>
                     </TR>
                   ))
                 )}
@@ -265,34 +269,34 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
 
         <Card>
           <CardHeader>
-            <CardTitle>Financeiro</CardTitle>
+            <CardTitle>{t("financeTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <THead>
                 <TR>
-                  <TH>Vencimento</TH>
-                  <TH className="text-right">Valor</TH>
-                  <TH>Status</TH>
-                  <TH>Forma de pagamento</TH>
+                  <TH>{t("dueDate")}</TH>
+                  <TH className="text-right">{t("amount")}</TH>
+                  <TH>{t("status")}</TH>
+                  <TH>{t("paymentMethod")}</TH>
                 </TR>
               </THead>
               <TBody>
                 {patient.charges.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Nenhuma cobrança.
+                      {t("chargesEmpty")}
                     </TD>
                   </TR>
                 ) : (
                   patient.charges.map((c) => (
                     <TR key={c.id}>
-                      <TD>{formatDateBR(c.dueDate)}</TD>
-                      <TD className="text-right">{formatBRL(c.amount)}</TD>
+                      <TD>{f.date(c.dueDate)}</TD>
+                      <TD className="text-right">{f.money(c.amount)}</TD>
                       <TD>
                         <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate)} />
                       </TD>
-                      <TD>{paymentMethodLabel(c.method)}</TD>
+                      <TD>{label("paymentMethod", c.method)}</TD>
                     </TR>
                   ))
                 )}
@@ -305,31 +309,36 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary-strong" aria-hidden /> LGPD · Consentimentos e direitos
+            <ShieldCheck className="h-5 w-5 text-primary-strong" aria-hidden /> {t("lgpdTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 md:grid-cols-2">
             {patient.consentRecords.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum consentimento registrado.</p>
+              <p className="text-sm text-muted-foreground">{t("consentsEmpty")}</p>
             ) : (
               patient.consentRecords.map((r) => (
                 <div key={r.id} className="rounded-md border p-3 text-sm">
-                  <p className="font-medium">{consentPurposeLabel(r.purpose)}</p>
+                  <p className="font-medium">{label("consentPurpose", r.purpose)}</p>
                   <p className="text-xs text-muted-foreground">
-                    Base legal: {legalBasisLabel(r.legalBasis)} · {r.granted ? "concedido" : "revogado"} ·{" "}
-                    {formatDateTimeBR(r.grantedAt)}
+                    {t("consentRecord", {
+                      basis: label("legalBasis", r.legalBasis),
+                      state: r.granted ? t("granted") : t("revoked"),
+                      date: f.dateTime(r.grantedAt),
+                    })}
                   </p>
                 </div>
               ))
             )}
           </div>
           <div className="text-xs text-muted-foreground">
-            Para exercer os 9 direitos do titular (acesso, portabilidade, eliminação etc.), abra a tela{" "}
-            <Link className="text-primary-strong underline-offset-4 hover:underline" href="/app/lgpd">
-              LGPD
-            </Link>
-            .
+            {t.rich("rights", {
+              link: (chunks) => (
+                <Link className="text-primary-strong underline-offset-4 hover:underline" href="/app/lgpd">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </div>
         </CardContent>
       </Card>

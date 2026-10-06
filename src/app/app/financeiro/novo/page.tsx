@@ -12,6 +12,8 @@ import { Select } from "@/components/ui/select";
 import { addDays } from "date-fns";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import { assertInWorkspace } from "@/lib/tenant";
+import { getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 
 const schema = z.object({
   patientId: z.string(),
@@ -77,6 +79,8 @@ export default async function NewChargePage({
   searchParams: Promise<{ patientId?: string }>;
 }) {
   const ctx = await requireContext();
+  const t = await getTranslations("finance.new");
+  const label = labeler(await getTranslations("common.labels"));
   const params = await searchParams;
   const patients = await db.patient.findMany({
     where: { workspaceId: ctx.workspace.id, deletedAt: null, active: true },
@@ -88,17 +92,15 @@ export default async function NewChargePage({
     <div className="max-w-xl">
       <Card>
         <CardHeader>
-          <CardTitle>Nova cobrança</CardTitle>
-          <CardDescription>
-            O Pix gera o código copia e cola e um link de pagamento. Com recorrência, a cobrança se repete sozinha.
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createChargeAction} className="space-y-4">
             <div className="space-y-1">
-              <Label htmlFor="patientId">Paciente</Label>
+              <Label htmlFor="patientId">{t("patient")}</Label>
               <Select name="patientId" id="patientId" defaultValue={params.patientId ?? ""} required>
-                <option value="">Selecione…</option>
+                <option value="">{t("select")}</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.fullName}
@@ -108,28 +110,28 @@ export default async function NewChargePage({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label htmlFor="amount">Valor (R$)</Label>
+                <Label htmlFor="amount">{t("amount")}</Label>
                 <Input type="number" step="0.01" name="amount" id="amount" defaultValue={200} required />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="dueDate">Vencimento</Label>
+                <Label htmlFor="dueDate">{t("dueDate")}</Label>
                 <Input type="date" name="dueDate" id="dueDate" defaultValue={defaultDue} required />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="method">Forma de pagamento</Label>
+                <Label htmlFor="method">{t("method")}</Label>
                 <Select name="method" id="method" defaultValue="pix">
-                  <option value="pix">Pix automático</option>
-                  <option value="card">Cartão (Stripe)</option>
-                  <option value="boleto">Boleto</option>
-                  <option value="dinheiro">Dinheiro</option>
+                  <option value="pix">{t("methodPix")}</option>
+                  <option value="card">{t("methodCard")}</option>
+                  <option value="boleto">{label("paymentMethod", "boleto")}</option>
+                  <option value="dinheiro">{label("paymentMethod", "dinheiro")}</option>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="recurringDays">Recorrência (dias)</Label>
-                <Input type="number" name="recurringDays" id="recurringDays" placeholder="30 para mensal" />
+                <Label htmlFor="recurringDays">{t("recurring")}</Label>
+                <Input type="number" name="recurringDays" id="recurringDays" placeholder={t("recurringPlaceholder")} />
               </div>
             </div>
-            <Button type="submit">Criar cobrança</Button>
+            <Button type="submit">{t("submit")}</Button>
           </form>
         </CardContent>
       </Card>

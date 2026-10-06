@@ -1,0 +1,246 @@
+{
+  "meta": {
+    "description": "Practice management for mental health professionals: scheduling, clinical records, finance, taxes and AI, compliant with LGPD (Brazil's data protection law)."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "schedule": "Schedule",
+    "records": "Clinical records",
+    "finance": "Finance",
+    "insurance": "Insurance",
+    "tax": "Taxes",
+    "tobi": "TOBI · AI",
+    "communication": "Communication",
+    "team": "Professionals",
+    "lgpd": "LGPD",
+    "settings": "Settings"
+  },
+  "layout": {
+    "home": "Home",
+    "trialDays": "Free trial: {days, plural, one {# day left} other {# days left}}",
+    "plan": "Plan",
+    "compliance": "LGPD active · audit enabled · multi-tenant",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menu": "Menu",
+    "workspace": "Active practice"
+  },
+  "userMenu": {
+    "lightTheme": "Switch to light theme",
+    "darkTheme": "Switch to dark theme",
+    "security": "Account security",
+    "logout": "Sign out"
+  },
+  "actions": {
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "back": "Back",
+    "continue": "Continue",
+    "search": "Search",
+    "seeAll": "See all",
+    "close": "Close"
+  },
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "count": {
+    "patients": "{count, plural, one {# patient} other {# patients}}",
+    "sessions": "{count, plural, one {# session} other {# sessions}}",
+    "professionals": "{count, plural, one {# professional} other {# professionals}}",
+    "charges": "{count, plural, one {# charge} other {# charges}}",
+    "records": "{count, plural, one {# record} other {# records}}",
+    "templates": "{count, plural, one {# active template} other {# active templates}}"
+  },
+  "labels": {
+    "noteType": {
+      "anamnese": "Intake",
+      "evolucao": "Progress note",
+      "plano_terapeutico": "Treatment plan",
+      "alta": "Discharge"
+    },
+    "paymentMethod": {
+      "pix": "Pix",
+      "card": "Card",
+      "boleto": "Boleto (bank slip)",
+      "dinheiro": "Cash"
+    },
+    "modality": {
+      "presencial": "In person",
+      "online": "Online"
+    },
+    "planTier": {
+      "trial": "Free trial",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Clinic"
+    },
+    "segment": {
+      "solo_psicologo": "Psychology",
+      "solo_psicanalista": "Psychoanalysis or therapy",
+      "clinica": "Multidisciplinary",
+      "ubs": "Public health unit (UBS)",
+      "odonto": "Dentistry"
+    },
+    "segmentOption": {
+      "solo_psicologo": "Psychology (licensed)",
+      "solo_psicanalista": "Psychoanalysis or other therapy (CRP not required)",
+      "odonto": "Dentistry",
+      "clinica": "Multidisciplinary clinic",
+      "ubs": "Public health unit (UBS) or public service",
+      "odonto_clinica": "Dental clinic"
+    },
+    "accountType": {
+      "autonomo": "Independent professional",
+      "clinica": "Clinic"
+    },
+    "accountTypeDescription": {
+      "autonomo": "You work on your own, in the office or online. One professional on the account.",
+      "clinica": "A team with several professionals, front desk and company details (CNPJ)."
+    },
+    "professionalType": {
+      "psicologo": "Psychologist",
+      "psicanalista": "Psychoanalyst",
+      "terapeuta": "Therapist",
+      "psiquiatra": "Psychiatrist",
+      "dentista": "Dentist",
+      "medico": "Physician"
+    },
+    "guideType": {
+      "consulta": "Consultation form",
+      "sp_sadt": "SP/SADT form"
+    },
+    "consentPurpose": {
+      "tutela_saude": "Health protection",
+      "comunicacao_marketing": "Communication and marketing",
+      "telemedicina": "Telehealth",
+      "compartilhamento": "Data sharing",
+      "foto_identificacao": "ID photo"
+    },
+    "legalBasis": {
+      "consentimento": "Consent",
+      "tutela_saude": "Health protection",
+      "obrigacao_legal": "Legal obligation",
+      "execucao_contrato": "Performance of contract"
+    },
+    "mood": {
+      "1": "Very bad",
+      "2": "Bad",
+      "3": "Neutral",
+      "4": "Good",
+      "5": "Very good"
+    },
+    "role": {
+      "owner": "Owner",
+      "admin": "Administrator",
+      "professional": "Professional",
+      "financial": "Finance",
+      "receptionist": "Front desk"
+    }
+  },
+  "status": {
+    "appointment": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "done": "Completed",
+      "no_show": "No-show",
+      "cancelled": "Canceled"
+    },
+    "charge": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Canceled",
+      "refunded": "Refunded"
+    },
+    "receitaSaude": {
+      "queued": "Queued",
+      "sent": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "error": "Failed"
+    },
+    "invoice": {
+      "queued": "Queued",
+      "issued": "Invoice issued",
+      "rejected": "Rejected"
+    },
+    "message": {
+      "queued": "Queued",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "integration": {
+      "real": "Live",
+      "sandbox": "Sandbox",
+      "heurístico": "Heuristic"
+    }
+  },
+  "phone": {
+    "countryButton": "Phone country: {country} ({dial})",
+    "search": "Search country or code",
+    "countries": "Countries",
+    "noCountry": "No country found.",
+    "invalid": "Incomplete or invalid number for {country}."
+  },
+  "email": {
+    "placeholder": "name@email.com",
+    "didYouMean": "Did you mean <fix>{suggestion}</fix>?"
+  },
+  "address": {
+    "cep": "CEP (Brazilian ZIP code)",
+    "loading": "Looking up address",
+    "notFound": "CEP not found. Fill in the address below.",
+    "unavailable": "CEP lookup is unavailable right now. Fill in the address below.",
+    "street": "Street",
+    "number": "Number",
+    "complement": "Address line 2",
+    "complementPlaceholder": "Suite, apt., building",
+    "district": "Neighborhood",
+    "city": "City",
+    "state": "UF",
+    "legend": "Address"
+  },
+  "image": {
+    "preparing": "Preparing image…",
+    "ready": "Image ready. Save to apply.",
+    "unreadable": "Couldn't read this image. Try JPG or PNG.",
+    "upload": "Upload image",
+    "replace": "Replace image",
+    "remove": "Remove"
+  },
+  "errors": {
+    "emailRequired": "Enter the email.",
+    "emailInvalid": "Invalid email. Check the address.",
+    "emailDomain": "This email domain doesn't receive mail. Check what comes after the @.",
+    "phoneInvalid": "{label}: invalid number. Check the country and the number.",
+    "phoneLabel": "Phone",
+    "cepInvalid": "Invalid CEP. Use 8 digits.",
+    "imageTooBig": "Image too large. Upload a photo up to 800 KB.",
+    "imageFormat": "Format not supported. Upload JPG, PNG or WebP.",
+    "imageDimensions": "Image dimensions are invalid or too large.",
+    "photoConsent": "Confirm that the patient (or guardian) authorized use of the photo.",
+    "generic": "Couldn't complete this. Try again."
+  },
+  "birthdays": {
+    "title": "Birthdays · next 7 days",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "inDays": "In {days} days",
+    "you": "You",
+    "patient": "Patient",
+    "team": "Team",
+    "yours": "Your birthday",
+    "turning": "Turning {age}",
+    "happyBirthday": "Happy birthday, {name}!"
+  },
+  "language": {
+    "label": "Language",
+    "auto": "Automatic (browser language)",
+    "hint": "Applies to the whole system. Amounts stay in Brazilian reais (R$)."
+  }
+}

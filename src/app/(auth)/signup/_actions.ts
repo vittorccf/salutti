@@ -1,4 +1,6 @@
 "use server";
+import { errorMessage } from "@/i18n/errors";
+import { getTranslations } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -12,10 +14,13 @@ import { parseDateOnly } from "@/lib/dates";
 import { ContactError, validEmail } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
 
+// Erros de validação: o campo com problema vira a chave em auth.signup.errors (texto longo demais e demais casos: "invalid").
+const FIELD_ERRORS = ["accountType", "name", "password"] as const;
+
 const schema = z.object({
-  accountType: z.string().refine(isAccountType, "Escolha se a conta é de profissional autônomo ou de clínica."),
-  name: z.string().trim().min(2, "Informe seu nome.").max(120),
-  password: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres.").max(200),
+  accountType: z.string().refine(isAccountType),
+  name: z.string().trim().min(2).max(120),
+  password: z.string().min(8).max(200),
   workspaceName: z.string().trim().max(120).optional(),
   segment: z.string(),
   cnpj: z.string().trim().max(20).optional(),
@@ -23,25 +28,30 @@ const schema = z.object({
 });
 
 export async function signupAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const t = await getTranslations("auth.signup");
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const field = issue.code === "too_big" ? undefined : FIELD_ERRORS.find((f) => f === issue.path[0]);
+    return { erro: t(`errors.${field ?? "invalid"}`) };
+  }
   const d = parsed.data;
   const accountType = d.accountType as "autonomo" | "clinica";
-  if (!segmentAllowed(accountType, d.segment)) return { erro: "Escolha a área de atendimento." };
+  if (!segmentAllowed(accountType, d.segment)) return { erro: t("errors.segment") };
 
   // Clínica precisa de nome próprio; autônomo pode deixar em branco (vira "Consultório de <nome>").
   const workspaceName = d.workspaceName || (accountType === "autonomo" ? `Consultório de ${d.name.split(" ")[0]}` : "");
-  if (workspaceName.length < 2) return { erro: "Informe o nome da clínica." };
-  if (accountType === "clinica" && d.cnpj && !isValidCnpj(d.cnpj)) return { erro: "CNPJ inválido. Confira os números." };
+  if (workspaceName.length < 2) return { erro: t("errors.clinicName") };
+  if (accountType === "clinica" && d.cnpj && !isValidCnpj(d.cnpj)) return { erro: t("errors.cnpj") };
 
   let email: string;
   try {
     email = (await validEmail(formData.get("email"), { required: true }))!;
   } catch (e) {
-    if (e instanceof ContactError) return { erro: e.message };
+    if (e instanceof ContactError) return { erro: await errorMessage(e) };
     throw e;
   }
-  if (await db.user.findUnique({ where: { email } })) return { erro: "Este e-mail já tem conta. Entre ou recupere o acesso." };
+  if (await db.user.findUnique({ where: { email } })) return { erro: t("errors.emailTaken") };
 
   const trial = new Date();
   trial.setDate(trial.getDate() + 15);

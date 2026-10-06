@@ -2,8 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatBRL, formatDateBR } from "@/lib/utils";
-import { paymentMethodLabel } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 
@@ -42,25 +42,28 @@ export default async function PublicPaymentPage({
   });
   if (!link) notFound();
   const charge = link.charge;
+  const t = await getTranslations("public.pay");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-accent/20 to-background grid place-items-center p-4">
       <Card className="w-full max-w-[440px]">
         <CardHeader className="text-center">
           <Logo variant="icon" size={48} className="mx-auto" />
-          <CardTitle>Pagamento · {link.workspace.name}</CardTitle>
-          <CardDescription>Pagamento seguro pela Salutti</CardDescription>
+          <CardTitle>{t("title", { workspace: link.workspace.name })}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-md border bg-card p-4 text-sm">
-            <p>Cobrança para <strong>{charge.patient.fullName}</strong></p>
-            <p>Vencimento: {formatDateBR(charge.dueDate)}</p>
-            <p className="text-xl font-bold mt-2 tabular-nums">{formatBRL(charge.amount)}</p>
-            <p className="text-muted-foreground">Forma de pagamento: {paymentMethodLabel(charge.method ?? "pix")}</p>
+            <p>{t.rich("chargeFor", { name: charge.patient.fullName, strong: (chunks) => <strong>{chunks}</strong> })}</p>
+            <p>{t("dueDate", { date: f.date(charge.dueDate) })}</p>
+            <p className="text-xl font-bold mt-2 tabular-nums">{f.money(charge.amount)}</p>
+            <p className="text-muted-foreground">{t("method", { method: label("paymentMethod", charge.method ?? "pix") })}</p>
           </div>
           {charge.pixCopyPaste ? (
             <div>
-              <p className="text-xs text-muted-foreground">Pix copia e cola</p>
+              <p className="text-xs text-muted-foreground">{t("pixCopyPaste")}</p>
               <code className="block break-all rounded-md bg-muted/30 p-2 text-xs">
                 {charge.pixCopyPaste}
               </code>
@@ -68,16 +71,16 @@ export default async function PublicPaymentPage({
           ) : null}
           {charge.status === "paid" || ok ? (
             <div className="rounded-md bg-success/10 text-success-strong p-3 text-sm flex items-center gap-2" role="status">
-              <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden /> Pagamento confirmado. O recibo chega em instantes.
+              <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden /> {t("confirmed")}
             </div>
           ) : (
             <form action={simulatePaymentAction}>
               <input type="hidden" name="token" value={token} />
-              <Button type="submit" className="bg-primary-strong hover:bg-primary-strong/90 w-full">Simular pagamento (sandbox)</Button>
+              <Button type="submit" className="bg-primary-strong hover:bg-primary-strong/90 w-full">{t("simulate")}</Button>
             </form>
           )}
           <p className="text-xs text-muted-foreground text-center">
-            Pagamento processado pela Salutti.
+            {t("processedBy")}
           </p>
         </CardContent>
       </Card>

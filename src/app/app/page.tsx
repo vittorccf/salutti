@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { formatBRL, formatDateTimeBR, formatPercentBR, greetingBR, plural } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -18,10 +19,9 @@ import {
   Users,
 } from "lucide-react";
 import { insightsEngine } from "@/lib/providers/insights";
-import { modalityLabel } from "@/lib/labels";
 import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
 import { onboardingProgress } from "@/lib/onboarding";
-import { upcomingBirthdays, whenLabel, type BirthdayPerson } from "@/lib/birthdays";
+import { upcomingBirthdays, type BirthdayPerson } from "@/lib/birthdays";
 
 export const dynamic = "force-dynamic";
 
@@ -121,26 +121,47 @@ export default async function DashboardPage() {
   const prev = paidLastMonth._sum.amount ?? 0;
   const pct = prev > 0 ? ((cur - prev) / prev) * 100 : 0;
 
+  const [t, tc, tb, tg, f, label] = await Promise.all([
+    getTranslations("dashboard.home"),
+    getTranslations("common.actions"),
+    getTranslations("common.birthdays"),
+    getTranslations("common.greeting"),
+    getFormat(),
+    getTranslations("common.labels").then(labeler),
+  ]);
+  const hour = f.hour(now);
+  const greeting = tg(hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening");
+  const firstName = ctx.user.name.split(" ")[0];
+  const whenLabel = (days: number) => (days === 0 ? tb("today") : days === 1 ? tb("tomorrow") : tb("inDays", { days }));
+  // "DD/MM" → dia e mês no formato do idioma.
+  const dayMonth = (dm: string) => {
+    const [d, m] = dm.split("/").map(Number);
+    return new Intl.DateTimeFormat(f.locale, { day: "2-digit", month: "2-digit", timeZone: "UTC" }).format(Date.UTC(2000, m - 1, d));
+  };
+
   return (
     <div className="space-y-8">
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {myBirthdayToday ? `Feliz aniversário, ${ctx.user.name.split(" ")[0]}!` : `${greetingBR(now)}, ${ctx.user.name.split(" ")[0]}`}
+            {myBirthdayToday ? tb("happyBirthday", { name: firstName }) : t("greeting", { greeting, name: firstName })}
           </h1>
           <p className="text-muted-foreground">
-            Resumo de <strong className="text-foreground">{ctx.workspace.name}</strong>
+            {t.rich("summary", {
+              workspace: ctx.workspace.name,
+              strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+            })}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link href="/app/agenda/novo">
-              <CalendarDays className="h-4 w-4" /> Agendar
+              <CalendarDays className="h-4 w-4" /> {t("schedule")}
             </Link>
           </Button>
           <Button asChild>
             <Link href="/app/financeiro/novo">
-              <ArrowUpRight className="h-4 w-4" /> Nova cobrança
+              <ArrowUpRight className="h-4 w-4" /> {t("newCharge")}
             </Link>
           </Button>
         </div>
@@ -151,14 +172,14 @@ export default async function DashboardPage() {
           <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold">
-                Primeiros passos · {onboarding.done} de {onboarding.total}
+                {t("onboardingTitle", { done: onboarding.done, total: onboarding.total })}
               </p>
               <p className="text-sm text-muted-foreground">
-                Cadastre quem atende, os modelos de anamnese e o primeiro paciente para começar a agendar.
+                {t("onboardingHint")}
               </p>
             </div>
             <Button asChild>
-              <Link href="/app/primeiros-passos">Continuar</Link>
+              <Link href="/app/primeiros-passos">{tc("continue")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -168,7 +189,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <CakeSlice className="h-5 w-5 text-primary-strong" aria-hidden /> Aniversários · próximos 7 dias
+              <CakeSlice className="h-5 w-5 text-primary-strong" aria-hidden /> {tb("title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -185,14 +206,14 @@ export default async function DashboardPage() {
                           {b.name}
                         </Link>
                       ) : b.kind === "self" ? (
-                        "Você"
+                        tb("you")
                       ) : (
                         b.name
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {b.kind === "patient" ? "Paciente" : b.kind === "professional" ? "Equipe" : "Seu aniversário"} · {b.dayMonth}
-                      {b.kind !== "patient" && b.turning > 0 ? ` · ${b.turning} anos` : ""}
+                      {b.kind === "patient" ? tb("patient") : b.kind === "professional" ? tb("team") : tb("yours")} · {dayMonth(b.dayMonth)}
+                      {b.kind !== "patient" && b.turning > 0 ? ` · ${tb("turning", { age: b.turning })}` : ""}
                     </p>
                   </div>
                   <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-primary-strong" : "text-muted-foreground"}`}>
@@ -209,11 +230,11 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <KpiCard
           icon={<TrendingUp className="h-4 w-4" />}
-          label="Receita do mês"
-          value={formatBRL(cur)}
+          label={t("revenueMonth")}
+          value={f.money(cur)}
           hint={
             pct === 0 ? (
-              "Sem dados do mês anterior"
+              t("noPreviousMonth")
             ) : (
               <span className="inline-flex items-center gap-1">
                 {pct > 0 ? (
@@ -222,8 +243,7 @@ export default async function DashboardPage() {
                   <TrendingDown className="h-3.5 w-3.5 text-destructive-strong" aria-hidden />
                 )}
                 <span className={pct > 0 ? "text-success-strong" : undefined}>
-                  {pct > 0 ? "+" : ""}
-                  {formatPercentBR(pct)} em relação ao mês anterior
+                  {t("vsPreviousMonth", { pct: `${pct > 0 ? "+" : ""}${f.percent(pct)}` })}
                 </span>
               </span>
             )
@@ -231,20 +251,20 @@ export default async function DashboardPage() {
         />
         <KpiCard
           icon={<AlertTriangle className="h-4 w-4" />}
-          label="A receber em atraso"
-          value={formatBRL(overdueAgg._sum.amount ?? 0)}
-          hint={plural(overdueAgg._count ?? 0, "cobrança vencida", "cobranças vencidas")}
+          label={t("overdue")}
+          value={f.money(overdueAgg._sum.amount ?? 0)}
+          hint={t("overdueCount", { count: overdueAgg._count ?? 0 })}
           tone="warn"
         />
         <KpiCard
           icon={<CalendarDays className="h-4 w-4" />}
-          label="Sessões a partir de hoje"
-          value={String(todayAppointments)}
+          label={t("sessionsFromToday")}
+          value={f.number(todayAppointments)}
         />
         <KpiCard
           icon={<Users className="h-4 w-4" />}
-          label="Pacientes ativos"
-          value={String(activePatients)}
+          label={t("activePatients")}
+          value={f.number(activePatients)}
         />
       </div>
 
@@ -253,19 +273,19 @@ export default async function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> TOBI · insights financeiros e clínicos
+              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> {t("insightsTitle")}
               <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
             </CardTitle>
-            <CardDescription>Gerados a partir dos seus dados em tempo real.</CardDescription>
+            <CardDescription>{t("insightsDescription")}</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/app/tobi">Ver todos</Link>
+            <Link href="/app/tobi">{tc("seeAll")}</Link>
           </Button>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           {liveInsights.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum insight ainda. Quando você registrar sessões e cobranças, o TOBI analisa os dados aqui.
+              {t("noInsights")}
             </p>
           ) : (
             liveInsights.map((insight) => (
@@ -302,25 +322,25 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary-strong" aria-hidden /> Próximas sessões
+            <Clock className="h-5 w-5 text-primary-strong" aria-hidden /> {t("upcomingTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Paciente</TH>
-                <TH>Profissional</TH>
-                <TH>Quando</TH>
-                <TH>Modalidade</TH>
-                <TH>Status</TH>
+                <TH>{t("patient")}</TH>
+                <TH>{t("professional")}</TH>
+                <TH>{t("when")}</TH>
+                <TH>{t("modality")}</TH>
+                <TH>{t("status")}</TH>
               </TR>
             </THead>
             <TBody>
               {upcoming.length === 0 ? (
                 <TR>
                   <TD colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma sessão nos próximos 7 dias. Quando você agendar, ela aparece aqui.
+                    {t("noUpcoming")}
                   </TD>
                 </TR>
               ) : (
@@ -328,8 +348,8 @@ export default async function DashboardPage() {
                   <TR key={a.id}>
                     <TD className="font-medium">{a.patient.fullName}</TD>
                     <TD>{a.professional.fullName}</TD>
-                    <TD className="whitespace-nowrap">{formatDateTimeBR(a.startsAt)}</TD>
-                    <TD>{modalityLabel(a.modality)}</TD>
+                    <TD className="whitespace-nowrap">{f.dateTime(a.startsAt)}</TD>
+                    <TD>{label("modality", a.modality)}</TD>
                     <TD>
                       <StatusBadge kind="appointment" status={a.status} />
                     </TD>

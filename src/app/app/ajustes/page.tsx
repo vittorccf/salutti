@@ -1,11 +1,12 @@
+import { autonomoBlockers } from "@/lib/account";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
-import { plural } from "@/lib/utils";
-import { planTierLabel, segmentLabel } from "@/lib/labels";
+import { getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { videoStatus } from "@/lib/providers/video";
 import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
 import { addLibraryTemplatesAction } from "../_actions/anamnesis";
@@ -18,8 +19,9 @@ import { changeAccountTypeAction, updateProfileAction, updateWorkspaceAction } f
 import { ActionForm } from "@/components/forms/action-form";
 import { AddressFields } from "@/components/forms/address-fields";
 import { Input } from "@/components/ui/input";
-import { ACCOUNT_TYPES, autonomoBlockers, isAccountType } from "@/lib/account";
+import { isAccountType } from "@/lib/account";
 import { dateKeySP } from "@/lib/dates";
+import { LOCALE_LABELS, LOCALES } from "@/i18n/config";
 import { ImageUpload } from "@/components/forms/image-upload";
 import { googleOAuthConfigured } from "@/lib/providers/google-oauth";
 import { disconnectGoogleAction } from "../_actions/integrations";
@@ -27,34 +29,34 @@ import { mediaUrl } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
-const AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
-  ok: { tone: "ok", text: "Assinatura confirmada. O plano é atualizado em instantes." },
-  simulada: { tone: "ok", text: "Plano ativado em modo de teste (sem cobrança)." },
-  erro: { tone: "erro", text: "Não foi possível abrir a cobrança. Confira as chaves do Stripe e tente de novo." },
-  "sem-permissao": { tone: "erro", text: "Só quem é dono do consultório pode mudar o plano." },
-};
-
-const GOOGLE_AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
-  ok: { tone: "ok", text: "Google conectado. As próximas sessões online com Meet são criadas na sua agenda." },
-  desconectado: { tone: "ok", text: "Google desconectado. O acesso da Salutti à sua agenda foi revogado." },
-  escopo: {
-    tone: "erro",
-    text: "A permissão do Google Agenda não foi marcada. Conecte de novo e deixe marcada a opção de ver e editar eventos.",
-  },
-  negado: { tone: "erro", text: "Conexão cancelada no Google. Nada foi alterado." },
-  erro: { tone: "erro", text: "Não foi possível conectar o Google. Tente de novo." },
-  indisponivel: { tone: "erro", text: "A conexão com o Google ainda não foi ativada na Salutti." },
+// Avisos vindos por ?assinatura= e ?google= (texto em settings.page.notices.<grupo>.<código>).
+const AVISOS: Record<string, "ok" | "erro"> = { ok: "ok", simulada: "ok", erro: "erro", "sem-permissao": "erro" };
+const GOOGLE_AVISOS: Record<string, "ok" | "erro"> = {
+  ok: "ok",
+  desconectado: "ok",
+  escopo: "erro",
+  negado: "erro",
+  erro: "erro",
+  indisponivel: "erro",
 };
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ assinatura?: string; google?: string }> }) {
   const ctx = await requireContext();
   const { assinatura, google } = await searchParams;
-  const googleAviso = google && Object.hasOwn(GOOGLE_AVISOS, google) ? GOOGLE_AVISOS[google] : null;
+  const t = await getTranslations("settings.page");
+  const label = labeler(await getTranslations("common.labels"));
+  const tLang = await getTranslations("common.language");
+  const tCount = await getTranslations("common.count");
+  const tAddress = await getTranslations("common.address");
+  const tGeneral = t("templates.general");
+  const googleAviso =
+    google && Object.hasOwn(GOOGLE_AVISOS, google) ? { tone: GOOGLE_AVISOS[google], text: t(`notices.google.${google}`) } : null;
   const googleConn = await db.integrationConnection.findUnique({
     where: { userId_provider: { userId: ctx.user.id, provider: "google" } },
     select: { accountEmail: true, createdAt: true },
   });
-  const aviso = assinatura && Object.hasOwn(AVISOS, assinatura) ? AVISOS[assinatura] : null;
+  const aviso =
+    assinatura && Object.hasOwn(AVISOS, assinatura) ? { tone: AVISOS[assinatura], text: t(`notices.subscription.${assinatura}`) } : null;
   const isOwner = ctx.role === "owner";
   const ws = ctx.workspace;
   const accountType = isAccountType(ws.accountType) ? ws.accountType : "autonomo";
@@ -65,42 +67,48 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     db.professional.count({ where: { workspaceId: ws.id, active: true } }),
     db.membership.count({ where: { workspaceId: ws.id, role: { notIn: ["receptionist", "financial"] } } }),
   ]);
-  const blockers = isClinic ? autonomoBlockers({ activeProfessionals, members }) : [];
+  // Para virar autônomo, a conta precisa caber em um profissional e um usuário (mesma regra de autonomoBlockers).
+  const blockers = isClinic
+    ? autonomoBlockers({ activeProfessionals, members }).map((b) =>
+        t(b.code === "professionals" ? "accountType.blockerProfessionals" : "accountType.blockerMembers", { count: b.count }),
+      )
+    : [];
+  const clinic = String(isClinic);
 
   const integrations = [
     {
       name: "Stripe Billing",
-      desc: "Assinaturas SaaS + cartão recorrente",
+      desc: t("integrations.stripe"),
       status: billingConfigured() ? "real" : "sandbox",
     },
     {
       name: "Zoom",
-      desc: "Link de videochamada pela API do Zoom",
+      desc: t("integrations.zoom"),
       status: videoStatus.zoom(),
     },
     {
       name: "Asaas / Iugu",
-      desc: "Pix Automático e boleto",
+      desc: t("integrations.asaas"),
       status: process.env.ASAAS_API_KEY?.includes("mock") ? "sandbox" : "real",
     },
     {
       name: "NFE.io / Focus NF-e",
-      desc: "Emissão NFS-e por município",
+      desc: t("integrations.nfe"),
       status: process.env.NFEIO_API_KEY?.includes("mock") ? "sandbox" : "real",
     },
     {
       name: "WhatsApp Business (Meta)",
-      desc: "Lembretes e régua de cobrança",
+      desc: t("integrations.whatsapp"),
       status: process.env.WHATSAPP_BUSINESS_TOKEN?.includes("mock") ? "sandbox" : "real",
     },
     {
       name: "Receita Saúde (Receita Federal)",
-      desc: "Envio automático de recibos a partir de Jan/2025",
+      desc: t("integrations.receitaSaude"),
       status: process.env.RECEITA_SAUDE_TOKEN?.includes("mock") ? "sandbox" : "real",
     },
     {
       name: "OpenAI (TOBI)",
-      desc: "Sumarização e insights generativos",
+      desc: t("integrations.openai"),
       status: process.env.OPENAI_API_KEY ? "real" : "heurístico",
     },
   ];
@@ -109,36 +117,48 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6 text-primary-strong" aria-hidden /> Ajustes
+          <Settings className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Seu perfil, dados {isClinic ? "da clínica" : "do consultório"}, tipo de conta, integrações, modelos de anamnese e plano.
+          {t("intro", { clinic })}
         </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Seu perfil</CardTitle>
-            <CardDescription>Vale em todas as contas que você acessa. O aniversário aparece no painel.</CardDescription>
+            <CardTitle>{t("profile.title")}</CardTitle>
+            <CardDescription>{t("profile.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ActionForm action={updateProfileAction} className="space-y-3">
               <ImageUpload
                 name="avatar"
-                label="Foto de perfil"
+                label={t("profile.photo")}
                 shape="square"
                 currentUrl={mediaUrl(ctx.user.avatarId)}
-                hint="Aparece no menu e, se você escolher, no lugar da marca Salutti."
+                hint={t("profile.photoHint")}
               />
               <div className="space-y-1">
-                <Label htmlFor="profile-name">Nome</Label>
+                <Label htmlFor="profile-name">{t("profile.name")}</Label>
                 <Input id="profile-name" name="name" required defaultValue={ctx.user.name} autoComplete="name" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="profile-birthDate">Aniversário</Label>
+                <Label htmlFor="profile-birthDate">{t("profile.birthday")}</Label>
                 <Input id="profile-birthDate" name="birthDate" type="date" defaultValue={ctx.user.birthDate ? dateKeySP(ctx.user.birthDate) : ""} />
-                <p className="text-xs text-muted-foreground">Usado só para o lembrete no painel da equipe.</p>
+                <p className="text-xs text-muted-foreground">{t("profile.birthdayHint")}</p>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="profile-locale">{tLang("label")}</Label>
+                <Select id="profile-locale" name="locale" defaultValue={ctx.user.locale ?? ""}>
+                  <option value="">{tLang("auto")}</option>
+                  {LOCALES.map((l) => (
+                    <option key={l} value={l} lang={l}>
+                      {LOCALE_LABELS[l]}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-xs text-muted-foreground">{tLang("hint")}</p>
               </div>
               <label className="flex items-start gap-2 text-sm">
                 <input
@@ -148,51 +168,51 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   className="mt-0.5 h-4 w-4 accent-primary"
                 />
                 <span>
-                  Mostrar no painel os aniversários dos meus pacientes
+                  {t("profile.showPatientBirthdays")}
                   <span className="block text-xs text-muted-foreground">
-                    Na clínica, só os pacientes que você atende. Lembrar a data é uma escolha sua e do seu enquadre.
+                    {t("profile.showPatientBirthdaysHint")}
                   </span>
                 </span>
               </label>
-              <p className="text-xs text-muted-foreground">E-mail de acesso: {ctx.user.email}</p>
-              <Button type="submit" variant="outline" size="sm">Salvar perfil</Button>
+              <p className="text-xs text-muted-foreground">{t("profile.loginEmail", { email: ctx.user.email })}</p>
+              <Button type="submit" variant="outline" size="sm">{t("profile.save")}</Button>
             </ActionForm>
           </CardContent>
         </Card>
 
         <Card id="tipo-de-conta" className="scroll-mt-20">
           <CardHeader>
-            <CardTitle>Tipo de conta</CardTitle>
+            <CardTitle>{t("accountType.title")}</CardTitle>
             <CardDescription>
-              Atual: <strong className="text-foreground">{ACCOUNT_TYPES[accountType].label}</strong> · {segmentLabel(ws.segment)}
+              {t.rich("accountType.current", {
+                type: label("accountType", accountType),
+                segment: label("segment", ws.segment),
+                strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <p className="text-muted-foreground">{ACCOUNT_TYPES[accountType].description}</p>
+            <p className="text-muted-foreground">{label("accountTypeDescription", accountType)}</p>
             {ctx.role !== "owner" ? (
-              <p className="text-muted-foreground">Só quem é dono da conta pode mudar o tipo.</p>
+              <p className="text-muted-foreground">{t("accountType.ownerOnly")}</p>
             ) : (
               <ActionForm action={changeAccountTypeAction} className="space-y-3">
                 <input type="hidden" name="to" value={isClinic ? "autonomo" : "clinica"} />
                 <p>
-                  {isClinic
-                    ? "Virar conta de profissional autônomo: a conta passa a ter um profissional ativo."
-                    : "Virar clínica: libera cadastrar vários profissionais e trabalhar em equipe."}{" "}
-                  Pacientes, agenda, prontuários e financeiro continuam como estão.
+                  {isClinic ? t("accountType.toAutonomo") : t("accountType.toClinic")} {t("accountType.keeps")}
                 </p>
                 {isClinic ? (
                   <p className="rounded-md border p-3 text-muted-foreground">
-                    Prontuários de profissionais desativados continuam guardados nesta conta e passam a ficar sob sua
-                    gestão. A guarda é de no mínimo 5 anos (Res. CFP 001/2009). Combine com quem atendeu antes de mudar.
+                    {t("accountType.recordsWarning")}
                   </p>
                 ) : null}
                 {blockers.length ? (
                   <p className="rounded-md bg-warning/10 p-3 text-warning-strong">
-                    Antes de mudar: {blockers.join("; ")}.
+                    {t("accountType.beforeChanging", { blockers: blockers.join("; ") })}
                   </p>
                 ) : null}
                 <Button type="submit" variant="outline" size="sm" disabled={blockers.length > 0}>
-                  {isClinic ? "Mudar para profissional autônomo" : "Mudar para clínica"}
+                  {isClinic ? t("accountType.changeToAutonomo") : t("accountType.changeToClinic")}
                 </Button>
               </ActionForm>
             )}
@@ -201,10 +221,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>{isClinic ? "Dados da clínica" : "Dados do consultório"}</CardTitle>
+            <CardTitle>{t("workspace.title", { clinic })}</CardTitle>
             <CardDescription>
-              Usados nas notas fiscais, nas guias TISS e nas mensagens aos pacientes. Endereço curto: {ws.slug} · Plano{" "}
-              <Badge>{planTierLabel(ws.planTier)}</Badge>
+              {t("workspace.description", { slug: ws.slug })} <Badge>{label("planTier", ws.planTier)}</Badge>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -212,25 +231,25 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <ActionForm action={updateWorkspaceAction} className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <Label htmlFor="ws-name">{isClinic ? "Nome da clínica" : "Nome do consultório"}</Label>
+                    <Label htmlFor="ws-name">{t("workspace.name", { clinic })}</Label>
                     <Input id="ws-name" name="name" required defaultValue={ws.name} />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="ws-cnpj">CNPJ{isClinic ? "" : " (se atende como empresa)"}</Label>
+                    <Label htmlFor="ws-cnpj">{isClinic ? t("workspace.cnpj") : t("workspace.cnpjOptional")}</Label>
                     <Input id="ws-cnpj" name="cnpj" defaultValue={ws.cnpj ?? ""} placeholder="00.000.000/0000-00" autoCapitalize="characters" />
                   </div>
                 </div>
                 <fieldset className="space-y-2">
-                  <legend className="text-sm font-medium">Endereço</legend>
+                  <legend className="text-sm font-medium">{tAddress("legend")}</legend>
                   <AddressFields idPrefix="ws-" defaultValue={ws} />
                 </fieldset>
                 <fieldset className="space-y-3">
-                  <legend className="text-sm font-medium">No topo do menu</legend>
+                  <legend className="text-sm font-medium">{t("workspace.menuTop")}</legend>
                   <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
                     {[
-                      { v: "salutti", l: "Marca Salutti" },
-                      { v: "photo", l: "Foto de perfil de quem está usando" },
-                      { v: "banner", l: isClinic ? "Banner da clínica" : "Banner profissional" },
+                      { v: "salutti", l: t("workspace.brandSalutti") },
+                      { v: "photo", l: t("workspace.brandPhoto") },
+                      { v: "banner", l: t("workspace.banner", { clinic }) },
                     ].map((o) => (
                       <label key={o.v} className="flex items-center gap-2">
                         <input type="radio" name="brandDisplay" value={o.v} defaultChecked={ws.brandDisplay === o.v} className="h-4 w-4 accent-primary" />
@@ -240,19 +259,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   </div>
                   <ImageUpload
                     name="banner"
-                    label={isClinic ? "Banner da clínica" : "Banner profissional"}
+                    label={t("workspace.banner", { clinic })}
                     shape="banner"
                     currentUrl={mediaUrl(ws.bannerId)}
-                    hint="Imagem larga (logo ou banner), até 1200×400. Sem banner enviado, aparece a marca Salutti."
+                    hint={t("workspace.bannerHint")}
                   />
                 </fieldset>
-                <Button type="submit" variant="outline" size="sm">Salvar dados</Button>
+                <Button type="submit" variant="outline" size="sm">{t("workspace.save")}</Button>
               </ActionForm>
             ) : (
               <div className="space-y-1 text-sm">
-                <p><strong>Nome:</strong> {ws.name}</p>
-                <p><strong>CNPJ:</strong> {ws.cnpj ?? "-"}</p>
-                <p className="text-muted-foreground">Só o dono ou um administrador altera estes dados.</p>
+                <p><strong>{t("workspace.nameLabel")}</strong> {ws.name}</p>
+                <p><strong>{t("workspace.cnpjLabel")}</strong> {ws.cnpj ?? "-"}</p>
+                <p className="text-muted-foreground">{t("workspace.readOnly")}</p>
               </div>
             )}
           </CardContent>
@@ -264,8 +283,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> Google Meet
             </CardTitle>
             <CardDescription>
-              O link do Meet de cada sessão é criado na conta Google de quem atende: só essa pessoa controla quem entra
-              na sala. Cada profissional conecta a própria conta; sem conexão, a sessão fica sem link.
+              {t("google.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -284,46 +302,42 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             {googleConn ? (
               <>
                 <p>
-                  <StatusBadge kind="integration" status="real" /> Conectado como{" "}
-                  <strong>{googleConn.accountEmail ?? "conta Google"}</strong>
+                  <StatusBadge kind="integration" status="real" /> {t("google.connectedAs")}{" "}
+                  <strong>{googleConn.accountEmail ?? t("google.googleAccount")}</strong>
                 </p>
                 {googleConn.accountEmail && googleConn.accountEmail.toLowerCase() !== ctx.user.email.toLowerCase() ? (
                   <p className="rounded-md bg-warning/10 p-3 text-warning-strong">
-                    A conta Google conectada ({googleConn.accountEmail}) é diferente do seu e-mail na Salutti. Confira se é
-                    mesmo a sua: as reuniões das suas sessões ficam nela.
+                    {t("google.otherAccount", { email: googleConn.accountEmail })}
                   </p>
                 ) : null}
                 <p className="text-muted-foreground">
-                  O evento é privado, sem convidados e com o título genérico “Sessão · Salutti”: o nome do paciente não vai
-                  para o Google.
+                  {t("google.privacy")}
                 </p>
                 <form action={disconnectGoogleAction}>
-                  <Button type="submit" variant="outline" size="sm">Desconectar Google</Button>
+                  <Button type="submit" variant="outline" size="sm">{t("google.disconnect")}</Button>
                 </form>
               </>
             ) : null}
             {googleOAuthConfigured() ? (
               <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                <li>Mantenha desligadas a gravação, a transcrição e as anotações automáticas do Meet nas sessões.</li>
-                <li>Informe o Google Meet como plataforma no seu cadastro e-Psi (Res. CFP 11/2018) e ao paciente.</li>
-                <li>Prefira uma conta Google Workspace com contrato de tratamento de dados a um Gmail pessoal.</li>
+                <li>{t("google.tipRecording")}</li>
+                <li>{t("google.tipEpsi")}</li>
+                <li>{t("google.tipWorkspace")}</li>
               </ul>
             ) : null}
             {googleConn ? null : googleOAuthConfigured() ? (
               <>
                 <p className="text-muted-foreground">
-                  Na tela do Google, deixe marcada a permissão de ver e editar eventos da agenda. A Salutti só cria o
-                  evento da sessão com o link do Meet.
+                  {t("google.permissionHint")}
                 </p>
                 <Button size="sm" asChild>
                   {/* Navegação completa (não prefetch): a rota redireciona para o Google. */}
-                  <a href="/api/integracoes/google/iniciar">Conectar Google</a>
+                  <a href="/api/integracoes/google/iniciar">{t("google.connect")}</a>
                 </Button>
               </>
             ) : (
               <p className="text-muted-foreground">
-                <StatusBadge kind="integration" status="sandbox" /> A conexão com o Google ainda não foi ativada na
-                Salutti. Enquanto isso, as sessões online recebem um link simulado.
+                <StatusBadge kind="integration" status="sandbox" /> {t("google.notEnabled")}
               </p>
             )}
           </CardContent>
@@ -332,14 +346,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-primary-strong" aria-hidden /> Certificado A1 (ICP-Brasil)
+              <KeyRound className="h-5 w-5 text-primary-strong" aria-hidden /> {t("certificate.title")}
             </CardTitle>
-            <CardDescription>Para assinatura de receitas e NFS-e.</CardDescription>
+            <CardDescription>{t("certificate.description")}</CardDescription>
           </CardHeader>
           <CardContent className="text-sm">
-            <p>Status: <StatusBadge kind="integration" status="sandbox" /></p>
+            <p>{t("certificate.status")} <StatusBadge kind="integration" status="sandbox" /></p>
             <p className="text-muted-foreground mt-1">
-              O arquivo .pfx fica guardado cifrado, e você recebe um aviso 30 dias antes do vencimento.
+              {t("certificate.hint")}
             </p>
           </CardContent>
         </Card>
@@ -347,9 +361,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> Integrações
+              <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> {t("integrations.title")}
             </CardTitle>
-            <CardDescription>Integrações em sandbox funcionam com dados simulados até você informar a chave real.</CardDescription>
+            <CardDescription>{t("integrations.description")}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {integrations.map((i) => (
@@ -366,36 +380,38 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Modelos de anamnese</CardTitle>
+            <CardTitle>{t("templates.title")}</CardTitle>
             <CardDescription>
-              {plural(templates.length, "modelo ativo", "modelos ativos")}. Adicione outros da biblioteca abaixo; a edição
-              das perguntas ainda é feita pelo Prisma Studio (<code>npx prisma studio</code>).
+              {t.rich("templates.description", {
+                count: tCount("templates", { count: templates.length }),
+                code: (chunks) => <code>{chunks}</code>,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
-              {templates.map((t) => (
-                <li key={t.id} className="flex items-center gap-2">
-                  <Badge variant="outline">{t.specialty ?? "Geral"}</Badge>
-                  <span>{t.name}</span>
-                  {t.isDefault ? <Badge variant="success">Padrão</Badge> : null}
+              {templates.map((tpl) => (
+                <li key={tpl.id} className="flex items-center gap-2">
+                  <Badge variant="outline">{tpl.specialty ?? tGeneral}</Badge>
+                  <span>{tpl.name}</span>
+                  {tpl.isDefault ? <Badge variant="success">{t("templates.default")}</Badge> : null}
                 </li>
               ))}
             </ul>
             <form action={addLibraryTemplatesAction} className="mt-4 flex flex-wrap items-end gap-2">
               <input type="hidden" name="back" value="ajustes" />
               <div className="space-y-1">
-                <Label htmlFor="slug">Biblioteca de modelos</Label>
+                <Label htmlFor="slug">{t("templates.library")}</Label>
                 <Select id="slug" name="slug" className="w-auto">
-                  {ANAMNESIS_LIBRARY.filter((t) => !templates.some((x) => x.name === t.name)).map((t) => (
-                    <option key={t.slug} value={t.slug}>
-                      {t.name}
+                  {ANAMNESIS_LIBRARY.filter((lib) => !templates.some((x) => x.name === lib.name)).map((lib) => (
+                    <option key={lib.slug} value={lib.slug}>
+                      {lib.name}
                     </option>
                   ))}
                 </Select>
               </div>
-              <Button type="submit" variant="outline" disabled={ANAMNESIS_LIBRARY.every((t) => templates.some((x) => x.name === t.name))}>
-                Adicionar da biblioteca
+              <Button type="submit" variant="outline" disabled={ANAMNESIS_LIBRARY.every((lib) => templates.some((x) => x.name === lib.name))}>
+                {t("templates.add")}
               </Button>
             </form>
           </CardContent>
@@ -404,11 +420,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary-strong" aria-hidden /> Plano Salutti
+              <CreditCard className="h-5 w-5 text-primary-strong" aria-hidden /> {t("plan.title")}
             </CardTitle>
             <CardDescription>
-              Plano atual: <strong className="text-foreground">{planTierLabel(ctx.workspace.planTier)}</strong>
-              {billingConfigured() ? " · cobrança pelo Stripe" : " · Stripe em modo de teste: a ativação é simulada"}
+              {t.rich("plan.current", {
+                plan: label("planTier", ctx.workspace.planTier),
+                strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+              })}
+              {billingConfigured() ? t("plan.stripe") : t("plan.stripeTest")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -431,16 +450,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 return (
                   <div key={key} className={current ? "rounded-md border border-primary p-3" : "rounded-md border p-3"}>
                     <p className="font-semibold">
-                      {p.name} · {p.price}
+                      {p.name} · {t(`plan.${key}Price`)}
                     </p>
-                    <p className="text-muted-foreground">{p.description}</p>
+                    <p className="text-muted-foreground">{t(`plan.${key}Description`)}</p>
                     {current ? (
-                      <Badge variant="success" className="mt-3">Plano atual</Badge>
+                      <Badge variant="success" className="mt-3">{t("plan.currentBadge")}</Badge>
                     ) : isOwner ? (
                       <form action={subscribeAction} className="mt-3">
                         <input type="hidden" name="plan" value={key} />
                         <Button type="submit" size="sm" variant={key === "pro" ? "default" : "outline"}>
-                          {billingConfigured() ? `Assinar ${p.name}` : `Ativar ${p.name} (simulação)`}
+                          {billingConfigured() ? t("plan.subscribe", { plan: p.name }) : t("plan.activateSimulated", { plan: p.name })}
                         </Button>
                       </form>
                     ) : null}
@@ -448,21 +467,21 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 );
               })}
               <div className="rounded-md border p-3">
-                <p className="font-semibold">Clínica · sob consulta</p>
-                <p className="text-muted-foreground">Multiprofissional · TISS · vários CNPJs</p>
+                <p className="font-semibold">{t("plan.clinicTitle")}</p>
+                <p className="text-muted-foreground">{t("plan.clinicDescription")}</p>
                 <Button size="sm" variant="outline" className="mt-3" asChild>
-                  <a href="mailto:contato@salutti.app?subject=Plano%20Cl%C3%ADnica">Falar com a equipe</a>
+                  <a href="mailto:contato@salutti.app?subject=Plano%20Cl%C3%ADnica">{t("plan.contact")}</a>
                 </Button>
               </div>
             </div>
             {isOwner && billingConfigured() && (ctx.workspace.planTier === "starter" || ctx.workspace.planTier === "pro") ? (
               <form action={billingPortalAction}>
                 <Button type="submit" variant="outline" size="sm">
-                  Gerenciar assinatura e faturas
+                  {t("plan.manage")}
                 </Button>
               </form>
             ) : null}
-            {!isOwner ? <p className="text-muted-foreground">Só quem é dono do consultório pode mudar o plano.</p> : null}
+            {!isOwner ? <p className="text-muted-foreground">{t("plan.ownerOnly")}</p> : null}
           </CardContent>
         </Card>
       </div>

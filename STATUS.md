@@ -1,6 +1,28 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-06. A seção "Roadmap executado" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-06. A seção "Pacote de melhorias" é a mais recente; as demais ficam como histórico.
+
+## Pacote de melhorias (2026-10-06) — PRs #14 e #15, e Lote E (idiomas)
+
+Pedido do dono em 10 itens + Google Meet por usuário. Cada lote passou pelos revisores do projeto (`.claude/agents/psicologo.md`, `advogado-do-diabo.md`, `qualidade.md`) e teve os bloqueantes corrigidos antes do commit.
+
+| Lote | PR | Entrega |
+|---|---|---|
+| A | #14 | LUMA → **TOBI** (redirect `/app/luma`); aba só "Salutti"; telefone internacional (bandeira, DDI, máscara, E.164, `libphonenumber-js/max`); e-mail com sugestão de domínio e checagem MX; CEP preenche endereço (ViaCEP → BrasilAPI, cache e limite); edição de paciente; erros de formulário sem perder dados (`ActionForm`) |
+| B | #14 | Cadastro separa **autônomo × clínica** (`Workspace.accountType`), troca em Ajustes; autônomo com 1 profissional ativo; CNPJ numérico/alfanumérico; **aniversários no painel** (pacientes só para quem atende, sem recepção/financeiro; equipe; o próprio usuário) |
+| C | #15 | Foto de perfil; **banner ou foto no lugar da marca** no menu; **foto do paciente** com consentimento registrado, só na ficha, `no-store`; imagens no Postgres (`MediaFile`) via `src/lib/providers/media.ts` |
+| D | #15 | **Google Meet com a conta Google de cada profissional** (OAuth + PKCE, token cifrado, evento privado, apagado ao cancelar; sem conexão = sem link, com aviso) |
+| E | #16 | **Idiomas** pt-BR (padrão), pt-PT, es, en em todo o sistema (`next-intl`, `docs/I18N.md`) |
+
+**Depende do dono:**
+1. Merge do #14 e depois do #15 (o #15 contém o #14; após o primeiro merge, o diff do segundo encolhe).
+2. Google Meet real: cliente OAuth "Aplicativo da Web" (Calendar API, URI `https://salutti.vercel.app/api/integracoes/google/retorno`), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `APP_URL` na Vercel. Até a verificação do app pelo Google: só usuários de teste (até 100) e acesso expira em 7 dias. Avaliar o escopo mais estreito `calendar.app.created` antes de pedir a verificação.
+3. Preview e produção dividem o mesmo banco Neon (decisão do dono, "por hora").
+4. O artifact do Design System ainda cita "LUMA": atualizar exige autorização para publicar.
+
+**Idiomas, ficou para depois:** insights do TOBI são gerados e salvos em pt-BR (guardar código + parâmetros e traduzir na tela); páginas públicas deixaram de ser estáticas (o idioma vem do cookie); formatos brasileiros (CPF, CEP, telefone +55 padrão) valem em qualquer idioma: pt-PT/es/en são interface para quem atende no Brasil; código antigo sem uso (`labels.ts` exceto `chargeDisplayStatus`/`UFS`, `lgpd.ts`, `mood.ts`, formatadores de `utils.ts`, `PLANS.price`); dias da semana/mês ainda com `Intl` direto em agenda e financeiro.
+
+**Ficou para depois (registrado pelos revisores):** limpeza periódica de imagens órfãs (corrida entre duas edições simultâneas); limite de profissionais do autônomo checado fora de transação; painel lê aniversários de pacientes em memória (filtrar no SQL quando houver muitos); papéis (recepção/financeiro) ainda não restringem prontuário; nome do paciente vai para a OpenAI no resumo do TOBI; convites de usuários para a clínica não existem (vínculo profissional ↔ usuário só para quem já é membro).
 
 ## Roadmap executado (2026-10-06) — PRs encadeados #1 → #11
 

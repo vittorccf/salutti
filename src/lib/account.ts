@@ -39,11 +39,11 @@ export function segmentAfterMigration(to: AccountType, segment: string) {
 }
 
 // Para virar autônomo, a conta precisa caber em um profissional e um usuário.
-export function autonomoBlockers({ activeProfessionals, members }: { activeProfessionals: number; members: number }) {
-  const reasons: string[] = [];
-  if (activeProfessionals > 1)
-    reasons.push(`há ${activeProfessionals} profissionais ativos (desative os outros e deixe só um)`);
-  if (members > 1)
-    reasons.push(`há ${members} usuários com acesso clínico ou de gestão (recepção e financeiro podem ficar; peça ao suporte para remover os outros)`);
+// Devolve códigos com a contagem; a tela traduz (settings.page.accountType.blockerProfessionals/blockerMembers).
+export type AutonomoBlocker = { code: "professionals" | "members"; count: number };
+export function autonomoBlockers({ activeProfessionals, members }: { activeProfessionals: number; members: number }): AutonomoBlocker[] {
+  const reasons: AutonomoBlocker[] = [];
+  if (activeProfessionals > 1) reasons.push({ code: "professionals", count: activeProfessionals });
+  if (members > 1) reasons.push({ code: "members", count: members });
   return reasons;
 }

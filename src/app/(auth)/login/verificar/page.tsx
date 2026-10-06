@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getTranslations } from "@/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ const back = (erro: string) => redirect(`/login/verificar?erro=${erro}`);
 async function verifyAction(formData: FormData) {
   "use server";
   const userId = await getPendingTwoFactor();
-  if (!userId) redirect("/login?error=" + encodeURIComponent("A verificação expirou. Entre de novo."));
+  if (!userId) redirect("/login?error=expirou");
   const user = await db.user.findUnique({ where: { id: userId }, include: { memberships: true } });
   if (!user?.totpEnabledAt || !user.totpSecret) redirect("/login");
 
@@ -65,28 +66,28 @@ async function verifyAction(formData: FormData) {
   redirect("/app");
 }
 
-const ERROS: Record<string, string> = {
-  codigo: "Código inválido. Confira o app autenticador e tente de novo.",
-  bloqueado: `Muitas tentativas. Aguarde ${LOCK_MINUTES} minutos e entre de novo.`,
-};
+// Códigos aceitos em ?erro= (texto em auth.verify.errors).
+const ERROS = ["codigo", "bloqueado"] as const;
 
 export default async function VerifyTwoFactorPage({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
   if (!(await getPendingTwoFactor())) redirect("/login");
   const { erro } = await searchParams;
-  const message = erro && Object.hasOwn(ERROS, erro) ? ERROS[erro] : null;
+  const t = await getTranslations("auth.verify");
+  const code = ERROS.find((e) => e === erro);
+  const message = code ? t(`errors.${code}`, { minutes: LOCK_MINUTES }) : null;
 
   return (
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <Logo variant="icon" size={48} className="mx-auto" />
-          <CardTitle>Verificação em duas etapas</CardTitle>
-          <CardDescription>Digite o código de 6 dígitos do seu app autenticador.</CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={verifyAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="code">Código</Label>
+              <Label htmlFor="code">{t("code")}</Label>
               <Input
                 id="code"
                 name="code"
@@ -104,13 +105,13 @@ export default async function VerifyTwoFactorPage({ searchParams }: { searchPara
               </p>
             ) : null}
             <Button type="submit" className="w-full">
-              Verificar
+              {t("submit")}
             </Button>
           </form>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Sem acesso ao celular? Use um dos códigos de recuperação no mesmo campo.{" "}
+            {t("noPhone")}{" "}
             <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
-              Voltar
+              {t("back")}
             </Link>
           </p>
         </CardContent>

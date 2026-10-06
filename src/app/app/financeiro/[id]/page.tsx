@@ -9,8 +9,10 @@ import { receitaSaude } from "@/lib/providers/receita-saude";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
-import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
+import { chargeDisplayStatus } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { formatters } from "@/i18n/format";
+import { labeler } from "@/i18n/labels";
 import { CheckCircle2, FileSignature, MessageSquareText, Receipt as ReceiptIcon } from "lucide-react";
 import { isPastDue } from "@/lib/dates";
 import { ensureAffected } from "@/lib/tenant";
@@ -47,14 +49,16 @@ async function sendChargeReminder(formData: FormData) {
   });
   if (!charge || !charge.patient.phone) return;
   const overdue = isPastDue(charge.dueDate);
+  // O modelo da mensagem ao paciente é em pt-BR (lib/providers/whatsapp), então valor e data vão no mesmo idioma.
+  const br = formatters("pt-BR");
   await whatsapp.send({
     workspaceId: ctx.workspace.id,
     recipient: charge.patient.phone,
     template: overdue ? "charge_overdue" : "charge_due",
     vars: {
       patient: charge.patient.fullName.split(" ")[0],
-      amount: formatBRL(charge.amount),
-      due: formatDateBR(charge.dueDate),
+      amount: br.money(charge.amount),
+      due: br.date(charge.dueDate),
       pix: charge.pixCopyPaste ?? "-",
       link: charge.paymentLink ? `https://salutti.app${charge.paymentLink.url}` : "",
     },
@@ -135,6 +139,9 @@ async function issueReceiptAction(formData: FormData) {
 
 export default async function ChargeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireContext();
+  const t = await getTranslations("finance.charge");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
   const { id } = await params;
   const charge = await db.charge.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
@@ -152,9 +159,9 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
     <div className="max-w-3xl space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Cobrança · {formatBRL(charge.amount)}</h1>
+          <h1 className="text-2xl font-bold">{t("title", { amount: f.money(charge.amount) })}</h1>
           <p className="text-sm text-muted-foreground">
-            {charge.patient.fullName} · Vencimento {formatDateBR(charge.dueDate)} ·{" "}
+            {charge.patient.fullName} · {t("due", { date: f.date(charge.dueDate) })} ·{" "}
             <StatusBadge kind="charge" status={chargeDisplayStatus(charge.status, charge.dueDate)} />
           </p>
         </div>
@@ -163,21 +170,21 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             <form action={markPaidAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit" variant="success">
-                <CheckCircle2 className="h-4 w-4" /> Confirmar pagamento
+                <CheckCircle2 className="h-4 w-4" /> {t("confirmPayment")}
               </Button>
             </form>
           ) : null}
           <form action={sendChargeReminder}>
             <input type="hidden" name="id" value={charge.id} />
             <Button type="submit" variant="outline" disabled={!charge.patient.phone}>
-              <MessageSquareText className="h-4 w-4" /> Enviar lembrete
+              <MessageSquareText className="h-4 w-4" /> {t("sendReminder")}
             </Button>
           </form>
           {charge.status === "paid" && (!charge.receipt || !charge.invoice) ? (
             <form action={issueReceiptAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit">
-                <FileSignature className="h-4 w-4" /> Emitir recibo e nota
+                <FileSignature className="h-4 w-4" /> {t("issue")}
               </Button>
             </form>
           ) : null}
@@ -187,23 +194,23 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
       <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
-            <CardTitle>Detalhes</CardTitle>
+            <CardTitle>{t("details")}</CardTitle>
             <CardDescription>
-              Forma de pagamento: <strong className="text-foreground">{paymentMethodLabel(charge.method)}</strong>
+              {t("method")} <strong className="text-foreground">{label("paymentMethod", charge.method)}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {charge.appointment ? (
               <p className="text-sm">
-                Referente à{" "}
+                {t("relatedTo")}{" "}
                 <Link className="text-primary-strong underline-offset-4 hover:underline" href={`/app/agenda/${charge.appointment.id}`}>
-                  sessão de {formatDateTimeBR(charge.appointment.startsAt)}
+                  {t("sessionOf", { date: f.dateTime(charge.appointment.startsAt) })}
                 </Link>
               </p>
             ) : null}
             {charge.pixCopyPaste ? (
               <div>
-                <p className="text-sm font-semibold">Pix copia e cola</p>
+                <p className="text-sm font-semibold">{t("pixCopyPaste")}</p>
                 <code className="block break-all rounded-md bg-muted/30 p-2 text-xs">
                   {charge.pixCopyPaste}
                 </code>
@@ -211,47 +218,47 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             ) : null}
             {charge.paymentLink ? (
               <div>
-                <p className="text-sm font-semibold">Link de pagamento</p>
+                <p className="text-sm font-semibold">{t("paymentLink")}</p>
                 <Link className="break-all text-sm text-primary-strong underline-offset-4 hover:underline" href={`/pay/${charge.paymentLink.token}`} target="_blank">
                   {`/pay/${charge.paymentLink.token}`}
                 </Link>
               </div>
             ) : null}
             {charge.paidAt ? (
-              <p className="text-xs text-muted-foreground">Pago em {formatDateTimeBR(charge.paidAt)}.</p>
+              <p className="text-xs text-muted-foreground">{t("paidAt", { date: f.dateTime(charge.paidAt) })}</p>
             ) : null}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Fiscal</CardTitle>
-            <CardDescription>Recibo digital, nota fiscal (NFS-e) e protocolo do Receita Saúde.</CardDescription>
+            <CardTitle>{t("fiscal")}</CardTitle>
+            <CardDescription>{t("fiscalDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {charge.receipt ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <ReceiptIcon className="h-4 w-4 text-primary-strong" /> Recibo {charge.receipt.receiptNumber}
+                  <ReceiptIcon className="h-4 w-4 text-primary-strong" /> {t("receipt", { number: charge.receipt.receiptNumber })}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Receita Saúde: <StatusBadge kind="receitaSaude" status={charge.receipt.receitaSaudeStatus} /> · {charge.receipt.receitaSaudeId}
+                  {t("receitaSaude")} <StatusBadge kind="receitaSaude" status={charge.receipt.receitaSaudeStatus} /> · {charge.receipt.receitaSaudeId}
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground">Nenhum recibo emitido. Ele é gerado depois do pagamento.</p>
+              <p className="text-muted-foreground">{t("noReceipt")}</p>
             )}
             {charge.invoice ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <FileSignature className="h-4 w-4 text-primary-strong" /> NFS-e {charge.invoice.invoiceNumber}
+                  <FileSignature className="h-4 w-4 text-primary-strong" /> {t("invoice", { number: charge.invoice.invoiceNumber })}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <StatusBadge kind="invoice" status={charge.invoice.issStatus} /> · ISS {charge.invoice.serviceCode}
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground">Nenhuma nota fiscal emitida.</p>
+              <p className="text-muted-foreground">{t("noInvoice")}</p>
             )}
           </CardContent>
         </Card>

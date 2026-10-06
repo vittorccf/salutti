@@ -35,7 +35,7 @@ describe("imagens enviadas", () => {
     await expect(readImageUpload(form({ photo: html }), "photo")).rejects.toBeInstanceOf(UploadError);
 
     const big = new File([new Uint8Array(MAX_IMAGE_BYTES + 1)], "g.png", { type: "image/png" });
-    await expect(readImageUpload(form({ photo: big }), "photo")).rejects.toThrow(/grande demais/);
+    await expect(readImageUpload(form({ photo: big }), "photo")).rejects.toThrow(/imageTooBig/);
 
     expect(await readImageUpload(form({ photo: new File([], "") }), "photo")).toBeNull();
     expect(await readImageUpload(form({ photoRemove: "on" }), "photo")).toBe("remove");
@@ -49,6 +49,6 @@ describe("imagens enviadas", () => {
     const jpg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0, 4, 0, 0, 0xff, 0xc0, 0, 11, 8, 0x01, 0x2c, 0x01, 0x90, 3, 0, 0]);
     expect(imageSize(jpg)).toEqual({ w: 400, h: 300 });
     const huge = new File([png(30000, 30000)], "g.png", { type: "image/png" });
-    await expect(readImageUpload(form({ photo: huge }), "photo")).rejects.toThrow(/dimensões/);
+    await expect(readImageUpload(form({ photo: huge }), "photo")).rejects.toThrow(/imageDimensions/);
   });
 });

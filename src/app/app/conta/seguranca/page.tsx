@@ -13,7 +13,7 @@ import {
   otpauthUrl,
   verifyTotp,
 } from "@/lib/totp";
-import { formatDateBR } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -102,6 +102,8 @@ async function dismissCodesAction() {
 export default async function SecurityPage({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
   const ctx = await requireContext();
   const { erro } = await searchParams;
+  const t = await getTranslations("auth.security");
+  const f = await getFormat();
   const user = await db.user.findUniqueOrThrow({ where: { id: ctx.user.id } });
   const enabled = Boolean(user.totpEnabledAt);
   const pending = Boolean(user.totpSecret) && !enabled;
@@ -127,27 +129,25 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
     <div className="max-w-2xl space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-primary-strong" aria-hidden /> Segurança da conta
+          <ShieldCheck className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">{user.email}</p>
       </header>
 
       {erro === "codigo" ? (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
-          Código inválido. Confira o app autenticador e tente de novo.
+          {t("codeInvalid")}
         </p>
       ) : null}
 
       {recoveryCodes ? (
         <Card className="border-warning/40">
           <CardHeader>
-            <CardTitle>Guarde seus códigos de recuperação</CardTitle>
-            <CardDescription>
-              Cada código entra uma vez, se você perder o celular. Eles não serão mostrados de novo.
-            </CardDescription>
+            <CardTitle>{t("recoveryTitle")}</CardTitle>
+            <CardDescription>{t("recoveryDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ul className="grid grid-cols-2 gap-2 font-mono text-sm" aria-label="Códigos de recuperação">
+            <ul className="grid grid-cols-2 gap-2 font-mono text-sm" aria-label={t("recoveryList")}>
               {recoveryCodes.map((c) => (
                 <li key={c} className="rounded-md border bg-muted/40 px-3 py-2 text-center tabular-nums">
                   {c}
@@ -155,7 +155,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
               ))}
             </ul>
             <form action={dismissCodesAction}>
-              <Button type="submit">Já guardei os códigos</Button>
+              <Button type="submit">{t("recoveryDismiss")}</Button>
             </form>
           </CardContent>
         </Card>
@@ -164,51 +164,47 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
       <Card>
         <CardHeader>
           <CardTitle className="flex flex-wrap items-center gap-2">
-            Verificação em duas etapas
-            {enabled ? <Badge variant="success">Ativa</Badge> : <Badge variant="muted">Desativada</Badge>}
+            {t("twoFactorTitle")}
+            {enabled ? <Badge variant="success">{t("active")}</Badge> : <Badge variant="muted">{t("inactive")}</Badge>}
           </CardTitle>
-          <CardDescription>
-            Além da senha, o login pede um código do app autenticador (Google Authenticator, Microsoft Authenticator,
-            1Password).
-          </CardDescription>
+          <CardDescription>{t("twoFactorDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           {enabled ? (
             <>
               <p className="text-muted-foreground">
-                Ativa desde {formatDateBR(user.totpEnabledAt!)} ·{" "}
-                {remaining === 1 ? "1 código de recuperação restante" : `${remaining} códigos de recuperação restantes`}
+                {t("activeSince", { date: f.date(user.totpEnabledAt!) })} · {t("recoveryRemaining", { count: remaining })}
               </p>
               <form action={regenerateAction} className="flex flex-wrap items-end gap-2">
                 <div className="space-y-1">
-                  <Label htmlFor="regen-code">Código atual</Label>
+                  <Label htmlFor="regen-code">{t("currentCode")}</Label>
                   <Input id="regen-code" name="code" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" className="w-36 tabular-nums" required />
                 </div>
                 <Button type="submit" variant="outline">
-                  Gerar novos códigos de recuperação
+                  {t("regenerate")}
                 </Button>
               </form>
               <form action={disableAction} className="flex flex-wrap items-end gap-2">
                 <div className="space-y-1">
-                  <Label htmlFor="disable-code">Código atual</Label>
+                  <Label htmlFor="disable-code">{t("currentCode")}</Label>
                   <Input id="disable-code" name="code" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" className="w-36 tabular-nums" required />
                 </div>
                 <Button type="submit" variant="destructive">
-                  Desativar verificação
+                  {t("disable")}
                 </Button>
               </form>
             </>
           ) : qr ? (
             <>
               <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                <li>Abra o app autenticador e escaneie o QR code.</li>
-                <li>Digite o código de 6 dígitos que aparecer.</li>
+                <li>{t("step1")}</li>
+                <li>{t("step2")}</li>
               </ol>
               <div className="flex flex-wrap items-center gap-4">
                 {/* eslint-disable-next-line @next/next/no-img-element -- data URL gerado no servidor */}
-                <img src={qr.dataUrl} alt="QR code para o app autenticador" width={200} height={200} className="rounded-md border bg-white p-2" />
+                <img src={qr.dataUrl} alt={t("qrAlt")} width={200} height={200} className="rounded-md border bg-white p-2" />
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Sem câmera? Digite a chave:</p>
+                  <p className="text-xs text-muted-foreground">{t("noCamera")}</p>
                   <code className="block break-all rounded-md bg-muted/40 p-2 font-mono text-xs" data-testid="totp-secret">
                     {qr.secret}
                   </code>
@@ -216,15 +212,15 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
               </div>
               <form action={confirmAction} className="flex flex-wrap items-end gap-2">
                 <div className="space-y-1">
-                  <Label htmlFor="confirm-code">Código do app</Label>
+                  <Label htmlFor="confirm-code">{t("appCode")}</Label>
                   <Input id="confirm-code" name="code" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" className="w-36 tabular-nums" required />
                 </div>
-                <Button type="submit">Ativar verificação</Button>
+                <Button type="submit">{t("enable")}</Button>
               </form>
             </>
           ) : (
             <form action={startAction}>
-              <Button type="submit">Configurar verificação em duas etapas</Button>
+              <Button type="submit">{t("setup")}</Button>
             </form>
           )}
         </CardContent>

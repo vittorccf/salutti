@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 export type AddressValue = {
   cep?: string | null;
@@ -28,6 +29,7 @@ export function AddressFields({ defaultValue = {}, idPrefix = "" }: { defaultVal
     state: defaultValue.state ?? "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "notfound" | "error">("idle");
+  const t = useTranslations("common.address");
   const numberRef = useRef<HTMLInputElement>(null);
   const pending = useRef<AbortController | null>(null);
   const id = (f: string) => `${idPrefix}${f}`;
@@ -56,7 +58,7 @@ export function AddressFields({ defaultValue = {}, idPrefix = "" }: { defaultVal
   return (
     <div className="grid gap-3 sm:grid-cols-6">
       <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor={id("cep")}>CEP</Label>
+        <Label htmlFor={id("cep")}>{t("cep")}</Label>
         <div className="relative">
           <Input
             id={id("cep")}
@@ -75,40 +77,40 @@ export function AddressFields({ defaultValue = {}, idPrefix = "" }: { defaultVal
             aria-describedby={status !== "idle" ? id("cep-status") : undefined}
           />
           {status === "loading" ? (
-            <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" aria-label="Buscando endereço" />
+            <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" aria-label={t("loading")} />
           ) : null}
         </div>
         {/* Região viva sempre presente: leitores de tela anunciam a mudança de texto. */}
         <p id={id("cep-status")} className="text-xs text-muted-foreground empty:hidden" role="status">
           {status === "notfound"
-            ? "CEP não encontrado. Preencha o endereço abaixo."
+            ? t("notFound")
             : status === "error"
-              ? "Busca de CEP indisponível agora. Preencha o endereço abaixo."
+              ? t("unavailable")
               : ""}
         </p>
       </div>
       <div className="space-y-1 sm:col-span-4">
-        <Label htmlFor={id("street")}>Rua</Label>
+        <Label htmlFor={id("street")}>{t("street")}</Label>
         <Input id={id("street")} name="street" autoComplete="address-line1" value={v.street} onChange={set("street")} />
       </div>
       <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor={id("addressNumber")}>Número</Label>
+        <Label htmlFor={id("addressNumber")}>{t("number")}</Label>
         <Input ref={numberRef} id={id("addressNumber")} name="addressNumber" value={v.addressNumber} onChange={set("addressNumber")} />
       </div>
       <div className="space-y-1 sm:col-span-4">
-        <Label htmlFor={id("complement")}>Complemento</Label>
-        <Input id={id("complement")} name="complement" autoComplete="address-line2" placeholder="Sala, apto, bloco" value={v.complement} onChange={set("complement")} />
+        <Label htmlFor={id("complement")}>{t("complement")}</Label>
+        <Input id={id("complement")} name="complement" autoComplete="address-line2" placeholder={t("complementPlaceholder")} value={v.complement} onChange={set("complement")} />
       </div>
       <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor={id("district")}>Bairro</Label>
+        <Label htmlFor={id("district")}>{t("district")}</Label>
         <Input id={id("district")} name="district" value={v.district} onChange={set("district")} />
       </div>
       <div className="space-y-1 sm:col-span-3">
-        <Label htmlFor={id("city")}>Cidade</Label>
+        <Label htmlFor={id("city")}>{t("city")}</Label>
         <Input id={id("city")} name="city" autoComplete="address-level2" value={v.city} onChange={set("city")} />
       </div>
       <div className="space-y-1 sm:col-span-1">
-        <Label htmlFor={id("state")}>UF</Label>
+        <Label htmlFor={id("state")}>{t("state")}</Label>
         <Input id={id("state")} name="state" autoComplete="address-level1" maxLength={2} value={v.state} onChange={(e) => setV((s) => ({ ...s, state: e.target.value.toUpperCase() }))} />
       </div>
     </div>
