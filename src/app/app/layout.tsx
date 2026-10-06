@@ -23,12 +23,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const sidebar = (
     <>
       <div className="p-5">
-        <Link href="/app" className="block space-y-1.5">
+        <Link href="/app" className="block space-y-1.5 rounded-md pr-10 md:pr-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <Logo size={22} />
           <span className="block text-xs text-muted-foreground">{ctx.workspace.name}</span>
         </Link>
         <div className="mt-4">
           <WorkspaceSwitcher
+            key={ctx.workspace.id}
             workspaces={ctx.allWorkspaces.map((w) => ({ id: w.id, name: w.name, slug: w.slug }))}
             activeId={ctx.workspace.id}
           />
@@ -45,7 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <p className="font-semibold text-warning-strong">
               Teste grátis: {trialDays} {trialDays === 1 ? "dia restante" : "dias restantes"}
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-foreground/80">
               Plano <strong className="text-foreground">{ctx.workspace.planTier}</strong>
             </p>
           </div>
@@ -64,7 +65,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <MobileNav>{sidebar}</MobileNav>
-              <Link href="/app" className="md:hidden" aria-label="Início">
+              <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Início">
                 <Logo size={20} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
