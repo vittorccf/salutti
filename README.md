@@ -7,13 +7,15 @@
 ## ⚡ Subir em 60 segundos
 
 ```bash
-cd salutti-app
+cd saluti-app
 npm install
-npx prisma db push --skip-generate
-npx prisma generate
-npm run db:seed
+cp .env.example .env    # DATABASE_URL aponta para o Postgres local
+npm run db:local        # terminal 1: sobe o Postgres (localhost:5433) e aplica as migrations
+npm run db:seed         # terminal 2, só na primeira vez
 npm run dev
 ```
+
+O `db:local` usa um Postgres embutido (binários oficiais via npm, dados em `.pgdata`): não precisa de Docker. Se preferir outro Postgres (Docker, Neon), basta trocar o `DATABASE_URL`.
 
 Abra http://localhost:3000 e use as credenciais demo:
 
@@ -22,7 +24,7 @@ Abra http://localhost:3000 e use as credenciais demo:
 | `guilherme@salutti.dev`        | `salutti123` | Consultório psicólogo autônomo (Goiânia)           |
 | `kris@salutti.dev`             | `salutti123` | UBS Turvânia · clínica odontológica                |
 
-**Portal do paciente (Ana Beatriz):** http://localhost:3000/portal/ana-demo-token-please-rotate
+Os consultórios começam **sem pacientes nem profissionais** (base limpa). Cadastre um profissional em Profissionais e um paciente em Pacientes; o link do portal do paciente é gerado na ficha dele.
 
 **Link público de pagamento:** /pay/&lt;token&gt; (gerado para cada cobrança).
 
@@ -53,7 +55,7 @@ Cobertura completa do prompt original:
 ## 🏗 Arquitetura resumida
 
 - **Next.js 14 (App Router) + TypeScript** - full-stack, Server Actions para todas as mutações
-- **Prisma + SQLite** no dev (provider trocável para PostgreSQL com 1 linha)
+- **Prisma + PostgreSQL** em todos os ambientes, com migrations versionadas em `prisma/migrations`
 - **shadcn/ui-style** (Radix + Tailwind) - design system enxuto montado à mão
 - **Multi-tenant** via `workspaceId` em todas as tabelas + cookie de workspace ativo (`salutti_ws`)
 - **Auth** JWT em cookie httpOnly (jose) - em produção: substituir por Auth.js + sessões em DB
@@ -67,9 +69,13 @@ Detalhes em `ARCHITECTURE.md`.
 ```bash
 npm run dev           # dev server
 npm run build         # build produção
-npm run db:push       # sincronizar schema
-npm run db:seed       # repovoar dados demo
-npm run db:reset      # nuke + seed
+npm run db:local      # Postgres local (localhost:5433)
+npm run db:migrate    # cria uma migration a partir de mudanças no schema.prisma
+npm run db:deploy     # aplica as migrations pendentes
+npm run db:seed       # recria usuários, consultórios e modelos de anamnese (sem pacientes)
+npm run db:reset      # apaga o banco, reaplica as migrations e roda o seed
+npm test              # testes unitários
+npm run test:e2e      # ponta a ponta (sobe um Postgres descartável sozinho)
 npx prisma studio     # GUI dos dados
 ```
 
@@ -83,11 +89,42 @@ OPENAI_API_KEY=sk-...
 
 Para integrações reais (Stripe, Asaas, NFE.io, WhatsApp, Receita Saúde): trocar as chaves correspondentes. As interfaces dos providers (`src/lib/providers/`) ficam idênticas - só a implementação `mock` é substituída.
 
+**Em produção, `AUTH_SECRET` é obrigatório** (32+ caracteres aleatórios, ex.: `openssl rand -base64 32`). Sem ele o login falha com erro explícito.
+
+### Assinatura da Salutti (Stripe Billing)
+
+Em Ajustes → Plano Salutti, quem é dono do consultório assina Starter ou Pro. Com `STRIPE_SECRET_KEY` real, o botão abre o Checkout do Stripe e o webhook atualiza o plano; sem ela, a ativação é simulada (sem cobrança) e aparece como tal.
+
+1. No Stripe, crie dois preços recorrentes mensais (Starter R$ 49, Pro R$ 129) e preencha `STRIPE_PRICE_STARTER` e `STRIPE_PRICE_PRO`.
+2. Crie o endpoint de webhook `https://<seu-domínio>/api/stripe/webhook` com os eventos `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted`, e preencha `STRIPE_WEBHOOK_SECRET`.
+3. Ative o Customer Portal do Stripe para o botão "Gerenciar assinatura e faturas".
+
+### Banco de produção (Postgres)
+
+1. Crie um banco Postgres (ex.: **Neon** pelo Marketplace da Vercel, que já preenche o `DATABASE_URL`).
+2. Na Vercel, o script `vercel-build` aplica as migrations (`prisma migrate deploy`) antes do build.
+3. Para criar os logins de demonstração no banco novo, rode uma vez `DATABASE_URL=<url> npm run db:seed`.
+
+### Convênios e faturamento TISS
+
+Em **Convênios**, cadastre a operadora (registro ANS, valor contratado por sessão e, se houver, o código do prestador) e os dados do prestador (CNPJ e CNES). Vincule o paciente ao convênio com o número da carteirinha, agende a sessão com "Forma de pagamento: Convênio" e, depois de realizada, gere o lote em **Convênios → Faturar**. O XML sai no **Padrão TISS 4.03.00** (ISO-8859-1), pronto para enviar pelo portal da operadora.
+
+- Psicólogo: guia **SP/SADT**, procedimento TUSS **50000470** (sessão de psicoterapia individual por psicólogo), CRP 09, CBO 251510.
+- Psiquiatra/médico: guia de **consulta**, TUSS **10101012**, CRM 06.
+- Sessão online sai com regime 05 (telessaúde); presencial, 01 (ambulatorial). Sem CNES, a guia usa 9999999.
+- Odontologia (guia GTO) e profissionais sem conselho ainda não são faturáveis.
+- O XML é validado nos testes contra os XSD oficiais (`tests/fixtures/tiss-4.03.00`). Operadoras podem exigir autorização prévia, senha ou pedido médico: confira o contrato antes do primeiro envio.
+
+### Videochamada (Google Meet e Zoom)
+
+Ao agendar uma sessão online, escolha Google Meet ou Zoom e o link é gerado na hora (também dá para gerar depois, na tela da sessão). Sem as chaves abaixo, o link é **simulado** e aparece com o selo "Simulado". O título da reunião é genérico ("Sessão · Salutti"): o nome do paciente não vai para o Google nem para o Zoom.
+
+- **Google Meet** (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_CALENDAR_ID`): crie um cliente OAuth no Google Cloud com a Google Calendar API ativada e o escopo `https://www.googleapis.com/auth/calendar.events`, e gere um refresh token da conta do consultório (ex.: OAuth Playground). A reunião é criada como evento na agenda dessa conta.
+- **Zoom** (`ZOOM_ACCOUNT_ID`, `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`): crie um app "Server-to-Server OAuth" no Zoom Marketplace com o escopo `meeting:write:admin`. As reuniões ficam na conta do dono do app, com sala de espera ativada.
+
 ## ✋ Trade-offs deliberados deste protótipo
 
-- **SQLite no dev** em vez de Postgres - zero setup. Schema é compatível com Postgres (basta trocar o provider no `schema.prisma`).
 - **Providers mock** (Asaas/NFE.io/WhatsApp/Receita Saúde) - entrega o fluxo end-to-end sem credenciais. Interfaces e callbacks já desenhados para integração real.
-- **Sem testes automatizados** - foco em demonstrabilidade visual. Schema, providers e domínio já estão isolados o suficiente para receber testes (Vitest/Playwright) sem refactor.
 - **NextAuth não foi usado** - implementação minimalista com `jose` para ficar transparente. Migração é direta.
 - **Sem React Native ainda** - App do Paciente é entregue como Web App responsivo no `/portal/[token]`. PWA / wrappers nativos vêm depois.
 - **TISS / convênios** estão fora deste protótipo (segmentação S3/S4 do discovery). Schema já contempla `Patient.responsibleName` e modelos suficientes para anexar TISS.

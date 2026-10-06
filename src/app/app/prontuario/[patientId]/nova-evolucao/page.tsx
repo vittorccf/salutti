@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { assertInWorkspace } from "@/lib/tenant";
 
 const schema = z.object({
   professionalId: z.string(),
@@ -35,6 +36,11 @@ async function saveNoteAction(formData: FormData) {
     where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null },
   });
   if (!patient) redirect("/app/pacientes");
+  await assertInWorkspace(ctx.workspace.id, {
+    patientId,
+    professionalId: data.professionalId,
+    appointmentId: data.appointmentId || null,
+  });
 
   const aiOutput = await luma.summarizeSession({
     text: data.contentMarkdown,

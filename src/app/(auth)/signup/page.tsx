@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { defaultTemplateFor } from "@/lib/anamnesis-library";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -44,6 +45,9 @@ async function signupAction(formData: FormData) {
     slug = `${slugBase}-${i++}`;
   }
 
+  // Modelo de anamnese padrão do tipo de atendimento escolhido (biblioteca).
+  const template = defaultTemplateFor(parsed.data!.segment);
+
   const user = await db.user.create({
     data: {
       email: parsed.data!.email,
@@ -61,10 +65,10 @@ async function signupAction(formData: FormData) {
       anamnesisTemplates: {
         create: [
           {
-            name: "Anamnese psicológica padrão",
-            specialty: "psicologia",
+            name: template.name,
+            specialty: template.specialty,
             isDefault: true,
-            schemaJson: JSON.stringify(defaultAnamnesis),
+            schemaJson: JSON.stringify(template.schema),
           },
         ],
       },
@@ -82,35 +86,8 @@ async function signupAction(formData: FormData) {
 
   await createSession({ userId: user.id, email: user.email, name: user.name });
   setActiveWorkspaceCookie(workspace.id);
-  redirect("/app");
+  redirect("/app/primeiros-passos");
 }
-
-const defaultAnamnesis = {
-  sections: [
-    {
-      title: "Identificação",
-      questions: [
-        { key: "queixa_principal", label: "Queixa principal", type: "textarea" },
-        { key: "motivacao", label: "Motivação da busca", type: "textarea" },
-      ],
-    },
-    {
-      title: "História clínica",
-      questions: [
-        { key: "antecedentes", label: "Antecedentes pessoais", type: "textarea" },
-        { key: "medicacoes", label: "Medicações em uso", type: "text" },
-        { key: "sono", label: "Qualidade do sono", type: "select", options: ["Boa", "Regular", "Ruim"] },
-      ],
-    },
-    {
-      title: "Contexto",
-      questions: [
-        { key: "familia", label: "Configuração familiar", type: "textarea" },
-        { key: "trabalho", label: "Vida profissional", type: "textarea" },
-      ],
-    },
-  ],
-};
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams;

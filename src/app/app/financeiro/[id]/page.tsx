@@ -12,6 +12,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 import { CheckCircle2, FileSignature, MessageSquareText, Receipt as ReceiptIcon } from "lucide-react";
+import { isPastDue } from "@/lib/dates";
+import { ensureAffected } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +21,12 @@ async function markPaidAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const id = formData.get("id") as string;
-  await db.charge.update({
-    where: { id },
-    data: { status: "paid", paidAt: new Date() },
-  });
+  ensureAffected(
+    await db.charge.updateMany({
+      where: { id, workspaceId: ctx.workspace.id, status: { not: "paid" } },
+      data: { status: "paid", paidAt: new Date() },
+    }),
+  );
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -42,7 +46,7 @@ async function sendChargeReminder(formData: FormData) {
     include: { patient: true, paymentLink: true },
   });
   if (!charge || !charge.patient.phone) return;
-  const overdue = charge.dueDate < new Date();
+  const overdue = isPastDue(charge.dueDate);
   await whatsapp.send({
     workspaceId: ctx.workspace.id,
     recipient: charge.patient.phone,

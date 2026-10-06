@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { parseDateOnly } from "@/lib/dates";
+import { Select } from "@/components/ui/select";
+import { assertInsurancePlan } from "@/lib/tenant";
 
 const schema = z.object({
   fullName: z.string().min(2),
@@ -21,12 +24,15 @@ const schema = z.object({
   address: z.string().optional(),
   notes: z.string().optional(),
   consent: z.string().optional(), // checkbox "on"
+  insurancePlanId: z.string().optional(),
+  insuranceCardNumber: z.string().trim().max(20).optional(),
 });
 
 async function createPatientAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const data = schema.parse(Object.fromEntries(formData.entries()));
+  if (data.insurancePlanId) await assertInsurancePlan(ctx.workspace.id, data.insurancePlanId);
   const patient = await db.patient.create({
     data: {
       workspaceId: ctx.workspace.id,
@@ -34,12 +40,14 @@ async function createPatientAction(formData: FormData) {
       email: data.email || null,
       phone: data.phone || null,
       cpf: data.cpf || null,
-      birthDate: data.birthDate ? new Date(data.birthDate) : null,
+      birthDate: data.birthDate ? parseDateOnly(data.birthDate) : null,
       pronouns: data.pronouns || null,
       responsibleName: data.responsibleName || null,
       emergencyContact: data.emergencyContact || null,
       address: data.address || null,
       notes: data.notes || null,
+      insurancePlanId: data.insurancePlanId || null,
+      insuranceCardNumber: data.insurancePlanId ? data.insuranceCardNumber || null : null,
       ...(data.consent === "on"
         ? {
             consentRecords: {
@@ -67,7 +75,9 @@ async function createPatientAction(formData: FormData) {
   redirect(`/app/pacientes/${patient.id}`);
 }
 
-export default function NewPatientPage() {
+export default async function NewPatientPage() {
+  const ctx = await requireContext();
+  const plans = await db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } });
   return (
     <div className="max-w-3xl space-y-6">
       <Card>
@@ -88,6 +98,22 @@ export default function NewPatientPage() {
               <Field label="Data de nascimento" name="birthDate" type="date" />
               <Field label="Responsável (se menor)" name="responsibleName" />
               <Field label="Contato de emergência" name="emergencyContact" />
+              {plans.length > 0 ? (
+                <>
+                  <div className="space-y-1">
+                    <Label htmlFor="insurancePlanId">Convênio</Label>
+                    <Select id="insurancePlanId" name="insurancePlanId" defaultValue="">
+                      <option value="">Particular</option>
+                      {plans.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <Field label="Número da carteirinha" name="insuranceCardNumber" placeholder="Só para convênio" />
+                </>
+              ) : null}
               <div className="space-y-1 sm:col-span-2">
                 <Label htmlFor="address">Endereço</Label>
                 <Input id="address" name="address" />

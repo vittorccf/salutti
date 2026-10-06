@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: salutti_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Mesmo fuso da Vercel: as datas não podem depender do fuso do servidor.
+      TZ: UTC
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/salutti_e2e
+      # O servidor dos testes ponta a ponta usa este banco em vez do Postgres embutido.
+      E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/salutti_e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npx next lint
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      - name: Migrations aplicam do zero
+        run: npx prisma migrate deploy
+
+      - name: Testes unitários
+        run: npm test
+
+      - name: Navegador do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes ponta a ponta (build de produção)
+        run: npm run test:e2e
+
+      - name: Relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright
+          path: test-results
+          retention-days: 7

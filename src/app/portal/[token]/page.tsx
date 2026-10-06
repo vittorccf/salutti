@@ -14,6 +14,8 @@ import { CalendarDays, CheckCircle2, Smartphone } from "lucide-react";
 import { moodLabels, moodLabel } from "@/lib/mood";
 import { modalityLabel } from "@/lib/labels";
 import { Logo } from "@/components/brand/logo";
+import { dateKeySP, parseDateOnly } from "@/lib/dates";
+import { meetingPlatform } from "@/lib/providers/video";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +38,11 @@ async function submitDailyCardAction(formData: FormData) {
   if (!access || !access.active) return;
 
   await db.dailyCard.upsert({
-    where: { patientId_date: { patientId: access.patientId, date: new Date(data.date) } },
+    where: { patientId_date: { patientId: access.patientId, date: parseDateOnly(data.date) } },
     create: {
       patientId: access.patientId,
       workspaceId: access.patient.workspaceId,
-      date: new Date(data.date),
+      date: parseDateOnly(data.date),
       mood: data.mood,
       sleepHours: data.sleepHours,
       anxiety: data.anxiety,
@@ -121,7 +123,7 @@ export default async function PatientPortalPage({
                     </p>
                     {a.meetingUrl ? (
                       <a className="text-sm font-medium text-primary-strong underline-offset-4 hover:underline" href={a.meetingUrl} target="_blank" rel="noreferrer">
-                        Entrar na sala
+                        Entrar no {meetingPlatform(a.meetingUrl)}
                       </a>
                     ) : null}
                   </div>
@@ -183,7 +185,7 @@ export default async function PatientPortalPage({
               <input type="hidden" name="token" value={token} />
               <div className="space-y-1">
                 <Label htmlFor="date">Data</Label>
-                <Input type="date" name="date" id="date" defaultValue={new Date().toISOString().slice(0, 10)} required />
+                <Input type="date" name="date" id="date" defaultValue={dateKeySP()} required />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="mood">Humor</Label>

@@ -1,6 +1,38 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-06 (migração para o Design System Salutti). Seção abaixo é a mais recente; o restante é da retomada de 2026-09-21.
+> Última atualização deste arquivo: 2026-10-06. A seção "Roadmap executado" é a mais recente; as demais ficam como histórico.
+
+## Roadmap executado (2026-10-06) — PRs encadeados #1 → #11
+
+Cada item tem PR próprio, testes e CI verde (exceto onde indicado). Merge na ordem; o GitHub redireciona a base de cada PR.
+
+| PR | Entrega |
+|---|---|
+| #1 | Design System Salutti (tokens, tema escuro, regras de uso em todas as telas) |
+| #2 | Datas no fuso de São Paulo (`src/lib/dates.ts`) |
+| #3 | Base limpa, sem pacientes/profissionais fictícios |
+| #4 | Segurança: isolamento entre consultórios (IDOR), `AUTH_SECRET` obrigatório em produção |
+| #5 | Google Meet e Zoom no agendamento |
+| #6 | Testes (Vitest + Playwright) e CI no GitHub Actions |
+| #7 | Primeiros passos e biblioteca de modelos de anamnese |
+| #8 | Assinatura da Salutti com Stripe Billing |
+| #9 | Verificação em duas etapas (TOTP) |
+| #10 | Convênios e faturamento TISS 4.03.00 (XML validado contra os XSD oficiais) |
+| #11 | PostgreSQL com migrations (substitui SQLite e o modo demo) |
+
+**Depende do dono do projeto:**
+1. Merges (o agente não faz merge sem revisão).
+2. Vercel/produção: `AUTH_SECRET` (antes do #4) e um Postgres com `DATABASE_URL`, ex.: Neon (antes do #11). Depois do #11: `DATABASE_URL=<url> npm run db:seed` para os logins de demonstração.
+3. Credenciais reais para sair do modo de teste: Google (Meet), Zoom, Stripe (chaves, preços, webhook).
+4. Local: trocar `DATABASE_URL` do `.env` para o Postgres local (ver `.env.example`) e usar `npm run db:local`.
+
+**Ainda não feito (decisão do dono):** WhatsApp Cloud API, Memed/receita digital, app mobile nativo, modo offline para UBS, guia odontológica (GTO) no TISS, Auth.js/SSO.
+
+**Observado:** o build às vezes falha ao baixar as fontes do Google Fonts (`next/font`), de forma intermitente; uma reexecução resolve. Hospedar as fontes localmente (`next/font/local`) elimina o problema.
+
+## Base limpa (2026-10-06) — branch `chore/base-limpa`
+
+Pacientes e profissionais fictícios removidos do banco local (`prisma/prisma/dev.db`) e do `prisma/seed.db` (demo da Vercel), com tudo ligado a eles (sessões, cobranças, prontuários, recibos, NFS-e, consentimentos, mensagens, insights, cartões, portal, auditoria). Ficam usuários, consultórios, vínculos e modelos de anamnese. O `seed.ts` não cria mais dados fictícios. Backup dos dois bancos em `prisma/backup-2026-10-06/` (ignorado pelo Git).
 
 ## Migração para o Design System (2026-10-06) — branch `feat/design-system-v2`
 
@@ -16,7 +48,7 @@ Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a parti
 **Pendente:**
 1. ~~Rodar `npx next build`~~: build completo passou em 2026-10-06.
 2. ~~Espelhar no artifact do DS as mudanças de token~~: publicado em 2026-10-06 (versão 6 do artifact).
-3. **Fuso horário (bug pré-existente, fora do escopo do DS):** campos só-data são gravados como meia-noite UTC e as datas/horas são formatadas no fuso do servidor (UTC na Vercel). Resultado: horários 3h adiantados em produção, cobrança "atrasada" às 21h do dia do vencimento, agenda agrupando dia errado. Corrigir gravação e exibição juntas (ex.: `@date-fns/tz` com `America/Sao_Paulo`); só a exibição desloca os campos só-data em -1 dia.
+3. ~~Fuso horário~~: corrigido na branch `fix/timezone` (`src/lib/dates.ts`): grava, exibe e compara em `America/Sao_Paulo`; campos só-data em 00:00 SP; vencida só a partir do dia seguinte. Testado com o servidor em UTC, São Paulo, Tóquio e Los Angeles (saída idêntica). Registros criados antes pelo formulário (só-data em 00:00 UTC) aparecem um dia antes; o seed não é afetado.
 4. **Insights da LUMA já salvos no banco** mantêm o texto antigo até "Recalcular insights" (ou novo seed).
 5. Botões em `primary-strong` nas páginas públicas estão sobrescritos via `className`; considerar uma variante do `Button`.
 6. Imports sem uso antigos: `fiscal/page.tsx` (`Link`, `Button`, `formatDateTimeBR`, `Landmark`), `equipe/page.tsx` (`Link`), `luma/page.tsx` (`CardDescription`).

@@ -8,8 +8,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { chargeDisplayStatus } from "@/lib/labels";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatBRL, formatDateBR, plural } from "@/lib/utils";
-import { differenceInDays } from "date-fns";
 import { MessageSquareText, Sparkles } from "lucide-react";
+import { daysBetweenSP, startOfTodaySP } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ async function runDunningAction() {
     where: {
       workspaceId: ctx.workspace.id,
       status: { in: ["pending", "overdue"] },
-      dueDate: { lt: new Date() },
+      dueDate: { lt: startOfTodaySP() },
     },
     include: { patient: true, paymentLink: true },
   });
@@ -54,7 +54,7 @@ export default async function DunningPage({
     where: {
       workspaceId: ctx.workspace.id,
       status: { in: ["pending", "overdue"] },
-      dueDate: { lt: new Date() },
+      dueDate: { lt: startOfTodaySP() },
     },
     include: { patient: true },
     orderBy: { dueDate: "asc" },
@@ -114,7 +114,7 @@ export default async function DunningPage({
                   <TR key={c.id}>
                     <TD className="font-medium">{c.patient.fullName}</TD>
                     <TD>{formatDateBR(c.dueDate)}</TD>
-                    <TD>{plural(differenceInDays(new Date(), c.dueDate), "dia", "dias")}</TD>
+                    <TD>{plural(daysBetweenSP(c.dueDate, new Date()), "dia", "dias")}</TD>
                     <TD className="text-right">{formatBRL(c.amount)}</TD>
                     <TD>
                       <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate)} />

@@ -6,11 +6,29 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
 import { plural } from "@/lib/utils";
 import { planTierLabel, segmentLabel } from "@/lib/labels";
+import { videoStatus } from "@/lib/providers/video";
+import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
+import { addLibraryTemplatesAction } from "../_actions/anamnesis";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { PLANS, billingConfigured, type PaidPlan } from "@/lib/providers/billing";
+import { billingPortalAction, subscribeAction } from "../_actions/billing";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+const AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
+  ok: { tone: "ok", text: "Assinatura confirmada. O plano é atualizado em instantes." },
+  simulada: { tone: "ok", text: "Plano ativado em modo de teste (sem cobrança)." },
+  erro: { tone: "erro", text: "Não foi possível abrir a cobrança. Confira as chaves do Stripe e tente de novo." },
+  "sem-permissao": { tone: "erro", text: "Só quem é dono do consultório pode mudar o plano." },
+};
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ assinatura?: string }> }) {
   const ctx = await requireContext();
+  const { assinatura } = await searchParams;
+  const aviso = assinatura && Object.hasOwn(AVISOS, assinatura) ? AVISOS[assinatura] : null;
+  const isOwner = ctx.role === "owner";
   const templates = await db.anamnesisTemplate.findMany({
     where: { workspaceId: ctx.workspace.id },
   });
@@ -19,9 +37,17 @@ export default async function SettingsPage() {
     {
       name: "Stripe Billing",
       desc: "Assinaturas SaaS + cartão recorrente",
-      status: process.env.STRIPE_SECRET_KEY?.startsWith("sk_") && !process.env.STRIPE_SECRET_KEY.includes("mock")
-        ? "real"
-        : "sandbox",
+      status: billingConfigured() ? "real" : "sandbox",
+    },
+    {
+      name: "Google Meet",
+      desc: "Link de videochamada pelo Google Agenda",
+      status: videoStatus.google_meet(),
+    },
+    {
+      name: "Zoom",
+      desc: "Link de videochamada pela API do Zoom",
+      status: videoStatus.zoom(),
     },
     {
       name: "Asaas / Iugu",
@@ -113,8 +139,8 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle>Modelos de anamnese</CardTitle>
             <CardDescription>
-              {plural(templates.length, "modelo ativo", "modelos ativos")}. Por enquanto a edição é feita pelo Prisma
-              Studio (<code>npx prisma studio</code>).
+              {plural(templates.length, "modelo ativo", "modelos ativos")}. Adicione outros da biblioteca abaixo; a edição
+              das perguntas ainda é feita pelo Prisma Studio (<code>npx prisma studio</code>).
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -127,6 +153,22 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
+            <form action={addLibraryTemplatesAction} className="mt-4 flex flex-wrap items-end gap-2">
+              <input type="hidden" name="back" value="ajustes" />
+              <div className="space-y-1">
+                <Label htmlFor="slug">Biblioteca de modelos</Label>
+                <Select id="slug" name="slug" className="w-auto">
+                  {ANAMNESIS_LIBRARY.filter((t) => !templates.some((x) => x.name === t.name)).map((t) => (
+                    <option key={t.slug} value={t.slug}>
+                      {t.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <Button type="submit" variant="outline" disabled={ANAMNESIS_LIBRARY.every((t) => templates.some((x) => x.name === t.name))}>
+                Adicionar da biblioteca
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
@@ -135,21 +177,63 @@ export default async function SettingsPage() {
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-primary-strong" aria-hidden /> Plano Salutti
             </CardTitle>
-            <CardDescription>Teste grátis de 15 dias, sem cartão · Plano atual: {planTierLabel(ctx.workspace.planTier)}</CardDescription>
+            <CardDescription>
+              Plano atual: <strong className="text-foreground">{planTierLabel(ctx.workspace.planTier)}</strong>
+              {billingConfigured() ? " · cobrança pelo Stripe" : " · Stripe em modo de teste: a ativação é simulada"}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3 text-sm">
-            <div className="rounded-md border p-3">
-              <p className="font-semibold">Starter - R$ 49/mês</p>
-              <p className="text-muted-foreground">Solo · até 50 pacientes ativos</p>
+          <CardContent className="space-y-3 text-sm">
+            {aviso ? (
+              <p
+                role={aviso.tone === "erro" ? "alert" : "status"}
+                className={
+                  aviso.tone === "erro"
+                    ? "rounded-md bg-destructive/10 p-3 text-destructive-strong"
+                    : "rounded-md bg-success/10 p-3 text-success-strong"
+                }
+              >
+                {aviso.text}
+              </p>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-3">
+              {(Object.keys(PLANS) as PaidPlan[]).map((key) => {
+                const p = PLANS[key];
+                const current = ctx.workspace.planTier === key;
+                return (
+                  <div key={key} className={current ? "rounded-md border border-primary p-3" : "rounded-md border p-3"}>
+                    <p className="font-semibold">
+                      {p.name} · {p.price}
+                    </p>
+                    <p className="text-muted-foreground">{p.description}</p>
+                    {current ? (
+                      <Badge variant="success" className="mt-3">Plano atual</Badge>
+                    ) : isOwner ? (
+                      <form action={subscribeAction} className="mt-3">
+                        <input type="hidden" name="plan" value={key} />
+                        <Button type="submit" size="sm" variant={key === "pro" ? "default" : "outline"}>
+                          {billingConfigured() ? `Assinar ${p.name}` : `Ativar ${p.name} (simulação)`}
+                        </Button>
+                      </form>
+                    ) : null}
+                  </div>
+                );
+              })}
+              <div className="rounded-md border p-3">
+                <p className="font-semibold">Clínica · sob consulta</p>
+                <p className="text-muted-foreground">Multiprofissional · TISS · vários CNPJs</p>
+                <Button size="sm" variant="outline" className="mt-3" asChild>
+                  <a href="mailto:contato@salutti.app?subject=Plano%20Cl%C3%ADnica">Falar com a equipe</a>
+                </Button>
+              </div>
             </div>
-            <div className="rounded-md border p-3 border-primary">
-              <p className="font-semibold">Pro - R$ 129/mês</p>
-              <p className="text-muted-foreground">Solo + IA preditiva ilimitada</p>
-            </div>
-            <div className="rounded-md border p-3">
-              <p className="font-semibold">Clínica - sob consulta</p>
-              <p className="text-muted-foreground">Multi-profissional · TISS · multi-CNPJ</p>
-            </div>
+            {isOwner && billingConfigured() && (ctx.workspace.planTier === "starter" || ctx.workspace.planTier === "pro") ? (
+              <form action={billingPortalAction}>
+                <Button type="submit" variant="outline" size="sm">
+                  Gerenciar assinatura e faturas
+                </Button>
+              </form>
+            ) : null}
+            {!isOwner ? <p className="text-muted-foreground">Só quem é dono do consultório pode mudar o plano.</p> : null}
           </CardContent>
         </Card>
       </div>

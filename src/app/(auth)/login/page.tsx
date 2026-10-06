@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { createSession, verifyPassword, getSession, setActiveWorkspaceCookie } from "@/lib/auth";
+import { createSession, verifyPassword, getSession, setActiveWorkspaceCookie, startTwoFactor } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,12 @@ async function loginAction(formData: FormData) {
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!ok) return redirect("/login?error=Credenciais+inválidas");
 
+  // Com verificação em duas etapas, a sessão só nasce depois do código.
+  if (user.totpEnabledAt) {
+    await startTwoFactor(user.id);
+    redirect("/login/verificar");
+  }
+
   await createSession({ userId: user.id, email: user.email, name: user.name });
   const firstWs = user.memberships[0];
   if (firstWs) setActiveWorkspaceCookie(firstWs.workspaceId);
@@ -53,7 +59,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <CardContent>
           <form action={loginAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email ou usuário</Label>
+              <Label htmlFor="email">E-mail ou usuário</Label>
               <Input id="email" name="email" type="text" required placeholder="voce@clinica.com.br" defaultValue="guilherme@salutti.dev" />
             </div>
             <div className="space-y-2">
