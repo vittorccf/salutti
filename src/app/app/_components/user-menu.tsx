@@ -1,7 +1,7 @@
 "use client";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { ChevronDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
+import { ChevronDown, LogOut, Moon, Settings, ShieldCheck, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import {
@@ -19,6 +19,7 @@ export const UserMenu = ({ name, email, avatarUrl }: Props) => {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const t = useTranslations("common.userMenu");
+  const tNav = useTranslations("common.nav");
 
   return (
     <DropdownMenu>
@@ -39,6 +40,11 @@ export const UserMenu = ({ name, email, avatarUrl }: Props) => {
         <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
           {isDark ? <Sun /> : <Moon />}
           {isDark ? t("lightTheme") : t("darkTheme")}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/app/ajustes">
+            <Settings /> {tNav("settings")}
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/app/conta/seguranca">
