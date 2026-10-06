@@ -20,7 +20,7 @@ export const accountTypeLabel = (v: string) => (isAccountType(v) ? ACCOUNT_TYPES
 export const SEGMENTS: Record<AccountType, { value: string; label: string }[]> = {
   autonomo: [
     { value: "solo_psicologo", label: "Psicologia (com CRP)" },
-    { value: "solo_psicanalista", label: "Psicanálise ou terapia (sem CRP)" },
+    { value: "solo_psicanalista", label: "Psicanálise ou outra terapia (sem exigência de CRP)" },
     { value: "odonto", label: "Odontologia" },
   ],
   clinica: [
@@ -43,6 +43,7 @@ export function autonomoBlockers({ activeProfessionals, members }: { activeProfe
   const reasons: string[] = [];
   if (activeProfessionals > 1)
     reasons.push(`há ${activeProfessionals} profissionais ativos (desative os outros e deixe só um)`);
-  if (members > 1) reasons.push(`há ${members} usuários com acesso (peça ao suporte para remover os acessos extras)`);
+  if (members > 1)
+    reasons.push(`há ${members} usuários com acesso clínico ou de gestão (recepção e financeiro podem ficar; peça ao suporte para remover os outros)`);
   return reasons;
 }

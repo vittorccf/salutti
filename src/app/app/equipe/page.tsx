@@ -40,11 +40,15 @@ const schema = z.object({
 const AUTONOMO_LIMIT =
   "Conta de profissional autônomo tem um profissional ativo. Para montar equipe, mude para clínica em Ajustes.";
 
+const canManage = (role: string) => role === "owner" || role === "admin";
+const NO_PERMISSION = "Só o dono ou um administrador gerencia os profissionais.";
+
 const activeCount = (workspaceId: string) => db.professional.count({ where: { workspaceId, active: true } });
 
 async function createProfessionalAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
   const ctx = await requireContext();
+  if (!canManage(ctx.role)) return { erro: NO_PERMISSION };
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { erro: "Confira o nome, o tipo de profissional e o valor da hora." };
   const data = parsed.data;
@@ -88,6 +92,7 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
 async function toggleProfessionalAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
+  if (!canManage(ctx.role)) redirect("/app/equipe?aviso=sem-permissao");
   const professionalId = String(formData.get("professionalId"));
   await assertInWorkspace(ctx.workspace.id, { professionalId });
   const current = await db.professional.findFirstOrThrow({ where: { id: professionalId, workspaceId: ctx.workspace.id } });
@@ -118,7 +123,8 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   });
   const autonomo = ctx.workspace.accountType === "autonomo";
   const active = professionals.filter((p) => p.active).length;
-  const canAdd = !autonomo || active === 0;
+  const manage = canManage(ctx.role);
+  const canAdd = manage && (!autonomo || active === 0);
 
   return (
     <div className="space-y-6">
@@ -132,9 +138,9 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
             : "Inclui psicanalistas, terapeutas e outras profissões sem registro de conselho."}
         </p>
       </header>
-      {aviso === "limite" ? (
+      {aviso === "limite" || aviso === "sem-permissao" ? (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
-          {AUTONOMO_LIMIT}
+          {aviso === "limite" ? AUTONOMO_LIMIT : NO_PERMISSION}
         </p>
       ) : null}
 
@@ -183,12 +189,14 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                         <Badge variant={p.active ? "success" : "muted"}>{p.active ? "Ativo" : "Inativo"}</Badge>
                       </TD>
                       <TD className="text-right">
+                        {manage ? (
                         <form action={toggleProfessionalAction}>
                           <input type="hidden" name="professionalId" value={p.id} />
                           <Button type="submit" size="sm" variant="ghost" aria-label={`${p.active ? "Desativar" : "Reativar"} ${p.fullName}`}>
                             {p.active ? "Desativar" : "Reativar"}
                           </Button>
                         </form>
+                        ) : null}
                       </TD>
                     </TR>
                   ))
@@ -198,7 +206,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
           </CardContent>
         </Card>
 
-        {!canAdd ? (
+        {!manage ? null : !canAdd ? (
           <Card>
             <CardHeader>
               <CardTitle>Conta de profissional autônomo</CardTitle>
@@ -286,7 +294,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                   <Input name="hourlyRate" id="hourlyRate" type="number" step="0.01" />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="birthDate">Aniversário</Label>
+                  <Label htmlFor="birthDate">Aniversário (lembrete no painel)</Label>
                   <Input name="birthDate" id="birthDate" type="date" />
                 </div>
               </div>

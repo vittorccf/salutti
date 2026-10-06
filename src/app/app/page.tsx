@@ -25,6 +25,23 @@ import { upcomingBirthdays, whenLabel, type BirthdayPerson } from "@/lib/birthda
 
 export const dynamic = "force-dynamic";
 
+// Saber quem é paciente já é dado sensível: recepção e financeiro não veem; na clínica, cada profissional vê
+// só quem ele atende (cadastro profissional com o mesmo e-mail do usuário); a pessoa pode desligar em Ajustes.
+async function patientBirthdaysFor(ctx: Awaited<ReturnType<typeof requireContext>>) {
+  if (!ctx.user.showPatientBirthdays || ctx.role === "receptionist" || ctx.role === "financial") return [];
+  const base = { workspaceId: ctx.workspace.id, active: true, deletedAt: null, anonymized: false, birthDate: { not: null } };
+  const where =
+    ctx.workspace.accountType === "clinica"
+      ? {
+          ...base,
+          appointments: {
+            some: { professional: { email: { equals: ctx.user.email, mode: "insensitive" as const } } },
+          },
+        }
+      : base;
+  return db.patient.findMany({ where, select: { id: true, fullName: true, birthDate: true } });
+}
+
 export default async function DashboardPage() {
   const ctx = await requireContext();
   const wsId = ctx.workspace.id;
@@ -74,10 +91,7 @@ export default async function DashboardPage() {
     }),
     db.patient.count({ where: { workspaceId: wsId, active: true, deletedAt: null } }),
     db.aiInsight.findMany({ where: { workspaceId: wsId }, orderBy: { createdAt: "desc" }, take: 4 }),
-    db.patient.findMany({
-      where: { workspaceId: wsId, active: true, deletedAt: null, anonymized: false, birthDate: { not: null } },
-      select: { id: true, fullName: true, birthDate: true },
-    }),
+    patientBirthdaysFor(ctx),
     db.professional.findMany({
       where: { workspaceId: wsId, active: true, birthDate: { not: null } },
       select: { id: true, fullName: true, email: true, birthDate: true },
@@ -178,7 +192,7 @@ export default async function DashboardPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {b.kind === "patient" ? "Paciente" : b.kind === "professional" ? "Equipe" : "Seu aniversário"} · {b.dayMonth}
-                      {b.turning > 0 ? ` · ${b.turning} anos` : ""}
+                      {b.kind !== "patient" && b.turning > 0 ? ` · ${b.turning} anos` : ""}
                     </p>
                   </div>
                   <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-primary-strong" : "text-muted-foreground"}`}>
