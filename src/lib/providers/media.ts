@@ -1,0 +1,24 @@
+// Armazenamento das imagens enviadas. Hoje: tabela MediaFile no Postgres (bytea), simples e sem outro serviço.
+// Para um storage de objetos (ex.: Vercel Blob privado), só o corpo destas funções muda.
+import { db } from "@/lib/db";
+
+export type MediaKind = "user_avatar" | "workspace_banner" | "patient_photo";
+export type MediaOwner = { userId?: string; workspaceId?: string };
+
+export const media = {
+  async save(kind: MediaKind, owner: MediaOwner, image: { mime: string; bytes: Buffer }) {
+    const created = await db.mediaFile.create({
+      data: { kind, ...owner, mime: image.mime, size: image.bytes.length, bytes: image.bytes },
+      select: { id: true },
+    });
+    return created.id;
+  },
+
+  async read(id: string) {
+    return db.mediaFile.findUnique({ where: { id } });
+  },
+
+  async remove(id: string | null | undefined) {
+    if (id) await db.mediaFile.deleteMany({ where: { id } });
+  },
+};

@@ -7,6 +7,8 @@ import { EmailInput } from "@/components/forms/email-input";
 import { PhoneInput } from "@/components/forms/phone-input";
 import { AddressFields } from "@/components/forms/address-fields";
 import { dateKeySP } from "@/lib/dates";
+import { ImageUpload } from "@/components/forms/image-upload";
+import { mediaUrl } from "@/lib/media";
 
 // Campos do paciente, usados no cadastro e na edição.
 export function PatientFields({ patient, plans }: { patient?: Patient | null; plans: InsurancePlan[] }) {
@@ -86,6 +88,14 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
         <Label htmlFor="notes">Observações administrativas</Label>
         <Textarea id="notes" name="notes" defaultValue={p?.notes ?? ""} placeholder="Só dados administrativos. A evolução clínica vai no prontuário." />
       </div>
+      <ImageUpload
+        name="photo"
+        label="Foto do paciente (opcional)"
+        shape="square"
+        currentUrl={mediaUrl(p?.photoId)}
+        hint="Ajuda a reconhecer quem chega. Aparece só na ficha, para a equipe deste consultório."
+        consentLabel="O paciente (ou o responsável, se for menor de idade) autorizou o uso da foto para identificação."
+      />
     </div>
   );
 }

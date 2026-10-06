@@ -15,7 +15,11 @@ async function signup(page: Page, email: string) {
 }
 
 async function logout(page: Page) {
-  await page.getByRole("button", { name: /Conta 2FA/ }).click();
+  // O menu é um componente cliente: no servidor de desenvolvimento o clique pode chegar antes da hidratação.
+  await expect(async () => {
+    await page.getByRole("button", { name: /Conta 2FA/ }).click();
+    await expect(page.getByRole("menuitem", { name: "Sair" })).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 30_000 });
   await page.getByRole("menuitem", { name: "Sair" }).click();
   await expect(page).toHaveURL(/\/login/);
 }

@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { modalityLabel } from "@/lib/labels";
 import { ensureAffected } from "@/lib/tenant";
 import { isSimulatedMeeting, meetingPlatform, video } from "@/lib/providers/video";
+import { cancelSessionMeeting, createSessionMeeting, MEET_ISSUE_TEXT, MeetAccountError, type MeetIssue } from "@/lib/video-connections";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
@@ -28,6 +29,16 @@ async function setStatusAction(formData: FormData) {
   const status = String(formData.get("status"));
   if (!APPOINTMENT_STATUSES.includes(status as (typeof APPOINTMENT_STATUSES)[number])) notFound();
   ensureAffected(await db.appointment.updateMany({ where: { id, workspaceId: ctx.workspace.id }, data: { status } }));
+  if (status === "cancelled") {
+    const appt = await db.appointment.findFirst({ where: { id, workspaceId: ctx.workspace.id } });
+    if (appt?.meetingEventId) {
+      await cancelSessionMeeting(appt);
+      await db.appointment.updateMany({
+        where: { id, workspaceId: ctx.workspace.id },
+        data: { meetingUrl: null, meetingEventId: null, meetingOwnerId: null },
+      });
+    }
+  }
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -47,13 +58,19 @@ async function createMeetingAction(formData: FormData) {
   const appt = await db.appointment.findFirst({ where: { id, workspaceId: ctx.workspace.id, modality: "online" } });
   if (!appt) notFound();
   try {
-    const meeting = await video.createMeeting({
+    const meeting = await createSessionMeeting({
+      workspaceId: ctx.workspace.id,
+      professionalId: appt.professionalId,
+      userId: ctx.user.id,
       provider,
       topic: "Sessão · Salutti",
       startsAt: appt.startsAt,
       durationMinutes: Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000),
     });
-    await db.appointment.updateMany({ where: { id, workspaceId: ctx.workspace.id }, data: { meetingUrl: meeting.url } });
+    await db.appointment.updateMany({
+      where: { id, workspaceId: ctx.workspace.id },
+      data: { meetingUrl: meeting.url, meetingEventId: meeting.eventId, meetingOwnerId: meeting.ownerId },
+    });
     await recordAudit({
       workspaceId: ctx.workspace.id,
       userId: ctx.user.id,
@@ -63,6 +80,7 @@ async function createMeetingAction(formData: FormData) {
       metadata: { provider, simulated: meeting.simulated },
     });
   } catch (e) {
+    if (e instanceof MeetAccountError) redirect(`/app/agenda/${id}?aviso=${e.issue}`);
     console.error("[video] falha ao criar reunião", e);
     redirect(`/app/agenda/${id}?aviso=video`);
   }
@@ -161,9 +179,9 @@ export default async function AppointmentDetailPage({
         </div>
       </header>
 
-      {aviso === "video" ? (
+      {aviso && Object.hasOwn(MEET_ISSUE_TEXT, aviso) ? (
         <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive-strong">
-          Não foi possível gerar o link da videochamada. Confira as credenciais em Ajustes e tente gerar de novo.
+          {MEET_ISSUE_TEXT[aviso as MeetIssue]}
         </p>
       ) : null}
 

@@ -103,6 +103,9 @@ test("perfil e dados do consultório em Ajustes (CEP preenche o endereço)", asy
   await page.getByRole("button", { name: "Salvar perfil" }).click();
   await expect(page.getByText("Perfil salvo.")).toBeVisible();
 
+  // Google Meet sem o app OAuth configurado: card explica que o link é simulado.
+  await expect(page.getByText("A conexão com o Google ainda não foi ativada na Salutti.", { exact: false })).toBeVisible();
+
   await page.reload();
   await expect(page.locator("#ws-street")).toHaveValue("Praça da Sé");
   await expect(page.locator("#ws-addressNumber")).toHaveValue("1");
