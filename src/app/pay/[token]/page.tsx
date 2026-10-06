@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
 import { CheckCircle2 } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,7 @@ export default async function PublicPaymentPage({
     <main className="min-h-screen bg-gradient-to-br from-accent/20 to-background grid place-items-center p-4">
       <Card className="w-full max-w-[440px]">
         <CardHeader className="text-center">
-          <Logo variant="icon" size={48} className="mx-auto" />
+          <BrandLogo variant="symbol" height={48} className="mx-auto" />
           <CardTitle>{t("title", { workspace: link.workspace.name })}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>

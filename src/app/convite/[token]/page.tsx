@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -7,7 +8,6 @@ import { recordAudit } from "@/lib/audit";
 import { acceptInvitation, findInvitation } from "@/lib/invitations";
 import { getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
-import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -76,7 +76,7 @@ export default async function InvitePage({
       </div>
       <Card className="w-full max-w-[440px]">
         <CardHeader className="text-center">
-          <Logo variant="icon" size={48} className="mx-auto" />
+          <BrandLogo variant="symbol" height={48} className="mx-auto" />
           {inv ? (
             <>
               <CardTitle>{t("title", { workspace: inv.workspace.name })}</CardTitle>

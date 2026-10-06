@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
@@ -12,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, CheckCircle2, Smartphone } from "lucide-react";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
-import { Logo } from "@/components/brand/logo";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import { meetingPlatform } from "@/lib/providers/video";
 
@@ -96,7 +96,7 @@ export default async function PatientPortalPage({
       <header className="border-b bg-background/80 backdrop-blur sticky top-0">
         <div className="container flex flex-wrap items-center justify-between gap-2 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <Logo size={22} />
+            <BrandLogo height={26} />
             <span className="text-sm font-medium text-muted-foreground">{t("header")}</span>
           </Link>
           <Badge variant="muted">{patient.workspace.name}</Badge>
