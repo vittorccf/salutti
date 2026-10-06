@@ -85,6 +85,14 @@ Para integrações reais (Stripe, Asaas, NFE.io, WhatsApp, Receita Saúde): troc
 
 **Em produção, `AUTH_SECRET` é obrigatório** (32+ caracteres aleatórios, ex.: `openssl rand -base64 32`). Sem ele o login falha com erro explícito.
 
+### Assinatura da Salutti (Stripe Billing)
+
+Em Ajustes → Plano Salutti, quem é dono do consultório assina Starter ou Pro. Com `STRIPE_SECRET_KEY` real, o botão abre o Checkout do Stripe e o webhook atualiza o plano; sem ela, a ativação é simulada (sem cobrança) e aparece como tal.
+
+1. No Stripe, crie dois preços recorrentes mensais (Starter R$ 49, Pro R$ 129) e preencha `STRIPE_PRICE_STARTER` e `STRIPE_PRICE_PRO`.
+2. Crie o endpoint de webhook `https://<seu-domínio>/api/stripe/webhook` com os eventos `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted`, e preencha `STRIPE_WEBHOOK_SECRET`.
+3. Ative o Customer Portal do Stripe para o botão "Gerenciar assinatura e faturas".
+
 ### Videochamada (Google Meet e Zoom)
 
 Ao agendar uma sessão online, escolha Google Meet ou Zoom e o link é gerado na hora (também dá para gerar depois, na tela da sessão). Sem as chaves abaixo, o link é **simulado** e aparece com o selo "Simulado". O título da reunião é genérico ("Sessão · Salutti"): o nome do paciente não vai para o Google nem para o Zoom.
