@@ -22,7 +22,7 @@ Abra http://localhost:3000 e use as credenciais demo:
 | `guilherme@salutti.dev`        | `salutti123` | Consultório psicólogo autônomo (Goiânia)           |
 | `kris@salutti.dev`             | `salutti123` | UBS Turvânia · clínica odontológica                |
 
-**Portal do paciente (Ana Beatriz):** http://localhost:3000/portal/ana-demo-token-please-rotate
+Os consultórios começam **sem pacientes nem profissionais** (base limpa). Cadastre um profissional em Profissionais e um paciente em Pacientes; o link do portal do paciente é gerado na ficha dele.
 
 **Link público de pagamento:** /pay/&lt;token&gt; (gerado para cada cobrança).
 
@@ -68,7 +68,7 @@ Detalhes em `ARCHITECTURE.md`.
 npm run dev           # dev server
 npm run build         # build produção
 npm run db:push       # sincronizar schema
-npm run db:seed       # repovoar dados demo
+npm run db:seed       # recria usuários, consultórios e modelos de anamnese (sem pacientes)
 npm run db:reset      # nuke + seed
 npx prisma studio     # GUI dos dados
 ```
