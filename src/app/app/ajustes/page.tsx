@@ -20,6 +20,7 @@ import { AddressFields } from "@/components/forms/address-fields";
 import { Input } from "@/components/ui/input";
 import { ACCOUNT_TYPES, autonomoBlockers, isAccountType } from "@/lib/account";
 import { dateKeySP } from "@/lib/dates";
+import { LOCALE_LABELS, LOCALES } from "@/i18n/config";
 import { ImageUpload } from "@/components/forms/image-upload";
 import { googleOAuthConfigured } from "@/lib/providers/google-oauth";
 import { disconnectGoogleAction } from "../_actions/integrations";
@@ -139,6 +140,18 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <Label htmlFor="profile-birthDate">Aniversário</Label>
                 <Input id="profile-birthDate" name="birthDate" type="date" defaultValue={ctx.user.birthDate ? dateKeySP(ctx.user.birthDate) : ""} />
                 <p className="text-xs text-muted-foreground">Usado só para o lembrete no painel da equipe.</p>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="profile-locale">Idioma</Label>
+                <Select id="profile-locale" name="locale" defaultValue={ctx.user.locale ?? ""}>
+                  <option value="">Automático (idioma do navegador)</option>
+                  {LOCALES.map((l) => (
+                    <option key={l} value={l} lang={l}>
+                      {LOCALE_LABELS[l]}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-xs text-muted-foreground">Vale para todo o sistema. Valores continuam em reais (R$).</p>
               </div>
               <label className="flex items-start gap-2 text-sm">
                 <input

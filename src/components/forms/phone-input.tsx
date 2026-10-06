@@ -6,18 +6,20 @@ import { ChevronDown, Search } from "lucide-react";
 import { countryOptions, DEFAULT_COUNTRY, isContactPhone, type CountryCode } from "@/lib/phone";
 import { Flag } from "@/components/ui/flag";
 import { cn } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
 
 type Props = {
   id: string;
   name: string;
   defaultValue?: string | null; // E.164
   required?: boolean;
-  locale?: string;
   placeholder?: string;
 };
 
 // Campo de telefone com país (bandeira + DDI), máscara do país enquanto digita e valor enviado em E.164.
-export function PhoneInput({ id, name, defaultValue, required, locale = "pt-BR", placeholder }: Props) {
+export function PhoneInput({ id, name, defaultValue, required, placeholder }: Props) {
+  const t = useTranslations("common.phone");
+  const locale = useLocale();
   const initial = defaultValue ? parsePhoneNumberFromString(defaultValue, DEFAULT_COUNTRY) : undefined;
   const [country, setCountry] = useState<CountryCode>((initial?.country as CountryCode) ?? DEFAULT_COUNTRY);
   // Número antigo que não se interpreta (ex.: "ligar p/ mãe") aparece como está, para não ser apagado sem aviso.
@@ -101,7 +103,7 @@ export function PhoneInput({ id, name, defaultValue, required, locale = "pt-BR",
         <Popover.Root open={open} onOpenChange={setOpen}>
           <Popover.Trigger
             type="button"
-            aria-label={`País do telefone: ${current?.name ?? country} (${current?.dial ?? ""})`}
+            aria-label={t("countryButton", { country: current?.name ?? country, dial: current?.dial ?? "" })}
             className="flex h-full shrink-0 items-center gap-1.5 rounded-l-md border-r px-2.5 hover:bg-accent focus-visible:outline-none"
           >
             <Flag code={country} />
@@ -124,8 +126,8 @@ export function PhoneInput({ id, name, defaultValue, required, locale = "pt-BR",
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={onSearchKey}
-                  placeholder="Buscar país ou DDI"
-                  aria-label="Buscar país ou DDI"
+                  placeholder={t("search")}
+                  aria-label={t("search")}
                   role="combobox"
                   aria-expanded="true"
                   aria-controls={listId}
@@ -134,7 +136,7 @@ export function PhoneInput({ id, name, defaultValue, required, locale = "pt-BR",
                   className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
               </div>
-              <ul id={listId} role="listbox" aria-label="Países" className="mt-2 max-h-64 overflow-y-auto">
+              <ul id={listId} role="listbox" aria-label={t("countries")} className="mt-2 max-h-64 overflow-y-auto">
                 {filtered.map((o, i) => (
                   <li
                     key={o.code}
@@ -155,7 +157,7 @@ export function PhoneInput({ id, name, defaultValue, required, locale = "pt-BR",
                   </li>
                 ))}
               </ul>
-              {filtered.length === 0 ? <p className="px-2 py-1.5 text-sm text-muted-foreground">Nenhum país encontrado.</p> : null}
+              {filtered.length === 0 ? <p className="px-2 py-1.5 text-sm text-muted-foreground">{t("noCountry")}</p> : null}
             </Popover.Content>
           </Popover.Portal>
         </Popover.Root>
@@ -180,7 +182,7 @@ export function PhoneInput({ id, name, defaultValue, required, locale = "pt-BR",
       <input type="hidden" name={`${name}Country`} value={country} />
       {showError ? (
         <p id={`${id}-erro`} className="mt-1 text-xs text-destructive-strong">
-          Número incompleto ou inválido para {current?.name ?? "o país escolhido"}.
+          {t("invalid", { country: current?.name ?? country })}
         </p>
       ) : null}
     </div>

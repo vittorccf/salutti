@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "description": "Gestão para profissionais de saúde mental: agenda, prontuário, financeiro, fiscal e IA, em conformidade com a LGPD."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Pacientes",
+    "schedule": "Agenda",
+    "records": "Prontuário",
+    "finance": "Financeiro",
+    "insurance": "Convênios",
+    "tax": "Fiscal",
+    "tobi": "TOBI · IA",
+    "communication": "Comunicação",
+    "team": "Profissionais",
+    "lgpd": "LGPD",
+    "settings": "Ajustes"
+  },
+  "layout": {
+    "home": "Início",
+    "trialDays": "Teste grátis: {days, plural, one {# dia restante} other {# dias restantes}}",
+    "plan": "Plano",
+    "compliance": "LGPD ativo · auditoria habilitada · multi-tenant",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "menu": "Menu",
+    "workspace": "Consultório ativo"
+  },
+  "userMenu": {
+    "lightTheme": "Ativar tema claro",
+    "darkTheme": "Ativar tema escuro",
+    "security": "Segurança da conta",
+    "logout": "Sair"
+  },
+  "actions": {
+    "save": "Salvar",
+    "saveChanges": "Salvar alterações",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "back": "Voltar",
+    "continue": "Continuar",
+    "search": "Buscar",
+    "seeAll": "Ver todos",
+    "close": "Fechar"
+  },
+  "greeting": {
+    "morning": "Bom dia",
+    "afternoon": "Boa tarde",
+    "evening": "Boa noite"
+  },
+  "count": {
+    "patients": "{count, plural, one {# paciente} other {# pacientes}}",
+    "sessions": "{count, plural, one {# sessão} other {# sessões}}",
+    "professionals": "{count, plural, one {# profissional} other {# profissionais}}",
+    "charges": "{count, plural, one {# cobrança} other {# cobranças}}",
+    "records": "{count, plural, one {# registro} other {# registros}}",
+    "templates": "{count, plural, one {# modelo ativo} other {# modelos ativos}}"
+  },
+  "labels": {
+    "noteType": { "anamnese": "Anamnese", "evolucao": "Evolução", "plano_terapeutico": "Plano terapêutico", "alta": "Alta" },
+    "paymentMethod": { "pix": "Pix", "card": "Cartão", "boleto": "Boleto", "dinheiro": "Dinheiro" },
+    "modality": { "presencial": "Presencial", "online": "Online" },
+    "planTier": { "trial": "Teste grátis", "starter": "Starter", "pro": "Pro", "enterprise": "Clínica" },
+    "segment": {
+      "solo_psicologo": "Psicologia",
+      "solo_psicanalista": "Psicanálise ou terapia",
+      "clinica": "Multiprofissional",
+      "ubs": "UBS",
+      "odonto": "Odontologia"
+    },
+    "segmentOption": {
+      "solo_psicologo": "Psicologia (com CRP)",
+      "solo_psicanalista": "Psicanálise ou outra terapia (sem exigência de CRP)",
+      "odonto": "Odontologia",
+      "clinica": "Clínica multiprofissional",
+      "ubs": "UBS ou serviço público",
+      "odonto_clinica": "Clínica odontológica"
+    },
+    "accountType": { "autonomo": "Profissional autônomo", "clinica": "Clínica" },
+    "accountTypeDescription": {
+      "autonomo": "Você atende sozinho, no consultório ou online. Um profissional na conta.",
+      "clinica": "Equipe com vários profissionais, recepção e dados da empresa (CNPJ)."
+    },
+    "professionalType": {
+      "psicologo": "Psicólogo",
+      "psicanalista": "Psicanalista",
+      "terapeuta": "Terapeuta",
+      "psiquiatra": "Psiquiatra",
+      "dentista": "Dentista",
+      "medico": "Médico"
+    },
+    "guideType": { "consulta": "Guia de consulta", "sp_sadt": "Guia SP/SADT" },
+    "consentPurpose": {
+      "tutela_saude": "Tutela da saúde",
+      "comunicacao_marketing": "Comunicação e marketing",
+      "telemedicina": "Telemedicina",
+      "compartilhamento": "Compartilhamento de dados",
+      "foto_identificacao": "Foto para identificação"
+    },
+    "legalBasis": {
+      "consentimento": "Consentimento",
+      "tutela_saude": "Tutela da saúde",
+      "obrigacao_legal": "Obrigação legal",
+      "execucao_contrato": "Execução de contrato"
+    },
+    "mood": { "1": "Muito mal", "2": "Mal", "3": "Neutro", "4": "Bem", "5": "Muito bem" },
+    "role": {
+      "owner": "Dono",
+      "admin": "Administrador",
+      "professional": "Profissional",
+      "financial": "Financeiro",
+      "receptionist": "Recepção"
+    }
+  },
+  "status": {
+    "appointment": { "scheduled": "Agendada", "confirmed": "Confirmada", "done": "Realizada", "no_show": "Faltou", "cancelled": "Cancelada" },
+    "charge": { "pending": "Pendente", "paid": "Pago", "overdue": "Atrasado", "cancelled": "Cancelado", "refunded": "Estornado" },
+    "receitaSaude": { "queued": "Na fila", "sent": "Aguardando confirmação", "confirmed": "Confirmado", "error": "Falhou" },
+    "invoice": { "queued": "Na fila", "issued": "Nota emitida", "rejected": "Rejeitada" },
+    "message": { "queued": "Na fila", "sent": "Enviada", "failed": "Falhou" },
+    "integration": { "real": "Ativa", "sandbox": "Sandbox", "heurístico": "Heurístico" }
+  },
+  "phone": {
+    "countryButton": "País do telefone: {country} ({dial})",
+    "search": "Buscar país ou DDI",
+    "countries": "Países",
+    "noCountry": "Nenhum país encontrado.",
+    "invalid": "Número incompleto ou inválido para {country}."
+  },
+  "email": {
+    "placeholder": "nome@email.com",
+    "didYouMean": "Você quis dizer <fix>{suggestion}</fix>?"
+  },
+  "address": {
+    "cep": "CEP",
+    "loading": "Buscando endereço",
+    "notFound": "CEP não encontrado. Preencha o endereço abaixo.",
+    "unavailable": "Busca de CEP indisponível agora. Preencha o endereço abaixo.",
+    "street": "Rua",
+    "number": "Número",
+    "complement": "Complemento",
+    "complementPlaceholder": "Sala, apto, bloco",
+    "district": "Bairro",
+    "city": "Cidade",
+    "state": "UF",
+    "legend": "Endereço"
+  },
+  "image": {
+    "preparing": "Preparando a imagem…",
+    "ready": "Imagem pronta. Salve para aplicar.",
+    "unreadable": "Não foi possível ler essa imagem. Tente JPG ou PNG.",
+    "upload": "Enviar imagem",
+    "replace": "Trocar imagem",
+    "remove": "Remover"
+  },
+  "errors": {
+    "emailRequired": "Informe o e-mail.",
+    "emailInvalid": "E-mail inválido. Confira o endereço.",
+    "emailDomain": "O domínio do e-mail não recebe mensagens. Confira o que vem depois do @.",
+    "phoneInvalid": "{label} inválido. Confira o país e o número.",
+    "phoneLabel": "Telefone",
+    "cepInvalid": "CEP inválido. Use 8 dígitos.",
+    "imageTooBig": "Imagem grande demais. Envie uma foto de até 800 KB.",
+    "imageFormat": "Formato não aceito. Envie JPG, PNG ou WebP.",
+    "imageDimensions": "Imagem com dimensões inválidas ou grandes demais.",
+    "photoConsent": "Confirme que o paciente (ou o responsável) autorizou o uso da foto.",
+    "generic": "Não foi possível concluir. Tente de novo."
+  },
+  "birthdays": {
+    "title": "Aniversários · próximos 7 dias",
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "inDays": "Em {days} dias",
+    "you": "Você",
+    "patient": "Paciente",
+    "team": "Equipe",
+    "yours": "Seu aniversário",
+    "turning": "{age} anos",
+    "happyBirthday": "Feliz aniversário, {name}!"
+  },
+  "language": {
+    "label": "Idioma",
+    "auto": "Automático (idioma do navegador)",
+    "hint": "Vale para todo o sistema. Valores continuam em reais (R$)."
+  }
+}

@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
+import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 
 // Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
 // obrigatório: o padrão está no repositório público e permitiria forjar sessões.
@@ -47,6 +48,11 @@ export const createSession = async (payload: SessionPayload) => {
     .sign(secretKey());
 
   cookies().set(COOKIE_NAME, token, cookieBase);
+  // Idioma escolhido em Ajustes vale em qualquer navegador onde a pessoa entrar.
+  const user = await db.user.findUnique({ where: { id: payload.userId }, select: { locale: true } });
+  if (user?.locale && isLocale(user.locale)) {
+    cookies().set(LOCALE_COOKIE, user.locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  }
 };
 
 export const destroySession = () => {
@@ -116,7 +122,7 @@ export const getCurrentContext = async () => {
   if (!membership) membership = user.memberships[0]!;
 
   return {
-    user: { id: user.id, email: user.email, name: user.name, birthDate: user.birthDate, showPatientBirthdays: user.showPatientBirthdays, avatarId: user.avatarId },
+    user: { id: user.id, email: user.email, name: user.name, birthDate: user.birthDate, showPatientBirthdays: user.showPatientBirthdays, avatarId: user.avatarId, locale: user.locale },
     workspace: membership.workspace,
     role: membership.role,
     allWorkspaces: user.memberships.map((m) => m.workspace),

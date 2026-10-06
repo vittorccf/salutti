@@ -1,6 +1,8 @@
 // Upload de imagem vindo de formulário: o navegador já reduz e converte (ImageUpload); aqui o servidor
 // confere tamanho e o tipo real pelo conteúdo (assinatura do arquivo), não pelo nome nem pelo tipo declarado.
-export class UploadError extends Error {}
+import { TranslatableError } from "@/i18n/errors";
+
+export class UploadError extends TranslatableError {}
 
 export const MAX_IMAGE_BYTES = 800 * 1024;
 
@@ -51,12 +53,12 @@ export async function readImageUpload(formData: FormData, name: string): Promise
   if (formData.get(`${name}Remove`) === "on") return "remove";
   const file = formData.get(name);
   if (!(file instanceof File) || file.size === 0) return null;
-  if (file.size > MAX_IMAGE_BYTES) throw new UploadError("Imagem grande demais. Envie uma foto de até 800 KB.");
+  if (file.size > MAX_IMAGE_BYTES) throw new UploadError("imageTooBig");
   const bytes = Buffer.from(await file.arrayBuffer());
   const mime = sniffImage(bytes);
-  if (!mime) throw new UploadError("Formato não aceito. Envie JPG, PNG ou WebP.");
+  if (!mime) throw new UploadError("imageFormat");
   const size = imageSize(bytes);
-  if (!size || size.w < 1 || size.h < 1 || size.w > MAX_IMAGE_SIDE || size.h > MAX_IMAGE_SIDE) throw new UploadError("Imagem com dimensões inválidas ou grandes demais.");
+  if (!size || size.w < 1 || size.h < 1 || size.w > MAX_IMAGE_SIDE || size.h > MAX_IMAGE_SIDE) throw new UploadError("imageDimensions");
   return { mime, bytes };
 }
 

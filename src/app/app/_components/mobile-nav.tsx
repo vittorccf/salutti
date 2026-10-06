@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Menu, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 // Gaveta com o conteúdo da sidebar em telas estreitas (abaixo de md).
 export const MobileNav = ({ children }: { children: React.ReactNode }) => {
+  const t = useTranslations("common.layout");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   useEffect(() => setOpen(false), [pathname]);
@@ -20,7 +22,7 @@ export const MobileNav = ({ children }: { children: React.ReactNode }) => {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger
-        aria-label="Abrir menu"
+        aria-label={t("openMenu")}
         className="grid h-9 w-9 place-content-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
       >
         <Menu className="h-5 w-5" />
@@ -31,9 +33,9 @@ export const MobileNav = ({ children }: { children: React.ReactNode }) => {
           aria-describedby={undefined}
           onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}
           className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col overflow-y-auto border-r bg-card shadow-sm data-[state=open]:animate-in data-[state=open]:slide-in-from-left">
-          <Dialog.Title className="sr-only">Menu</Dialog.Title>
+          <Dialog.Title className="sr-only">{t("menu")}</Dialog.Title>
           <Dialog.Close
-            aria-label="Fechar menu"
+            aria-label={t("closeMenu")}
             className="absolute right-3 top-3 grid h-8 w-8 place-content-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-4 w-4" />
