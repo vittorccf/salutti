@@ -12,9 +12,12 @@ const nextConfig = {
   },
   typescript: { ignoreBuildErrors: false },
   eslint: { ignoreDuringBuilds: true },
-  // O assistente LUMA virou TOBI: links antigos continuam funcionando.
+  // O assistente se chamou LUMA e depois TOBI; hoje é Saluttin. Links antigos continuam funcionando.
   async redirects() {
-    return [{ source: "/app/luma", destination: "/app/tobi", permanent: true }];
+    return [
+      { source: "/app/luma", destination: "/app/saluttin", permanent: true },
+      { source: "/app/tobi", destination: "/app/saluttin", permanent: true },
+    ];
   },
 };
 

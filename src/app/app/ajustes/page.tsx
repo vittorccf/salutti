@@ -107,7 +107,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       status: process.env.RECEITA_SAUDE_TOKEN?.includes("mock") ? "sandbox" : "real",
     },
     {
-      name: "OpenAI (TOBI)",
+      name: "OpenAI (Saluttin)",
       desc: t("integrations.openai"),
       status: process.env.OPENAI_API_KEY ? "real" : "heurístico",
     },
