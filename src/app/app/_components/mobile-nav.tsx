@@ -9,6 +9,13 @@ export const MobileNav = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   useEffect(() => setOpen(false), [pathname]);
+  // Ao passar para md a gaveta deixa de existir: fecha para não deixar o overlay órfão.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = () => mq.matches && setOpen(false);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -20,7 +27,10 @@ export const MobileNav = ({ children }: { children: React.ReactNode }) => {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-foreground/40 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col overflow-y-auto border-r bg-card shadow-sm data-[state=open]:animate-in data-[state=open]:slide-in-from-left">
+        <Dialog.Content
+          aria-describedby={undefined}
+          onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}
+          className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col overflow-y-auto border-r bg-card shadow-sm data-[state=open]:animate-in data-[state=open]:slide-in-from-left">
           <Dialog.Title className="sr-only">Menu</Dialog.Title>
           <Dialog.Close
             aria-label="Fechar menu"

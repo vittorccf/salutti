@@ -36,14 +36,14 @@ export const SidebarNav = () => {
     <nav className="space-y-1">
       {nav.map((item) => {
         const Icon = item.icon;
-        const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
+        const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(`${item.href}/`));
         return (
           <Link
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
+              "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active && "bg-accent font-medium text-accent-foreground",
             )}
           >
