@@ -39,6 +39,7 @@ model User {
   memberships   Membership[]
   auditEvents   AuditLog[]    @relation("AuditUser")
   connections   IntegrationConnection[]
+  invitesSent   Invitation[]  @relation("InviteSentBy")
 }
 
 model Workspace {
@@ -87,6 +88,7 @@ model Workspace {
   insurancePlans  InsurancePlan[]
   tissBatches     TissBatch[]
   tissGuides      TissGuide[]
+  invitations     Invitation[]
 }
 
 model Membership {
@@ -539,4 +541,24 @@ model IntegrationConnection {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
+}
+
+// Convite para entrar na equipe de um consultório/clínica com um papel. O link leva o token; no banco fica
+// só o hash (SHA-256). Vale 7 dias e uma vez.
+model Invitation {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  role        String    // admin | professional | financial | receptionist
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy   User      @relation("InviteSentBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
 }

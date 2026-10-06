@@ -2,6 +2,10 @@
 
 > Última atualização deste arquivo: 2026-10-06. A seção "Pacote de melhorias" é a mais recente; as demais ficam como histórico.
 
+## Equipe: convites e acesso clínico (2026-10-06)
+
+Dono/administrador convida por link (7 dias, uso único, token só em hash) com papel: administrador, profissional, financeiro ou recepção (autônomo: só recepção e financeiro). Equipe → Acessos à conta: trocar papel, remover, cancelar convite. Recepção e financeiro não abrem prontuário, anamnese, evolução nem humor diário.
+
 ## Assistente renomeado (2026-10-06)
 
 TOBI passou a se chamar **Saluttin** (rota `/app/saluttin`; `/app/tobi` e `/app/luma` redirecionam). Insights já salvos no banco mantêm o nome antigo até "Recalcular insights". O artifact do Design System ainda cita o nome antigo (publicar exige autorização do dono).
@@ -26,7 +30,7 @@ Pedido do dono em 10 itens + Google Meet por usuário. Cada lote passou pelos re
 
 **Idiomas, ficou para depois:** insights do TOBI são gerados e salvos em pt-BR (guardar código + parâmetros e traduzir na tela); páginas públicas deixaram de ser estáticas (o idioma vem do cookie); formatos brasileiros (CPF, CEP, telefone +55 padrão) valem em qualquer idioma: pt-PT/es/en são interface para quem atende no Brasil; código antigo sem uso (`labels.ts` exceto `chargeDisplayStatus`/`UFS`, `lgpd.ts`, `mood.ts`, formatadores de `utils.ts`, `PLANS.price`); dias da semana/mês ainda com `Intl` direto em agenda e financeiro.
 
-**Ficou para depois (registrado pelos revisores):** limpeza periódica de imagens órfãs (corrida entre duas edições simultâneas); limite de profissionais do autônomo checado fora de transação; painel lê aniversários de pacientes em memória (filtrar no SQL quando houver muitos); papéis (recepção/financeiro) ainda não restringem prontuário; nome do paciente vai para a OpenAI no resumo do TOBI; convites de usuários para a clínica não existem (vínculo profissional ↔ usuário só para quem já é membro).
+**Ficou para depois (registrado pelos revisores):** limpeza periódica de imagens órfãs (corrida entre duas edições simultâneas); limite de profissionais do autônomo checado fora de transação; painel lê aniversários de pacientes em memória (filtrar no SQL quando houver muitos); nome do paciente vai para a OpenAI no resumo do TOBI; convites saem por link copiado (sem serviço de e-mail); profissional da clínica ainda vê o prontuário de pacientes de colegas.
 
 ## Roadmap executado (2026-10-06) — PRs encadeados #1 → #11
 

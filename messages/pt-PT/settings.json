@@ -243,5 +243,33 @@
     "workspaceSaved": "Dados guardados.",
     "nowClinic": "Pronto: a conta é agora de clínica.",
     "nowAutonomo": "Pronto: a conta é agora de profissional independente."
+  },
+  "access": {
+    "title": "Acessos à conta",
+    "description": "Quem entra no sistema e com que papel. A receção e a faturação não veem o processo clínico.",
+    "descriptionAutonomo": "Na conta de profissional independente, pode dar acesso à receção e à faturação. Não veem o processo clínico.",
+    "email": "E-mail da pessoa",
+    "role": "Papel",
+    "invite": "Gerar convite",
+    "inviteCreated": "Convite criado. Copie a ligação e envie-a à pessoa; é válida durante 7 dias e uma única vez.",
+    "linkLabel": "Ligação do convite",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "linkHint": "Só quem entrar com o e-mail convidado consegue usar esta ligação.",
+    "pending": "Convites pendentes",
+    "expires": "válido até {date}",
+    "revoke": "Cancelar",
+    "revokeOf": "Cancelar convite de {email}",
+    "saveRole": "Guardar",
+    "roleOf": "Papel de {name}",
+    "remove": "Remover",
+    "removeOf": "Remover acesso de {name}",
+    "errors": {
+      "noPermission": "Só o titular ou um administrador gere os acessos.",
+      "email": "E-mail inválido. Verifique o endereço.",
+      "role": "Escolha um papel disponível para esta conta.",
+      "adminOnlyOwner": "Só o titular da conta convida administradores.",
+      "alreadyMember": "Essa pessoa já tem acesso a esta conta."
+    }
   }
 }

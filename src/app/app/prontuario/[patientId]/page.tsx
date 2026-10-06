@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireContext } from "@/lib/auth";
+import { requireClinicalContext } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ export default async function ProntuarioPatientPage({
 }: {
   params: Promise<{ patientId: string }>;
 }) {
-  const ctx = await requireContext();
+  const ctx = await requireClinicalContext();
   const { patientId } = await params;
   const patient = await db.patient.findFirst({
     where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null },

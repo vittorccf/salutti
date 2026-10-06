@@ -243,5 +243,33 @@
     "workspaceSaved": "Dados salvos.",
     "nowClinic": "Pronto: a conta agora é de clínica.",
     "nowAutonomo": "Pronto: a conta agora é de profissional autônomo."
+  },
+  "access": {
+    "title": "Acessos à conta",
+    "description": "Quem entra no sistema e com qual papel. Recepção e financeiro não veem o prontuário.",
+    "descriptionAutonomo": "Na conta de autônomo, você pode dar acesso à recepção e ao financeiro. Eles não veem o prontuário.",
+    "email": "E-mail da pessoa",
+    "role": "Papel",
+    "invite": "Gerar convite",
+    "inviteCreated": "Convite criado. Copie o link e envie para a pessoa; ele vale por 7 dias e uma única vez.",
+    "linkLabel": "Link do convite",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "linkHint": "Só quem entrar com o e-mail convidado consegue usar este link.",
+    "pending": "Convites pendentes",
+    "expires": "vale até {date}",
+    "revoke": "Cancelar",
+    "revokeOf": "Cancelar convite de {email}",
+    "saveRole": "Salvar",
+    "roleOf": "Papel de {name}",
+    "remove": "Remover",
+    "removeOf": "Remover acesso de {name}",
+    "errors": {
+      "noPermission": "Só o dono ou um administrador gerencia os acessos.",
+      "email": "E-mail inválido. Confira o endereço.",
+      "role": "Escolha um papel disponível para esta conta.",
+      "adminOnlyOwner": "Só o dono da conta convida administradores.",
+      "alreadyMember": "Essa pessoa já tem acesso a esta conta."
+    }
   }
 }
