@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { startOfMonth, subMonths } from "date-fns";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { insightsEngine } from "@/lib/providers/insights";
 import { modalityLabel } from "@/lib/labels";
+import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +26,9 @@ export default async function DashboardPage() {
   const ctx = await requireContext();
   const wsId = ctx.workspace.id;
   const now = new Date();
-  const thisMonth = startOfMonth(now);
-  const lastMonth = startOfMonth(subMonths(now, 1));
+  const thisMonth = startOfMonthSP(now);
+  const lastMonth = startOfMonthSP(now, -1);
+  const today = startOfTodaySP(now);
   const next7 = new Date();
   next7.setDate(next7.getDate() + 7);
 
@@ -50,7 +51,7 @@ export default async function DashboardPage() {
       _sum: { amount: true },
     }),
     db.charge.aggregate({
-      where: { workspaceId: wsId, status: { in: ["pending", "overdue"] }, dueDate: { lt: now } },
+      where: { workspaceId: wsId, status: { in: ["pending", "overdue"] }, dueDate: { lt: today } },
       _sum: { amount: true },
       _count: true,
     }),
@@ -63,7 +64,7 @@ export default async function DashboardPage() {
     db.appointment.count({
       where: {
         workspaceId: wsId,
-        startsAt: { gte: new Date(now.toISOString().slice(0, 10)) },
+        startsAt: { gte: today },
       },
     }),
     db.patient.count({ where: { workspaceId: wsId, active: true, deletedAt: null } }),

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { addDays } from "date-fns";
+import { dateKeySP, parseDateOnly } from "@/lib/dates";
 
 const schema = z.object({
   patientId: z.string(),
@@ -25,7 +26,7 @@ async function createChargeAction(formData: FormData) {
   const data = schema.parse(Object.fromEntries(formData.entries()));
 
   const txid = pix.generateChargeId();
-  const dueDate = new Date(data.dueDate);
+  const dueDate = parseDateOnly(data.dueDate);
   const charge = await db.charge.create({
     data: {
       workspaceId: ctx.workspace.id,
@@ -79,8 +80,7 @@ export default async function NewChargePage({
     where: { workspaceId: ctx.workspace.id, deletedAt: null, active: true },
     orderBy: { fullName: "asc" },
   });
-  const defaultDue = new Date();
-  defaultDue.setDate(defaultDue.getDate() + 3);
+  const defaultDue = dateKeySP(addDays(new Date(), 3));
 
   return (
     <div className="max-w-xl">
@@ -111,7 +111,7 @@ export default async function NewChargePage({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="dueDate">Vencimento</Label>
-                <Input type="date" name="dueDate" id="dueDate" defaultValue={defaultDue.toISOString().slice(0, 10)} required />
+                <Input type="date" name="dueDate" id="dueDate" defaultValue={defaultDue} required />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="method">Forma de pagamento</Label>

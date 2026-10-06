@@ -3,8 +3,9 @@
 // Calcula insights a partir dos dados do workspace.
 
 import { db } from "../db";
-import { differenceInDays, startOfMonth, subMonths } from "date-fns";
+import { differenceInDays } from "date-fns";
 import { formatBRL, formatPercentBR, plural } from "../utils";
+import { startOfMonthSP, startOfTodaySP } from "../dates";
 
 type InsightInput = { workspaceId: string };
 
@@ -46,8 +47,8 @@ export const insightsEngine = {
 
 const revenueTrend = async (workspaceId: string) => {
   const now = new Date();
-  const thisMonthStart = startOfMonth(now);
-  const lastMonthStart = startOfMonth(subMonths(now, 1));
+  const thisMonthStart = startOfMonthSP(now);
+  const lastMonthStart = startOfMonthSP(now, -1);
 
   const [thisMonth, lastMonth] = await Promise.all([
     db.charge.aggregate({
@@ -102,7 +103,7 @@ const revenueTrend = async (workspaceId: string) => {
 
 const overduePattern = async (workspaceId: string) => {
   const overdue = await db.charge.findMany({
-    where: { workspaceId, status: { in: ["pending", "overdue"] }, dueDate: { lt: new Date() } },
+    where: { workspaceId, status: { in: ["pending", "overdue"] }, dueDate: { lt: startOfTodaySP() } },
   });
   if (overdue.length === 0) return [];
   const total = overdue.reduce((acc, c) => acc + c.amount, 0);

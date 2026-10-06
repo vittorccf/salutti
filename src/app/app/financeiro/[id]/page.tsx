@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 import { CheckCircle2, FileSignature, MessageSquareText, Receipt as ReceiptIcon } from "lucide-react";
+import { isPastDue } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ async function sendChargeReminder(formData: FormData) {
     include: { patient: true, paymentLink: true },
   });
   if (!charge || !charge.patient.phone) return;
-  const overdue = charge.dueDate < new Date();
+  const overdue = isPastDue(charge.dueDate);
   await whatsapp.send({
     workspaceId: ctx.workspace.id,
     recipient: charge.patient.phone,
