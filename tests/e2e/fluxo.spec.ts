@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { createPatient, createProfessional, login, selectByText } from "./helpers";
 
 test("profissional → paciente → sessão online com Meet → cobrança paga", async ({ page }) => {
-  await login(page, "guilherme");
+  await login(page, "kris");
   await createProfessional(page, "Dra. Fluxo E2E");
   await createPatient(page, "Paciente Fluxo E2E");
 
@@ -40,7 +40,7 @@ test("profissional → paciente → sessão online com Meet → cobrança paga",
 });
 
 test("sessão online sem link: gerar link do Zoom depois", async ({ page }) => {
-  await login(page, "guilherme");
+  await login(page, "kris");
   await createProfessional(page, "Dr. Zoom E2E");
   await createPatient(page, "Paciente Zoom E2E");
   await page.goto("/app/agenda/novo");
