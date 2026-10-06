@@ -116,7 +116,7 @@ export const getCurrentContext = async () => {
   if (!membership) membership = user.memberships[0]!;
 
   return {
-    user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl },
+    user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl, birthDate: user.birthDate },
     workspace: membership.workspace,
     role: membership.role,
     allWorkspaces: user.memberships.map((m) => m.workspace),

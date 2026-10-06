@@ -79,6 +79,7 @@ async function main() {
     data: {
       name: "Consultório Guilherme Quintino",
       slug: "consultorio-guilherme",
+      accountType: "autonomo",
       segment: "solo_psicologo",
       cnpj: "12.345.678/0001-90",
       trialEndsAt: addDays(new Date(), 13),
@@ -101,6 +102,7 @@ async function main() {
     data: {
       name: "UBS Turvânia · Odonto",
       slug: "ubs-turvania",
+      accountType: "clinica",
       segment: "ubs",
       cnpj: "00.000.000/0001-00",
       trialEndsAt: addDays(new Date(), 13),

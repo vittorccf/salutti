@@ -5,7 +5,7 @@ import { validateTiss } from "../helpers/tiss-xsd";
 
 test("convênio → paciente com carteirinha → sessão realizada → lote TISS válido", async ({ page }) => {
   const sufixo = Date.now().toString().slice(-6);
-  await login(page, "guilherme");
+  await login(page, "kris");
 
   // Convênio e dados do prestador.
   await page.goto("/app/convenios");

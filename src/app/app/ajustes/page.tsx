@@ -14,6 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PLANS, billingConfigured, type PaidPlan } from "@/lib/providers/billing";
 import { billingPortalAction, subscribeAction } from "../_actions/billing";
+import { changeAccountTypeAction, updateProfileAction, updateWorkspaceAction } from "../_actions/account";
+import { ActionForm } from "@/components/forms/action-form";
+import { AddressFields } from "@/components/forms/address-fields";
+import { Input } from "@/components/ui/input";
+import { ACCOUNT_TYPES, autonomoBlockers, isAccountType } from "@/lib/account";
+import { dateKeySP } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +35,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const { assinatura } = await searchParams;
   const aviso = assinatura && Object.hasOwn(AVISOS, assinatura) ? AVISOS[assinatura] : null;
   const isOwner = ctx.role === "owner";
-  const templates = await db.anamnesisTemplate.findMany({
-    where: { workspaceId: ctx.workspace.id },
-  });
+  const ws = ctx.workspace;
+  const accountType = isAccountType(ws.accountType) ? ws.accountType : "autonomo";
+  const isClinic = accountType === "clinica";
+  const canEditWorkspace = ctx.role === "owner" || ctx.role === "admin";
+  const [templates, activeProfessionals, members] = await Promise.all([
+    db.anamnesisTemplate.findMany({ where: { workspaceId: ws.id } }),
+    db.professional.count({ where: { workspaceId: ws.id, active: true } }),
+    db.membership.count({ where: { workspaceId: ws.id } }),
+  ]);
+  const blockers = isClinic ? autonomoBlockers({ activeProfessionals, members }) : [];
 
   const integrations = [
     {
@@ -82,21 +95,100 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Settings className="h-6 w-6 text-primary-strong" aria-hidden /> Ajustes
         </h1>
-        <p className="text-sm text-muted-foreground">Dados do consultório, integrações, modelos de anamnese e plano.</p>
+        <p className="text-sm text-muted-foreground">
+          Seu perfil, dados {isClinic ? "da clínica" : "do consultório"}, tipo de conta, integrações, modelos de anamnese e plano.
+        </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Consultório</CardTitle>
-            <CardDescription>Dados usados nas notas fiscais e nas mensagens aos pacientes.</CardDescription>
+            <CardTitle>Seu perfil</CardTitle>
+            <CardDescription>Vale em todas as contas que você acessa. O aniversário aparece no painel.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p><strong>Nome:</strong> {ctx.workspace.name}</p>
-            <p><strong>Endereço curto:</strong> {ctx.workspace.slug}</p>
-            <p><strong>Segmento:</strong> {segmentLabel(ctx.workspace.segment)}</p>
-            <p><strong>CNPJ:</strong> {ctx.workspace.cnpj ?? "-"}</p>
-            <p><strong>Plano:</strong> <Badge>{planTierLabel(ctx.workspace.planTier)}</Badge></p>
+          <CardContent>
+            <ActionForm action={updateProfileAction} className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="profile-name">Nome</Label>
+                <Input id="profile-name" name="name" required defaultValue={ctx.user.name} autoComplete="name" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="profile-birthDate">Aniversário</Label>
+                <Input id="profile-birthDate" name="birthDate" type="date" defaultValue={ctx.user.birthDate ? dateKeySP(ctx.user.birthDate) : ""} />
+              </div>
+              <p className="text-xs text-muted-foreground">E-mail de acesso: {ctx.user.email}</p>
+              <Button type="submit" variant="outline" size="sm">Salvar perfil</Button>
+            </ActionForm>
+          </CardContent>
+        </Card>
+
+        <Card id="tipo-de-conta" className="scroll-mt-20">
+          <CardHeader>
+            <CardTitle>Tipo de conta</CardTitle>
+            <CardDescription>
+              Atual: <strong className="text-foreground">{ACCOUNT_TYPES[accountType].label}</strong> · {segmentLabel(ws.segment)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{ACCOUNT_TYPES[accountType].description}</p>
+            {ctx.role !== "owner" ? (
+              <p className="text-muted-foreground">Só quem é dono da conta pode mudar o tipo.</p>
+            ) : (
+              <ActionForm action={changeAccountTypeAction} className="space-y-3">
+                <input type="hidden" name="to" value={isClinic ? "autonomo" : "clinica"} />
+                <p>
+                  {isClinic
+                    ? "Virar conta de profissional autônomo: a conta passa a ter um profissional ativo e um usuário."
+                    : "Virar clínica: libera cadastrar vários profissionais e trabalhar em equipe."}{" "}
+                  Pacientes, agenda, prontuários e financeiro continuam como estão.
+                </p>
+                {blockers.length ? (
+                  <p className="rounded-md bg-warning/10 p-3 text-warning-strong">
+                    Antes de mudar: {blockers.join("; ")}.
+                  </p>
+                ) : null}
+                <Button type="submit" variant="outline" size="sm" disabled={blockers.length > 0}>
+                  {isClinic ? "Mudar para profissional autônomo" : "Mudar para clínica"}
+                </Button>
+              </ActionForm>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>{isClinic ? "Dados da clínica" : "Dados do consultório"}</CardTitle>
+            <CardDescription>
+              Usados nas notas fiscais, nas guias TISS e nas mensagens aos pacientes. Endereço curto: {ws.slug} · Plano{" "}
+              <Badge>{planTierLabel(ws.planTier)}</Badge>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {canEditWorkspace ? (
+              <ActionForm action={updateWorkspaceAction} className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="ws-name">{isClinic ? "Nome da clínica" : "Nome do consultório"}</Label>
+                    <Input id="ws-name" name="name" required defaultValue={ws.name} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="ws-cnpj">CNPJ{isClinic ? "" : " (se atende como empresa)"}</Label>
+                    <Input id="ws-cnpj" name="cnpj" defaultValue={ws.cnpj ?? ""} placeholder="00.000.000/0000-00" autoCapitalize="characters" />
+                  </div>
+                </div>
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-medium">Endereço</legend>
+                  <AddressFields idPrefix="ws-" defaultValue={ws} />
+                </fieldset>
+                <Button type="submit" variant="outline" size="sm">Salvar dados</Button>
+              </ActionForm>
+            ) : (
+              <div className="space-y-1 text-sm">
+                <p><strong>Nome:</strong> {ws.name}</p>
+                <p><strong>CNPJ:</strong> {ws.cnpj ?? "-"}</p>
+                <p className="text-muted-foreground">Só o dono ou um administrador altera estes dados.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

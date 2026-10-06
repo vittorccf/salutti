@@ -37,9 +37,9 @@ export const planTierLabel = lookup({
 });
 
 export const segmentLabel = lookup({
-  solo_psicologo: "Psicólogo autônomo",
-  solo_psicanalista: "Psicanalista ou terapeuta",
-  clinica: "Clínica",
+  solo_psicologo: "Psicologia",
+  solo_psicanalista: "Psicanálise ou terapia",
+  clinica: "Multiprofissional",
   ubs: "UBS",
   odonto: "Odontologia",
 });

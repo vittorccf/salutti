@@ -17,6 +17,9 @@ import { professionalTypeLabel } from "@/lib/labels";
 import { UFS } from "@/lib/labels";
 import { ContactError, validEmail, validPhone } from "@/lib/contact-validation";
 import { EmailInput } from "@/components/forms/email-input";
+import { parseDateOnly } from "@/lib/dates";
+import { assertInWorkspace } from "@/lib/tenant";
+import { revalidatePath } from "next/cache";
 import { PhoneInput } from "@/components/forms/phone-input";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 
@@ -31,7 +34,13 @@ const schema = z.object({
   councilUF: z.string().regex(/^\d{2}$/).optional().or(z.literal("")),
   specialty: z.string().optional(),
   hourlyRate: z.coerce.number().optional(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
+
+const AUTONOMO_LIMIT =
+  "Conta de profissional autônomo tem um profissional ativo. Para montar equipe, mude para clínica em Ajustes.";
+
+const activeCount = (workspaceId: string) => db.professional.count({ where: { workspaceId, active: true } });
 
 async function createProfessionalAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
@@ -39,6 +48,7 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { erro: "Confira o nome, o tipo de profissional e o valor da hora." };
   const data = parsed.data;
+  if (ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) return { erro: AUTONOMO_LIMIT };
   let email: string | null, phone: string | null;
   try {
     email = await validEmail(formData.get("email"));
@@ -61,6 +71,7 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
       councilUF: noCouncil ? null : data.councilUF || null,
       specialty: data.specialty || null,
       hourlyRate: data.hourlyRate || null,
+      birthDate: data.birthDate ? parseDateOnly(data.birthDate) : null,
     },
   });
   await recordAudit({
@@ -73,13 +84,41 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
   redirect("/app/equipe");
 }
 
-export default async function TeamPage() {
+// Desativar mantém o histórico (sessões, evoluções); o profissional só some das listas de agendamento.
+async function toggleProfessionalAction(formData: FormData) {
+  "use server";
+  const ctx = await requireContext();
+  const professionalId = String(formData.get("professionalId"));
+  await assertInWorkspace(ctx.workspace.id, { professionalId });
+  const current = await db.professional.findFirstOrThrow({ where: { id: professionalId, workspaceId: ctx.workspace.id } });
+  if (!current.active && ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) {
+    redirect("/app/equipe?aviso=limite");
+  }
+  await db.professional.updateMany({
+    where: { id: professionalId, workspaceId: ctx.workspace.id },
+    data: { active: !current.active },
+  });
+  await recordAudit({
+    workspaceId: ctx.workspace.id,
+    userId: ctx.user.id,
+    action: current.active ? "professional.deactivate" : "professional.activate",
+    entity: "Professional",
+    entityId: professionalId,
+  });
+  revalidatePath("/app/equipe");
+}
+
+export default async function TeamPage({ searchParams }: { searchParams: Promise<{ aviso?: string }> }) {
+  const { aviso } = await searchParams;
   const ctx = await requireContext();
   const professionals = await db.professional.findMany({
     where: { workspaceId: ctx.workspace.id },
     include: { _count: { select: { appointments: true } } },
     orderBy: { createdAt: "desc" },
   });
+  const autonomo = ctx.workspace.accountType === "autonomo";
+  const active = professionals.filter((p) => p.active).length;
+  const canAdd = !autonomo || active === 0;
 
   return (
     <div className="space-y-6">
@@ -88,14 +127,23 @@ export default async function TeamPage() {
           <Stethoscope className="h-6 w-6 text-primary-strong" aria-hidden /> Profissionais
         </h1>
         <p className="text-sm text-muted-foreground">
-          Inclui psicanalistas, terapeutas e outras profissões sem registro de conselho.
+          {autonomo
+            ? "Conta de profissional autônomo: o cadastro profissional usado nas sessões, recibos e guias."
+            : "Inclui psicanalistas, terapeutas e outras profissões sem registro de conselho."}
         </p>
       </header>
+      {aviso === "limite" ? (
+        <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
+          {AUTONOMO_LIMIT}
+        </p>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] [&>*]:min-w-0">
         <Card>
           <CardHeader>
-            <CardTitle>Equipe · {plural(professionals.length, "profissional", "profissionais")}</CardTitle>
+            <CardTitle>
+              {autonomo ? "Cadastro profissional" : `Equipe · ${plural(professionals.length, "profissional", "profissionais")}`}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -107,12 +155,13 @@ export default async function TeamPage() {
                   <TH className="text-right">Valor da hora</TH>
                   <TH className="text-right">Sessões</TH>
                   <TH>Status</TH>
+                  <TH><span className="sr-only">Ações</span></TH>
                 </TR>
               </THead>
               <TBody>
                 {professionals.length === 0 ? (
                   <TR>
-                    <TD colSpan={6} className="text-center text-muted-foreground">
+                    <TD colSpan={7} className="text-center text-muted-foreground">
                       Nenhum profissional ainda. Cadastre o primeiro no formulário ao lado.
                     </TD>
                   </TR>
@@ -133,6 +182,14 @@ export default async function TeamPage() {
                       <TD>
                         <Badge variant={p.active ? "success" : "muted"}>{p.active ? "Ativo" : "Inativo"}</Badge>
                       </TD>
+                      <TD className="text-right">
+                        <form action={toggleProfessionalAction}>
+                          <input type="hidden" name="professionalId" value={p.id} />
+                          <Button type="submit" size="sm" variant="ghost" aria-label={`${p.active ? "Desativar" : "Reativar"} ${p.fullName}`}>
+                            {p.active ? "Desativar" : "Reativar"}
+                          </Button>
+                        </form>
+                      </TD>
                     </TR>
                   ))
                 )}
@@ -141,9 +198,25 @@ export default async function TeamPage() {
           </CardContent>
         </Card>
 
+        {!canAdd ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Conta de profissional autônomo</CardTitle>
+              <CardDescription>
+                Esta conta tem um profissional ativo. Para cadastrar outras pessoas e trabalhar em equipe, mude o tipo da
+                conta para clínica. Os pacientes, a agenda e o financeiro continuam como estão.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" asChild>
+                <Link href="/app/ajustes#tipo-de-conta">Mudar para clínica</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Adicionar profissional</CardTitle>
+            <CardTitle>{autonomo ? "Seu cadastro profissional" : "Adicionar profissional"}</CardTitle>
             <CardDescription>Para psicanalistas e terapeutas, marque “sem registro de conselho”.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -207,14 +280,21 @@ export default async function TeamPage() {
                   ))}
                 </Select>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="hourlyRate">Valor da hora (R$)</Label>
-                <Input name="hourlyRate" id="hourlyRate" type="number" step="0.01" />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="hourlyRate">Valor da hora (R$)</Label>
+                  <Input name="hourlyRate" id="hourlyRate" type="number" step="0.01" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="birthDate">Aniversário</Label>
+                  <Input name="birthDate" id="birthDate" type="date" />
+                </div>
               </div>
               <Button type="submit" className="w-full">Cadastrar profissional</Button>
             </ActionForm>
           </CardContent>
         </Card>
+        )}
       </div>
     </div>
   );
