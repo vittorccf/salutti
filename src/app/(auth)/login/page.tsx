@@ -45,10 +45,12 @@ async function loginAction(formData: FormData) {
   await createSession({ userId: user.id, email: user.email, name: user.name });
   const firstWs = user.memberships[0];
   if (firstWs) setActiveWorkspaceCookie(firstWs.workspaceId);
-  redirect("/app");
+  // Volta ao convite que mandou para o login (só caminhos internos de convite, nunca uma URL externa).
+  const next = String(formData.get("next") ?? "");
+  redirect(/^\/convite\/[A-Za-z0-9_-]+$/.test(next) ? next : "/app");
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
   const session = await getSession();
   if (session) redirect("/app");
   const params = await searchParams;
@@ -68,6 +70,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </CardHeader>
         <CardContent>
           <form action={loginAction} className="space-y-4">
+            {params.next ? <input type="hidden" name="next" value={params.next} /> : null}
             <div className="space-y-2">
               <Label htmlFor="email">{t("email")}</Label>
               <Input id="email" name="email" type="text" required placeholder={t("emailPlaceholder")} defaultValue="guilherme@salutti.dev" />

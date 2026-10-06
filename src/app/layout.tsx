@@ -17,7 +17,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
   // Só o que os componentes do cliente usam vai para o navegador (o resto é renderizado no servidor).
   const all = await getMessages();
-  const messages = { common: all.common, auth: all.auth, finance: all.finance };
+  const settings = all.settings as Record<string, unknown> | undefined;
+  const messages = { common: all.common, auth: all.auth, finance: all.finance, settings: { access: settings?.access } };
   return (
     <html lang={locale} suppressHydrationWarning className={`${sora.variable} ${figtree.variable}`}>
       <body>
