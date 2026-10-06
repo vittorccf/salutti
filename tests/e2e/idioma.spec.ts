@@ -3,7 +3,7 @@
 import { expect, test } from "@playwright/test";
 
 test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", async ({ page, browser }) => {
-  const email = `idioma-${Date.now()}@teste.dev`;
+  const email = `idioma-${Date.now()}@example.com`;
   await page.goto("/signup");
   await page.getByText("Profissional autônomo", { exact: true }).click();
   await page.locator("#name").fill("Lia Idiomas");
