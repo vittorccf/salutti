@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTimeBR } from "@/lib/utils";
+import { formatDateTimeBR, plural } from "@/lib/utils";
+import { noteTypeLabel } from "@/lib/labels";
 import { FilePlus2, FileSignature, Sparkles, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -34,10 +35,10 @@ export default async function ProntuarioPatientPage({
         <div>
           <h1 className="text-2xl font-bold">Prontuário · {patient.fullName}</h1>
           <p className="text-sm text-muted-foreground">
-            {patient.clinicalNotes.length} entrada(s). Sumarização IA disponível para cada evolução.
+            {plural(patient.clinicalNotes.length, "registro", "registros")} · a LUMA resume cada evolução ao salvar.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <Link href={`/app/prontuario/${patient.id}/anamnese`}>
               <FileSignature className="h-4 w-4" /> Aplicar anamnese
@@ -55,20 +56,20 @@ export default async function ProntuarioPatientPage({
         {patient.clinicalNotes.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center">
-              <Sparkles className="mx-auto h-8 w-8 text-primary" />
-              <p className="mt-3 font-semibold">Sem evoluções registradas.</p>
+              <Sparkles className="mx-auto h-6 w-6 text-primary-strong" aria-hidden />
+              <p className="mt-3 font-semibold">Nenhuma evolução registrada</p>
               <p className="text-sm text-muted-foreground">
-                Crie a primeira evolução para gerar sumário automático com o LUMA.
+                Registre a primeira evolução e a LUMA gera o resumo da sessão.
               </p>
             </CardContent>
           </Card>
         ) : (
           patient.clinicalNotes.map((n) => (
             <Card key={n.id}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-base capitalize">
-                    {n.noteType.replace("_", " ")}{" "}
+                  <CardTitle className="text-base">
+                    {noteTypeLabel(n.noteType)}{" "}
                     {n.signedAt ? <Badge variant="success" className="ml-2">Assinado</Badge> : null}
                   </CardTitle>
                   <CardDescription>
@@ -85,8 +86,8 @@ export default async function ProntuarioPatientPage({
                 </article>
                 {n.aiSummary ? (
                   <div className="rounded-md border bg-accent/20 p-3 text-sm">
-                    <p className="font-semibold flex items-center gap-2 text-primary">
-                      <Sparkles className="h-4 w-4" /> Sumário LUMA
+                    <p className="font-semibold flex items-center gap-2 text-primary-strong">
+                      <Sparkles className="h-4 w-4" aria-hidden /> Resumo da LUMA
                     </p>
                     <pre className="mt-2 whitespace-pre-wrap font-sans text-sm">{n.aiSummary}</pre>
                     {n.aiTopics ? (
@@ -99,7 +100,7 @@ export default async function ProntuarioPatientPage({
                   </div>
                 ) : null}
                 <div className="rounded-md border-dashed border bg-muted/30 p-3 text-xs flex items-start gap-2">
-                  <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <ShieldCheck className="h-4 w-4 text-primary-strong shrink-0 mt-0.5" />
                   <p className="text-muted-foreground">
                     Em produção: conteúdo cifrado em repouso + assinatura ICP-Brasil (A1 em nuvem · Memed/SafeID).
                     Hash atual: <code>{n.signedHash ?? "-"}</code>
