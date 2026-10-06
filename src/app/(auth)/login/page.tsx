@@ -53,7 +53,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <CardContent>
           <form action={loginAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email ou usuário</Label>
+              <Label htmlFor="email">E-mail ou usuário</Label>
               <Input id="email" name="email" type="text" required placeholder="voce@clinica.com.br" defaultValue="guilherme@salutti.dev" />
             </div>
             <div className="space-y-2">
