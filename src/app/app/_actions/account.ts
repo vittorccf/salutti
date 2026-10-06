@@ -10,7 +10,7 @@ import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
 import { ContactError, readAddress } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
 import { UploadError } from "@/lib/media";
-import { replaceImage } from "@/lib/media-store";
+import { stageImage, type StagedImage } from "@/lib/media-store";
 
 
 
@@ -24,22 +24,28 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
     })
     .safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
-  let avatarId: string | null;
+  let avatar: StagedImage;
   try {
-    avatarId = await replaceImage(formData, "avatar", ctx.user.avatarId, "user_avatar", { userId: ctx.user.id });
+    avatar = await stageImage(formData, "avatar", ctx.user.avatarId, "user_avatar", { userId: ctx.user.id });
   } catch (e) {
     if (e instanceof UploadError) return { erro: e.message };
     throw e;
   }
-  await db.user.update({
-    where: { id: ctx.user.id },
-    data: {
-      avatarId,
+  await db.user
+    .update({
+      where: { id: ctx.user.id },
+      data: {
+        avatarId: avatar.id,
       name: parsed.data.name,
       birthDate: parsed.data.birthDate ? parseDateOnly(parsed.data.birthDate) : null,
-      showPatientBirthdays: formData.get("showPatientBirthdays") === "on",
-    },
-  });
+        showPatientBirthdays: formData.get("showPatientBirthdays") === "on",
+      },
+    })
+    .catch(async (e) => {
+      await avatar.rollback();
+      throw e;
+    });
+  await avatar.commit();
   revalidatePath("/app", "layout");
   return { ok: "Perfil salvo." };
 }
@@ -61,20 +67,36 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
     if (e instanceof ContactError) return { erro: e.message };
     throw e;
   }
-  const brandDisplay = String(formData.get("brandDisplay") ?? "salutti");
-  if (!["salutti", "photo", "banner"].includes(brandDisplay)) return { erro: "Escolha o que aparece no menu." };
-  let bannerId: string | null;
+  const brand = z.enum(["salutti", "photo", "banner"]).safeParse(formData.get("brandDisplay") ?? "salutti");
+  if (!brand.success) return { erro: "Escolha o que aparece no menu." };
+  const brandDisplay = brand.data;
+  let banner: StagedImage;
   try {
-    bannerId = await replaceImage(formData, "banner", ctx.workspace.bannerId, "workspace_banner", { workspaceId: ctx.workspace.id });
+    banner = await stageImage(formData, "banner", ctx.workspace.bannerId, "workspace_banner", { workspaceId: ctx.workspace.id });
   } catch (e) {
     if (e instanceof UploadError) return { erro: e.message };
     throw e;
   }
-  if (brandDisplay === "banner" && !bannerId) return { erro: "Envie o banner para usá-lo no menu." };
-  await db.workspace.update({
-    where: { id: ctx.workspace.id },
-    data: { brandDisplay, bannerId, name, cnpj: cnpjRaw ? (cnpjChanged ? formatCnpj(cnpjRaw) : ctx.workspace.cnpj) : null, ...address },
-  });
+  if (brandDisplay === "banner" && !banner.id) {
+    await banner.rollback();
+    return { erro: "Envie o banner para usá-lo no menu." };
+  }
+  await db.workspace
+    .update({
+      where: { id: ctx.workspace.id },
+      data: {
+        brandDisplay,
+        bannerId: banner.id,
+        name,
+        cnpj: cnpjRaw ? (cnpjChanged ? formatCnpj(cnpjRaw) : ctx.workspace.cnpj) : null,
+        ...address,
+      },
+    })
+    .catch(async (e) => {
+      await banner.rollback();
+      throw e;
+    });
+  await banner.commit();
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

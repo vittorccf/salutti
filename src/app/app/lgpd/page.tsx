@@ -89,12 +89,14 @@ async function softDeleteAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const patientId = formData.get("patientId") as string;
+  const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
   ensureAffected(
     await db.patient.updateMany({
       where: { id: patientId, workspaceId: ctx.workspace.id },
-      data: { deletedAt: new Date(), active: false },
+      data: { deletedAt: new Date(), active: false, photoId: null },
     }),
   );
+  await media.remove(before?.photoId);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

@@ -45,13 +45,15 @@ test("foto de perfil e banner no menu; foto do paciente com acesso restrito", as
   await g.getByRole("button", { name: "Salvar dados" }).click();
   await expect(g.getByText("Dados salvos.")).toBeVisible();
   await g.goto("/app");
-  await expect(g.locator("aside a[href='/app'] img[alt='Consultório Guilherme Quintino']")).toBeVisible();
+  await expect(g.locator("aside a[href='/app'] img").first()).toHaveClass(/object-contain/);
 
   // Foto do paciente.
   await g.goto("/app/pacientes/novo");
   await g.locator("#fullName").fill("Paciente Foto E2E");
   await g.locator('input[name="photo"]').setInputFiles(file("p.png"));
   await expect(g.getByText("Imagem pronta. Salve para aplicar.")).toBeVisible();
+  // Foto de paciente exige a autorização marcada.
+  await g.getByRole("checkbox", { name: /autorizou o uso da foto/ }).check();
   await g.getByRole("button", { name: "Cadastrar paciente" }).click();
   await expect(g.getByRole("heading", { name: "Paciente · Paciente Foto E2E" })).toBeVisible();
   const photo = g.locator("header img").first();
@@ -60,6 +62,10 @@ test("foto de perfil e banner no menu; foto do paciente com acesso restrito", as
   const own = await g.request.get(src);
   expect(own.status()).toBe(200);
   expect(own.headers()["content-type"]).toMatch(/^image\/(webp|jpeg)$/);
+  expect(own.headers()["cache-control"]).toContain("no-store");
+  // A lista de pacientes não mostra fotos (sigilo na recepção).
+  await g.goto("/app/pacientes");
+  await expect(g.locator("main table img")).toHaveCount(0);
 
   // Outro consultório não acessa a foto; sem sessão também não.
   const k = await (await browser.newContext()).newPage();
@@ -68,9 +74,15 @@ test("foto de perfil e banner no menu; foto do paciente com acesso restrito", as
   const anon = await (await browser.newContext()).request.get(new URL(src, g.url()).toString());
   expect(anon.status()).toBe(401);
 
-  // Volta a marca Salutti para não afetar outros testes.
+  // Volta a marca Salutti e remove banner e foto, para não afetar outros testes.
   await g.goto("/app/ajustes");
   await g.getByRole("radio", { name: "Marca Salutti" }).check();
+  await g.getByRole("checkbox", { name: "Remover banner profissional" }).check();
   await g.getByRole("button", { name: "Salvar dados" }).click();
   await expect(g.getByText("Dados salvos.")).toBeVisible();
+  await g.getByRole("checkbox", { name: "Remover foto de perfil" }).check();
+  await g.getByRole("button", { name: "Salvar perfil" }).click();
+  await expect(g.getByText("Perfil salvo.")).toBeVisible();
+  await g.goto("/app");
+  await expect(g.locator("aside img")).toHaveCount(0);
 });

@@ -15,13 +15,6 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
   const p = patient;
   return (
     <div className="space-y-6">
-      <ImageUpload
-        name="photo"
-        label="Foto do paciente (opcional)"
-        shape="square"
-        currentUrl={mediaUrl(p?.photoId)}
-        hint="Ajuda a reconhecer quem chega. Fica visível só para a equipe deste consultório."
-      />
       <fieldset className="grid gap-3 sm:grid-cols-2">
         <legend className="sr-only">Dados pessoais</legend>
         <div className="space-y-1">
@@ -95,6 +88,14 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
         <Label htmlFor="notes">Observações administrativas</Label>
         <Textarea id="notes" name="notes" defaultValue={p?.notes ?? ""} placeholder="Só dados administrativos. A evolução clínica vai no prontuário." />
       </div>
+      <ImageUpload
+        name="photo"
+        label="Foto do paciente (opcional)"
+        shape="square"
+        currentUrl={mediaUrl(p?.photoId)}
+        hint="Ajuda a reconhecer quem chega. Aparece só na ficha, para a equipe deste consultório."
+        consentLabel="O paciente (ou o responsável, se for menor de idade) autorizou o uso da foto para identificação."
+      />
     </div>
   );
 }

@@ -1,11 +1,13 @@
 // Provider de videochamada: Google Meet (via Google Agenda) e Zoom.
 // Sem credenciais, gera um link simulado da Salutti (modo sandbox), sem imitar um link real.
 //
-// Google Meet: app OAuth com escopo calendar.events e um refresh token da conta do consultório.
-//   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_CALENDAR_ID (padrão "primary")
+// Google Meet: app OAuth da plataforma (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) e a conta Google que cada
+//   usuário conecta em Ajustes (src/lib/providers/google-oauth.ts). O Meet nasce na agenda principal de quem
+//   atende. Reserva opcional: GOOGLE_REFRESH_TOKEN, uma conta única da plataforma/consultório.
 // Zoom: app "Server-to-Server OAuth" com escopo meeting:write.
 //   ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET
 import { TZ } from "../dates";
+import { accessTokenFrom, googleOAuthConfigured } from "./google-oauth";
 
 export type VideoProvider = "google_meet" | "zoom";
 
@@ -14,17 +16,19 @@ export type MeetingInput = {
   topic: string;
   startsAt: Date;
   durationMinutes: number;
+  // Refresh token da conta Google conectada pelo profissional (ou por quem agenda), já decifrado.
+  googleRefreshToken?: string | null;
 };
 
 export type Meeting = { url: string; externalId: string; simulated: boolean };
 
-const googleConfigured = () =>
-  Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN);
+const googleToken = (input: { googleRefreshToken?: string | null }) =>
+  googleOAuthConfigured() ? input.googleRefreshToken || process.env.GOOGLE_REFRESH_TOKEN || null : null;
 const zoomConfigured = () =>
   Boolean(process.env.ZOOM_ACCOUNT_ID && process.env.ZOOM_CLIENT_ID && process.env.ZOOM_CLIENT_SECRET);
 
 export const videoStatus = {
-  google_meet: () => (googleConfigured() ? "real" : "sandbox"),
+  google_meet: () => (googleOAuthConfigured() ? "real" : "sandbox"),
   zoom: () => (zoomConfigured() ? "real" : "sandbox"),
 } as const;
 
@@ -33,21 +37,9 @@ const simulated = (provider: VideoProvider): Meeting => {
   return { url: `https://meet.salutti.app/sessao/${id}?via=${provider}`, externalId: `sim_${id}`, simulated: true };
 };
 
-async function createGoogleMeet({ topic, startsAt, durationMinutes }: MeetingInput): Promise<Meeting> {
-  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      refresh_token: process.env.GOOGLE_REFRESH_TOKEN!,
-      grant_type: "refresh_token",
-    }),
-  });
-  if (!tokenRes.ok) throw new Error(`Google OAuth: ${tokenRes.status}`);
-  const { access_token } = (await tokenRes.json()) as { access_token: string };
-
-  const calendarId = encodeURIComponent(process.env.GOOGLE_CALENDAR_ID || "primary");
+async function createGoogleMeet({ topic, startsAt, durationMinutes }: MeetingInput, refreshToken: string): Promise<Meeting> {
+  const access_token = await accessTokenFrom(refreshToken);
+  const calendarId = "primary";
   const endsAt = new Date(startsAt.getTime() + durationMinutes * 60_000);
   const eventRes = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?conferenceDataVersion=1&sendUpdates=none`,
@@ -103,7 +95,10 @@ async function createZoom({ topic, startsAt, durationMinutes }: MeetingInput): P
 
 export const video = {
   async createMeeting(input: MeetingInput): Promise<Meeting> {
-    if (input.provider === "google_meet") return googleConfigured() ? createGoogleMeet(input) : simulated("google_meet");
+    if (input.provider === "google_meet") {
+      const token = googleToken(input);
+      return token ? createGoogleMeet(input, token) : simulated("google_meet");
+    }
     return zoomConfigured() ? createZoom(input) : simulated("zoom");
   },
 };

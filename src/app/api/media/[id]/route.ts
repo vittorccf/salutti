@@ -27,8 +27,8 @@ export const GET = async (_req: Request, { params }: { params: { id: string } })
     headers: {
       "content-type": file.mime,
       "content-length": String(file.size),
-      // O id muda a cada envio, então a resposta nunca fica velha; "private" impede cache compartilhado.
-      "cache-control": "private, max-age=31536000, immutable",
+      // Foto de paciente não fica no cache do navegador (computador compartilhado, anonimização, saída da equipe).
+      "cache-control": file.kind === "patient_photo" ? "private, no-store" : "private, max-age=3600",
       "x-content-type-options": "nosniff",
       "content-security-policy": "default-src 'none'; sandbox",
     },
