@@ -83,6 +83,15 @@ OPENAI_API_KEY=sk-...
 
 Para integrações reais (Stripe, Asaas, NFE.io, WhatsApp, Receita Saúde): trocar as chaves correspondentes. As interfaces dos providers (`src/lib/providers/`) ficam idênticas - só a implementação `mock` é substituída.
 
+**Em produção, `AUTH_SECRET` é obrigatório** (32+ caracteres aleatórios, ex.: `openssl rand -base64 32`). Sem ele o login falha com erro explícito.
+
+### Videochamada (Google Meet e Zoom)
+
+Ao agendar uma sessão online, escolha Google Meet ou Zoom e o link é gerado na hora (também dá para gerar depois, na tela da sessão). Sem as chaves abaixo, o link é **simulado** e aparece com o selo "Simulado". O título da reunião é genérico ("Sessão · Salutti"): o nome do paciente não vai para o Google nem para o Zoom.
+
+- **Google Meet** (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_CALENDAR_ID`): crie um cliente OAuth no Google Cloud com a Google Calendar API ativada e o escopo `https://www.googleapis.com/auth/calendar.events`, e gere um refresh token da conta do consultório (ex.: OAuth Playground). A reunião é criada como evento na agenda dessa conta.
+- **Zoom** (`ZOOM_ACCOUNT_ID`, `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`): crie um app "Server-to-Server OAuth" no Zoom Marketplace com o escopo `meeting:write:admin`. As reuniões ficam na conta do dono do app, com sala de espera ativada.
+
 ## ✋ Trade-offs deliberados deste protótipo
 
 - **SQLite no dev** em vez de Postgres - zero setup. Schema é compatível com Postgres (basta trocar o provider no `schema.prisma`).

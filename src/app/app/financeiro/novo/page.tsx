@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { addDays } from "date-fns";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
+import { assertInWorkspace } from "@/lib/tenant";
 
 const schema = z.object({
   patientId: z.string(),
@@ -24,6 +25,7 @@ async function createChargeAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const data = schema.parse(Object.fromEntries(formData.entries()));
+  await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId });
 
   const txid = pix.generateChargeId();
   const dueDate = parseDateOnly(data.dueDate);
