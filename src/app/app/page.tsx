@@ -118,7 +118,7 @@ export default async function DashboardPage() {
                 {pct > 0 ? (
                   <TrendingUp className="h-3.5 w-3.5 text-success-strong" aria-hidden />
                 ) : (
-                  <TrendingDown className="h-3.5 w-3.5 text-destructive" aria-hidden />
+                  <TrendingDown className="h-3.5 w-3.5 text-destructive-strong" aria-hidden />
                 )}
                 <span className={pct > 0 ? "text-success-strong" : undefined}>
                   {pct > 0 ? "+" : ""}
@@ -175,7 +175,7 @@ export default async function DashboardPage() {
                 <div
                   className={`mt-0.5 grid h-8 w-8 place-content-center rounded-md ${
                     insight.severity === "critical"
-                      ? "bg-destructive/10 text-destructive"
+                      ? "bg-destructive/10 text-destructive-strong"
                       : insight.severity === "warn"
                         ? "bg-warning/10 text-warning-strong"
                         : "bg-primary/10 text-primary-strong"

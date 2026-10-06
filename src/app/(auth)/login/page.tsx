@@ -61,7 +61,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <Input id="password" name="password" type="password" required defaultValue="salutti123" />
             </div>
             {params.error ? (
-              <p className="text-sm text-destructive">{params.error}</p>
+              <p className="text-sm text-destructive-strong" role="alert">{params.error}</p>
             ) : null}
             <Button type="submit" className="w-full">
               Entrar

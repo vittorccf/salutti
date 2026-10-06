@@ -15,7 +15,7 @@
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 16% 44%;
     --accent: 174 72% 95%;
     --accent-foreground: 174 72% 24%;
     --destructive: 0 84% 60%;
@@ -40,6 +40,7 @@
     --primary-strong: 175 77% 26%;
     --success-strong: 142 72% 29%;
     --warning-strong: 35 92% 33%;
+    --destructive-strong: 0 72% 42%;
     --highlight: var(--brand-apricot);
     --highlight-foreground: var(--brand-ink);
   }
@@ -71,6 +72,7 @@
     --primary-strong: 173 57% 60%;
     --success-strong: 142 69% 58%;
     --warning-strong: 46 97% 65%;
+    --destructive-strong: 0 91% 71%;
   }
 
   * { @apply border-border; }

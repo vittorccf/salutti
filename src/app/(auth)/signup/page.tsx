@@ -151,7 +151,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
                 <option value="odonto">Consultório odontológico</option>
               </Select>
             </div>
-            {params.error ? <p className="text-sm text-destructive">{params.error}</p> : null}
+            {params.error ? <p className="text-sm text-destructive-strong" role="alert">{params.error}</p> : null}
             <Button className="w-full">Criar conta</Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
