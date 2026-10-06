@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addDays, startOfWeek, format, isSameDay } from "date-fns";
+import { addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CalendarPlus, ChevronLeft, ChevronRight, Video } from "lucide-react";
 import { formatTimeBR, plural } from "@/lib/utils";
+import { dateKeySP, inSP, isSameDaySP, parseDateOnly, startOfWeekSP } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -19,14 +20,15 @@ export default async function AgendaPage({
 }) {
   const ctx = await requireContext();
   const params = await searchParams;
-  const refDate = params.week ? new Date(params.week) : new Date();
-  const weekStart = startOfWeek(refDate, { weekStartsOn: 1 });
+  // ?week=AAAA-MM-DD (dia em São Paulo); semana de segunda a domingo no calendário de São Paulo.
+  const refDate = params.week && /^\d{4}-\d{2}-\d{2}$/.test(params.week) ? parseDateOnly(params.week) : new Date();
+  const weekStart = inSP(startOfWeekSP(refDate));
   const weekEnd = addDays(weekStart, 7);
 
   const appointments = await db.appointment.findMany({
     where: {
       workspaceId: ctx.workspace.id,
-      startsAt: { gte: weekStart, lt: weekEnd },
+      startsAt: { gte: new Date(weekStart.getTime()), lt: new Date(weekEnd.getTime()) },
     },
     include: { patient: true, professional: true },
     orderBy: { startsAt: "asc" },
@@ -34,8 +36,8 @@ export default async function AgendaPage({
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const prevWeek = addDays(weekStart, -7).toISOString();
-  const nextWeek = addDays(weekStart, 7).toISOString();
+  const prevWeek = dateKeySP(addDays(weekStart, -7));
+  const nextWeek = dateKeySP(addDays(weekStart, 7));
 
   return (
     <div className="space-y-6">
@@ -68,8 +70,8 @@ export default async function AgendaPage({
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {days.map((day) => {
-          const dayAppointments = appointments.filter((a) => isSameDay(a.startsAt, day));
-          const isToday = isSameDay(day, new Date());
+          const dayAppointments = appointments.filter((a) => isSameDaySP(a.startsAt, day));
+          const isToday = isSameDaySP(day, new Date());
           return (
             <Card key={day.toISOString()} className={isToday ? "border-primary/40" : ""}>
               <CardHeader className="p-3">

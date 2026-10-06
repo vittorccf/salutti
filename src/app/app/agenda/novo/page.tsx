@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { dateKeySP, parseDateOnly, parseDateTimeLocal, toDateTimeLocalSP } from "@/lib/dates";
 
 const schema = z.object({
   patientId: z.string(),
@@ -24,7 +25,7 @@ async function createAppointmentAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const data = schema.parse(Object.fromEntries(formData.entries()));
-  const startsAt = new Date(data.startsAt);
+  const startsAt = parseDateTimeLocal(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
   const meetingUrl = data.modality === "online" ? `https://meet.salutti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
 
@@ -43,8 +44,8 @@ async function createAppointmentAction(formData: FormData) {
   });
 
   if (data.generateCharge === "on") {
-    const due = new Date(startsAt);
-    due.setHours(23, 59, 59);
+    // Cobrança da sessão vence no dia da sessão (campo só de data).
+    const due = parseDateOnly(dateKeySP(startsAt));
     const { pix } = await import("@/lib/providers/pix");
     const txid = pix.generateChargeId();
     const charge = await db.charge.create({
@@ -99,10 +100,9 @@ export default async function NewAppointmentPage({
   ]);
 
   const defaultDate = (() => {
-    const d = new Date();
-    d.setMinutes(0, 0, 0);
-    d.setHours(d.getHours() + 1);
-    return d.toISOString().slice(0, 16);
+    // Próxima hora cheia, no horário de São Paulo.
+    const d = new Date(Math.ceil((Date.now() + 1) / 3_600_000) * 3_600_000);
+    return toDateTimeLocalSP(d);
   })();
 
   return (
