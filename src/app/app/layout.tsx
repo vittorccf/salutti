@@ -11,6 +11,7 @@ import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
 import { getTranslations } from "next-intl/server";
 import { labeler } from "@/i18n/labels";
+import { canSeeClinical } from "@/lib/permissions";
 import { mediaUrl } from "@/lib/media";
 import { Avatar } from "@/components/ui/avatar";
 
@@ -55,7 +56,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav />
+        <SidebarNav clinical={canSeeClinical(ctx.role)} />
       </div>
       <Separator />
       <div className="p-3 space-y-3 text-sm">
