@@ -5,6 +5,10 @@
 // URI de retorno a cadastrar no console: <origem>/api/integracoes/google/retorno
 import crypto from "node:crypto";
 
+// URI de retorno: APP_URL (domínio de produção cadastrado no Google) quando existir; senão, a origem do pedido.
+export const googleRedirectUri = (requestUrl: string) =>
+  new URL("/api/integracoes/google/retorno", process.env.APP_URL || requestUrl).toString();
+
 // Cookie curto com state, verificador PKCE e usuário, entre o início e o retorno da autorização.
 export const OAUTH_COOKIE = "salutti_google_oauth";
 
@@ -40,6 +44,8 @@ export function authUrl({ redirectUri, state, challenge, loginHint }: { redirect
 }
 
 export class GoogleScopeError extends Error {}
+// invalid_grant: a pessoa revogou o acesso, trocou a senha, ou (app em modo de teste) o token passou de 7 dias.
+export class GoogleTokenRevokedError extends Error {}
 
 // Troca o código pelo refresh token. Com o consentimento granular do Google, a pessoa pode desmarcar a
 // permissão do Agenda: nesse caso a conexão não serve e é recusada (o token é revogado).
@@ -89,7 +95,11 @@ export async function accessTokenFrom(refreshToken: string) {
       grant_type: "refresh_token",
     }),
   });
-  if (!res.ok) throw new Error(`Google OAuth: ${res.status}`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (body.error === "invalid_grant") throw new GoogleTokenRevokedError("refresh token vencido ou revogado");
+    throw new Error(`Google OAuth: ${res.status}`);
+  }
   return ((await res.json()) as { access_token: string }).access_token;
 }
 

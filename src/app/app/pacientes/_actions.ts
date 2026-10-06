@@ -80,21 +80,24 @@ export async function createPatientAction(_prev: FormResult, formData: FormData)
   } catch (e) {
     return fail(e);
   }
-  const patient = await db.patient.create({
-    data: {
-      workspaceId: ctx.workspace.id,
-      ...data,
-      photoId: photo.id,
-      ...(formData.get("consent") === "on"
-        ? {
-            consentRecords: {
-              create: [{ workspaceId: ctx.workspace.id, purpose: "tutela_saude", legalBasis: "tutela_saude", granted: true }],
-            },
-          }
-        : {}),
-    },
-  });
-  if (photo.id) await recordPhotoConsent(ctx.workspace.id, patient.id);
+  const consents = [
+    ...(formData.get("consent") === "on" ? [{ workspaceId: ctx.workspace.id, purpose: "tutela_saude", legalBasis: "tutela_saude" }] : []),
+    // Foto só com autorização própria (finalidade: identificação na recepção).
+    ...(photo.id ? [{ workspaceId: ctx.workspace.id, purpose: "foto_identificacao", legalBasis: "consentimento" }] : []),
+  ];
+  const patient = await db.patient
+    .create({
+      data: {
+        workspaceId: ctx.workspace.id,
+        ...data,
+        photoId: photo.id,
+        ...(consents.length ? { consentRecords: { create: consents.map((c) => ({ ...c, granted: true })) } } : {}),
+      },
+    })
+    .catch(async (e) => {
+      await photo.rollback();
+      throw e;
+    });
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -130,6 +133,13 @@ export async function updatePatientAction(_prev: FormResult, formData: FormData)
     });
   await photo.commit();
   if (photo.changed && photo.id) await recordPhotoConsent(ctx.workspace.id, patientId);
+  if (photo.changed && !photo.id) {
+    // Foto removida: a autorização de uso deixa de valer (fica registrada a revogação).
+    await db.consentRecord.updateMany({
+      where: { workspaceId: ctx.workspace.id, patientId, purpose: "foto_identificacao", revokedAt: null },
+      data: { granted: false, revokedAt: new Date() },
+    });
+  }
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

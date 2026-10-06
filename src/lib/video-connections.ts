@@ -1,32 +1,94 @@
-// Qual conta do Google cria o Meet de uma sessão: a do profissional que atende (usuário do consultório com o
-// mesmo e-mail do cadastro profissional e Google conectado); senão, a de quem está agendando. Sem nenhuma,
-// o provider usa a conta da plataforma (se configurada) ou o link simulado.
+// Em qual conta Google nasce o Meet de uma sessão: sempre na de quem atende (Professional.userId com o Google
+// conectado). Nunca na de quem agenda nem numa conta da plataforma: o dono da reunião controla quem entra na
+// sala, e o sigilo da sessão é do profissional (Código de Ética, art. 9º).
+// Sem o app OAuth da plataforma configurado (desenvolvimento, demonstração), o provider gera link simulado.
 import { db } from "./db";
 import { decryptSecret } from "./totp";
+import { googleOAuthConfigured, GoogleTokenRevokedError } from "./providers/google-oauth";
+import { video, type VideoProvider } from "./providers/video";
 
-export async function googleRefreshTokenFor({
-  workspaceId,
-  professionalId,
-  userId,
-}: {
-  workspaceId: string;
-  professionalId?: string | null;
-  userId: string;
-}): Promise<string | null> {
-  const professional = professionalId
-    ? await db.professional.findFirst({ where: { id: professionalId, workspaceId }, select: { email: true } })
-    : null;
-  const candidates = await db.integrationConnection.findMany({
-    where: {
-      provider: "google",
-      user: {
-        memberships: { some: { workspaceId } },
-        OR: [{ id: userId }, ...(professional?.email ? [{ email: { equals: professional.email, mode: "insensitive" as const } }] : [])],
-      },
-    },
-    include: { user: { select: { id: true, email: true } } },
-  });
-  const ofProfessional = candidates.find((c) => professional?.email && c.user.email.toLowerCase() === professional.email.toLowerCase());
-  const chosen = ofProfessional ?? candidates.find((c) => c.user.id === userId);
-  return chosen ? decryptSecret(chosen.refreshToken) : null;
+// Códigos de aviso mostrados na tela da sessão (?aviso=...).
+export type MeetIssue = "meet-sem-usuario" | "meet-sem-conexao" | "meet-reconectar" | "video";
+
+export class MeetAccountError extends Error {
+  constructor(public issue: MeetIssue) {
+    super(issue);
+  }
 }
+
+async function meetAccountFor(workspaceId: string, professionalId: string, userId: string) {
+  const professional = await db.professional.findFirst({
+    where: { id: professionalId, workspaceId },
+    select: { userId: true, email: true },
+  });
+  if (!professional) throw new MeetAccountError("meet-sem-usuario");
+  // Cadastro antigo sem vínculo: vale só se quem está agendando é o próprio profissional (mesmo e-mail).
+  let ownerId = professional.userId;
+  if (!ownerId) {
+    const me = await db.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (me && professional.email && me.email.toLowerCase() === professional.email.toLowerCase()) ownerId = userId;
+  }
+  if (!ownerId) throw new MeetAccountError("meet-sem-usuario");
+  const conn = await db.integrationConnection.findFirst({
+    where: { userId: ownerId, provider: "google", user: { memberships: { some: { workspaceId } } } },
+  });
+  if (!conn) throw new MeetAccountError("meet-sem-conexao");
+  try {
+    return { ownerId, connId: conn.id, refreshToken: decryptSecret(conn.refreshToken) };
+  } catch {
+    throw new MeetAccountError("meet-reconectar");
+  }
+}
+
+// Cria o link da sessão. Erros esperados viram MeetAccountError com o aviso certo para a tela.
+export async function createSessionMeeting(input: {
+  workspaceId: string;
+  professionalId: string;
+  userId: string;
+  provider: VideoProvider;
+  topic: string;
+  startsAt: Date;
+  durationMinutes: number;
+}) {
+  const base = { provider: input.provider, topic: input.topic, startsAt: input.startsAt, durationMinutes: input.durationMinutes };
+  if (input.provider !== "google_meet" || !googleOAuthConfigured()) {
+    const m = await video.createMeeting(base);
+    return { url: m.url, eventId: null, ownerId: null, simulated: m.simulated };
+  }
+  const account = await meetAccountFor(input.workspaceId, input.professionalId, input.userId);
+  try {
+    const m = await video.createMeeting({ ...base, googleRefreshToken: account.refreshToken });
+    return { url: m.url, eventId: m.externalId, ownerId: account.ownerId, simulated: m.simulated };
+  } catch (e) {
+    if (e instanceof GoogleTokenRevokedError) {
+      // Token vencido ou revogado no Google: a conexão não serve mais; Ajustes passa a pedir para conectar de novo.
+      await db.integrationConnection.deleteMany({ where: { id: account.connId } });
+      throw new MeetAccountError("meet-reconectar");
+    }
+    throw e;
+  }
+}
+
+// Ao cancelar a sessão, o evento sai da agenda de quem atende (falha aqui não impede o cancelamento).
+export async function cancelSessionMeeting(appt: { meetingEventId: string | null; meetingOwnerId: string | null }) {
+  if (!appt.meetingEventId || !appt.meetingOwnerId || !googleOAuthConfigured()) return;
+  const conn = await db.integrationConnection.findUnique({
+    where: { userId_provider: { userId: appt.meetingOwnerId, provider: "google" } },
+  });
+  if (!conn) return;
+  try {
+    await video.deleteGoogleEvent(decryptSecret(conn.refreshToken), appt.meetingEventId);
+  } catch (e) {
+    console.error("[video] falha ao apagar evento do Google", e);
+  }
+}
+
+export const MEET_ISSUE_TEXT: Record<MeetIssue, string> = {
+  "meet-sem-usuario":
+    "O Meet é criado na conta Google de quem atende, e este profissional não tem usuário vinculado na Salutti. A sessão foi salva sem link.",
+  "meet-sem-conexao":
+    "Quem atende ainda não conectou a conta Google (Ajustes → Google Meet). A sessão foi salva sem link; gere depois de conectar.",
+  "meet-reconectar":
+    "A conexão com o Google expirou ou foi revogada. Quem atende precisa conectar de novo em Ajustes → Google Meet.",
+  video: "Não foi possível gerar o link da videochamada. Tente gerar de novo em instantes.",
+};
