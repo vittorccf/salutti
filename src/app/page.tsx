@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { LogoDialogo } from "@/components/brand/logo-dialogo";
 import { getTranslations } from "@/i18n/server";
 
 // Textos em public.home.features.<chave> e public.home.differentiators.<chave>.
@@ -31,11 +31,11 @@ const differentiators = ["noCrp", "erp", "offline"];
 export default async function Home() {
   const t = await getTranslations("public.home");
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-accent/30">
+    <main className="ds2 min-h-screen">
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="container flex items-center justify-between gap-3 py-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label="Salutti">
-            <Logo size={24} />
+            <LogoDialogo size={24} />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
@@ -48,12 +48,13 @@ export default async function Home() {
         </div>
       </nav>
 
-      <section className="container py-20 text-center">
+      <section className="ds2-glow">
+      <div className="container py-20 text-center">
         <Badge variant="muted" className="mb-4">
           <Sparkles className="h-3 w-3" aria-hidden /> {t("badge")}
         </Badge>
-        <h1 className="mx-auto max-w-3xl text-4xl md:text-6xl font-bold tracking-tight">
-          {t.rich("headline", { hl: (chunks) => <span className="text-primary">{chunks}</span> })}
+        <h1 className="text-hero mx-auto max-w-3xl">
+          {t.rich("headline", { hl: (chunks) => <span className="text-accent-serif">{chunks}</span> })}
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
           {t("subtitle")}
@@ -71,6 +72,7 @@ export default async function Home() {
         <p className="mt-3 text-xs text-muted-foreground">
           {t("fineprint")}
         </p>
+      </div>
       </section>
 
       <section className="container pb-20 grid gap-4 md:grid-cols-3">

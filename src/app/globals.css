@@ -79,3 +79,90 @@
   body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
   h1, h2, h3 { @apply font-display; }
 }
+
+
+/* Design system Salutti 2.0 (artifact "Salutti 2.0", tokens.json), aplicado por enquanto só nas telas de
+   entrada (página inicial, login e cadastro) com a classe `ds2` no elemento raiz da página. O resto do app
+   continua no design atual até a migração completa. */
+@layer base {
+  .ds2 {
+    --background: 240 54% 97%;
+    --foreground: 228 22% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 228 22% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 228 22% 9%;
+    --primary: 228 22% 9%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 48% 95%;
+    --secondary-foreground: 228 22% 9%;
+    --muted: 240 48% 95%;
+    --muted-foreground: 234 15% 42%;
+    --accent: 236 68% 95%;
+    --accent-foreground: 234 49% 44%;
+    --destructive: 358 68% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-strong: 0 66% 47%;
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 100%;
+    --success-strong: 142 69% 25%;
+    --warning: 37 91% 55%;
+    --warning-foreground: 228 22% 9%;
+    --warning-strong: 35 92% 28%;
+    --border: 236 35% 92%;
+    --input: 233 16% 59%;
+    --ring: 234 54% 54%;
+    --primary-strong: 234 54% 54%;
+    --brand-ink: 228 22% 9%;
+    --brand-mist: 210 29% 93%;
+    --brand-peach: 15 74% 74%;
+    --highlight: 15 74% 74%;
+    --highlight-foreground: 228 22% 9%;
+    --radius: 12px;
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  .dark .ds2 {
+    --background: 213 31% 7%;
+    --foreground: 210 29% 93%;
+    --card: 214 31% 10%;
+    --card-foreground: 210 29% 93%;
+    --popover: 214 31% 10%;
+    --popover-foreground: 210 29% 93%;
+    --primary: 210 29% 93%;
+    --primary-foreground: 213 31% 7%;
+    --secondary: 213 29% 13%;
+    --secondary-foreground: 210 29% 93%;
+    --muted: 213 29% 13%;
+    --muted-foreground: 211 15% 67%;
+    --accent: 213 30% 13%;
+    --accent-foreground: 211 35% 83%;
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 213 31% 7%;
+    --destructive-strong: 0 91% 71%;
+    --success: 142 69% 58%;
+    --success-foreground: 213 31% 7%;
+    --success-strong: 142 69% 58%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 213 31% 7%;
+    --warning-strong: 46 97% 65%;
+    --border: 212 26% 18%;
+    --input: 214 15% 44%;
+    --ring: 211 30% 65%;
+    --primary-strong: 211 30% 65%;
+  }
+  .ds2 h1, .ds2 h2, .ds2 h3 { font-family: inherit; }
+  .ds2 .rounded-xl { border-radius: 18px; }
+  .ds2 .lucide { stroke-width: 1.75; }
+}
+
+@layer components {
+  .ds2 .text-hero { font-size: clamp(36px, 6vw, 52px); line-height: 1.08; font-weight: 500; letter-spacing: -0.035em; }
+  .ds2 .text-display { font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.03em; }
+  .ds2 .text-page-title { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .ds2 .text-accent-serif { font-family: var(--font-serif), ui-serif, Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; }
+  /* Um degradê por tela: brilho no topo (Dia lavanda, Noite ardósia). */
+  .ds2-glow { background-image: radial-gradient(60% 55% at 50% 0%, rgba(199, 205, 240, 0.9) 0%, rgba(245, 245, 252, 0) 100%); }
+  .dark .ds2-glow { background-image: radial-gradient(60% 55% at 50% 0%, rgba(74, 106, 143, 0.33) 0%, rgba(12, 17, 23, 0) 100%); }
+}
