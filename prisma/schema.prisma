@@ -20,6 +20,13 @@ model User {
   passwordHash  String
   avatarUrl     String?
   createdAt     DateTime      @default(now())
+  // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
+  // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.
+  totpSecret         String?
+  totpEnabledAt      DateTime?
+  totpRecoveryHashes String?
+  totpFailedAttempts Int       @default(0)
+  totpLockedUntil    DateTime?
   memberships   Membership[]
   auditEvents   AuditLog[]    @relation("AuditUser")
 }

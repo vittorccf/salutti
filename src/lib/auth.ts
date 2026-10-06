@@ -59,11 +59,40 @@ export const getSession = async (): Promise<SessionPayload | null> => {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secretKey());
+    // O token da etapa de 2FA usa a mesma chave: nunca pode valer como sessão.
+    if (payload.aud === TWO_FACTOR_AUDIENCE) return null;
     return payload as unknown as SessionPayload;
   } catch {
     return null;
   }
 };
+
+// --- Etapa de verificação em duas etapas (entre a senha e a sessão) ---
+const COOKIE_2FA = "salutti_2fa";
+const TWO_FACTOR_AUDIENCE = "salutti-2fa";
+
+export const startTwoFactor = async (userId: string) => {
+  const token = await new SignJWT({ userId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setAudience(TWO_FACTOR_AUDIENCE)
+    .setIssuedAt()
+    .setExpirationTime("5m")
+    .sign(secretKey());
+  cookies().set(COOKIE_2FA, token, { ...cookieBase, maxAge: 5 * 60 });
+};
+
+export const getPendingTwoFactor = async (): Promise<string | null> => {
+  const token = cookies().get(COOKIE_2FA)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), { audience: TWO_FACTOR_AUDIENCE });
+    return typeof payload.userId === "string" ? payload.userId : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearPendingTwoFactor = () => cookies().delete(COOKIE_2FA);
 
 export const setActiveWorkspaceCookie = (workspaceId: string) => {
   cookies().set(COOKIE_WS, workspaceId, cookieBase);
