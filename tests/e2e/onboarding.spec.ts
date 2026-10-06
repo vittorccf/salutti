@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("conta nova: cadastro → primeiros passos até 'Tudo pronto'", async ({ page }) => {
   const email = `onboarding-${Date.now()}@teste.dev`;
   await page.goto("/signup");
+  await page.getByText("Profissional autônomo", { exact: true }).click();
   await page.locator("#name").fill("Marina Teste");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");

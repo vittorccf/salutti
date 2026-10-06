@@ -9,6 +9,7 @@ import { formatBRL, formatDateTimeBR, formatPercentBR, greetingBR, plural } from
 import {
   AlertTriangle,
   ArrowUpRight,
+  CakeSlice,
   CalendarDays,
   Clock,
   Sparkles,
@@ -20,8 +21,26 @@ import { insightsEngine } from "@/lib/providers/insights";
 import { modalityLabel } from "@/lib/labels";
 import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
 import { onboardingProgress } from "@/lib/onboarding";
+import { upcomingBirthdays, whenLabel, type BirthdayPerson } from "@/lib/birthdays";
 
 export const dynamic = "force-dynamic";
+
+// Saber quem é paciente já é dado sensível: recepção e financeiro não veem; na clínica, cada profissional vê
+// só quem ele atende (cadastro profissional com o mesmo e-mail do usuário); a pessoa pode desligar em Ajustes.
+async function patientBirthdaysFor(ctx: Awaited<ReturnType<typeof requireContext>>) {
+  if (!ctx.user.showPatientBirthdays || ctx.role === "receptionist" || ctx.role === "financial") return [];
+  const base = { workspaceId: ctx.workspace.id, active: true, deletedAt: null, anonymized: false, birthDate: { not: null } };
+  const where =
+    ctx.workspace.accountType === "clinica"
+      ? {
+          ...base,
+          appointments: {
+            some: { professional: { email: { equals: ctx.user.email, mode: "insensitive" as const } } },
+          },
+        }
+      : base;
+  return db.patient.findMany({ where, select: { id: true, fullName: true, birthDate: true } });
+}
 
 export default async function DashboardPage() {
   const ctx = await requireContext();
@@ -41,6 +60,8 @@ export default async function DashboardPage() {
     todayAppointments,
     activePatients,
     insights,
+    patientBirthdays,
+    professionalBirthdays,
   ] = await Promise.all([
     db.charge.aggregate({
       where: { workspaceId: wsId, status: "paid", paidAt: { gte: thisMonth } },
@@ -70,7 +91,23 @@ export default async function DashboardPage() {
     }),
     db.patient.count({ where: { workspaceId: wsId, active: true, deletedAt: null } }),
     db.aiInsight.findMany({ where: { workspaceId: wsId }, orderBy: { createdAt: "desc" }, take: 4 }),
+    patientBirthdaysFor(ctx),
+    db.professional.findMany({
+      where: { workspaceId: wsId, active: true, birthDate: { not: null } },
+      select: { id: true, fullName: true, email: true, birthDate: true },
+    }),
   ]);
+
+  // O cadastro profissional do próprio usuário (mesmo e-mail) não aparece duas vezes.
+  const people: BirthdayPerson[] = [
+    ...(ctx.user.birthDate ? [{ kind: "self" as const, id: ctx.user.id, name: ctx.user.name, birthDate: ctx.user.birthDate }] : []),
+    ...professionalBirthdays
+      .filter((p) => !(ctx.user.birthDate && p.email?.toLowerCase() === ctx.user.email.toLowerCase()))
+      .map((p) => ({ kind: "professional" as const, id: p.id, name: p.fullName, birthDate: p.birthDate! })),
+    ...patientBirthdays.map((p) => ({ kind: "patient" as const, id: p.id, name: p.fullName, birthDate: p.birthDate! })),
+  ];
+  const birthdays = upcomingBirthdays(people, now, 7);
+  const myBirthdayToday = birthdays.some((b) => b.kind === "self" && b.daysUntil === 0);
 
   const onboarding = await onboardingProgress(wsId);
 
@@ -89,7 +126,7 @@ export default async function DashboardPage() {
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {greetingBR(now)}, {ctx.user.name.split(" ")[0]} 👋
+            {myBirthdayToday ? `Feliz aniversário, ${ctx.user.name.split(" ")[0]}!` : `${greetingBR(now)}, ${ctx.user.name.split(" ")[0]}`}
           </h1>
           <p className="text-muted-foreground">
             Resumo de <strong className="text-foreground">{ctx.workspace.name}</strong>
@@ -123,6 +160,47 @@ export default async function DashboardPage() {
             <Button asChild>
               <Link href="/app/primeiros-passos">Continuar</Link>
             </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {birthdays.length > 0 ? (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CakeSlice className="h-5 w-5 text-primary-strong" aria-hidden /> Aniversários · próximos 7 dias
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {birthdays.map((b) => (
+                <li
+                  key={`${b.kind}-${b.id}`}
+                  className={`flex items-center justify-between gap-3 rounded-md border p-3 text-sm ${b.daysUntil === 0 ? "border-primary/40 bg-accent/40" : ""}`}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">
+                      {b.kind === "patient" ? (
+                        <Link href={`/app/pacientes/${b.id}`} className="hover:underline underline-offset-4">
+                          {b.name}
+                        </Link>
+                      ) : b.kind === "self" ? (
+                        "Você"
+                      ) : (
+                        b.name
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {b.kind === "patient" ? "Paciente" : b.kind === "professional" ? "Equipe" : "Seu aniversário"} · {b.dayMonth}
+                      {b.kind !== "patient" && b.turning > 0 ? ` · ${b.turning} anos` : ""}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-primary-strong" : "text-muted-foreground"}`}>
+                    {whenLabel(b.daysUntil)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       ) : null}
@@ -175,19 +253,19 @@ export default async function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> LUMA · insights financeiros e clínicos
+              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> TOBI · insights financeiros e clínicos
               <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
             </CardTitle>
             <CardDescription>Gerados a partir dos seus dados em tempo real.</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/app/luma">Ver todos</Link>
+            <Link href="/app/tobi">Ver todos</Link>
           </Button>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           {liveInsights.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum insight ainda. Quando você registrar sessões e cobranças, a LUMA analisa os dados aqui.
+              Nenhum insight ainda. Quando você registrar sessões e cobranças, o TOBI analisa os dados aqui.
             </p>
           ) : (
             liveInsights.map((insight) => (

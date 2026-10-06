@@ -7,7 +7,7 @@ const sora = Sora({ subsets: ["latin"], weight: ["500", "600", "700"], variable:
 const figtree = Figtree({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-figtree", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Salutti - ERP de Saúde com IA Financeira",
+  title: "Salutti",
   description:
     "ERP SaaS para profissionais de saúde mental. Agenda, prontuário, automação financeira, fiscal e IA preditiva - em conformidade com LGPD.",
 };

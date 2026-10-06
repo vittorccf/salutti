@@ -31,7 +31,7 @@ const routes = [
   "/app/prontuario",
   "/app/financeiro",
   "/app/fiscal",
-  "/app/luma",
+  "/app/tobi",
   "/app/comunicacao",
   "/app/equipe",
   "/app/lgpd",

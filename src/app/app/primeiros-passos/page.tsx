@@ -38,12 +38,17 @@ async function createFirstProfessionalAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const data = professionalSchema.parse(Object.fromEntries(formData.entries()));
+  // Autônomo: um profissional ativo (reenvio do formulário não cria um segundo).
+  if (ctx.workspace.accountType === "autonomo" && (await db.professional.count({ where: { workspaceId: ctx.workspace.id, active: true } })) > 0) {
+    redirect("/app/primeiros-passos");
+  }
   const noCouncil = data.councilType === "sem_registro";
   const created = await db.professional.create({
     data: {
       workspaceId: ctx.workspace.id,
       fullName: data.fullName,
       email: ctx.user.email,
+      birthDate: ctx.user.birthDate,
       professionalType: data.professionalType,
       noCouncil,
       councilType: data.councilType,

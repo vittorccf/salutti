@@ -79,8 +79,9 @@ async function main() {
     data: {
       name: "Consultório Guilherme Quintino",
       slug: "consultorio-guilherme",
+      accountType: "autonomo",
       segment: "solo_psicologo",
-      cnpj: "12.345.678/0001-90",
+      cnpj: "11.222.333/0001-81",
       trialEndsAt: addDays(new Date(), 13),
       planTier: "trial",
       memberships: { create: { userId: guilherme.id, role: "owner" } },
@@ -101,8 +102,9 @@ async function main() {
     data: {
       name: "UBS Turvânia · Odonto",
       slug: "ubs-turvania",
+      accountType: "clinica",
       segment: "ubs",
-      cnpj: "00.000.000/0001-00",
+      cnpj: "11.444.777/0001-61",
       trialEndsAt: addDays(new Date(), 13),
       planTier: "trial",
       memberships: { create: { userId: kris.id, role: "owner" } },

@@ -17,7 +17,7 @@ export async function createProfessional(page: Page, name: string) {
   await page.goto("/app/equipe");
   await page.locator("#fullName").fill(name);
   await page.getByRole("button", { name: "Cadastrar profissional" }).click();
-  await expect(page.getByRole("cell", { name })).toBeVisible();
+  await expect(page.getByRole("cell", { name, exact: true })).toBeVisible();
 }
 
 export async function createPatient(page: Page, name: string) {
