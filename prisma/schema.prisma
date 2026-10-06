@@ -38,6 +38,8 @@ model Workspace {
   // tipo da operação: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
   segment         String         @default("solo_psicologo")
   cnpj            String?
+  // CNES do estabelecimento (TISS); sem CNES as guias usam 9999999, como manda a ANS.
+  cnes            String?
   legalRepName    String?
   trialEndsAt     DateTime?
   planTier        String         @default("trial") // trial | starter | pro | enterprise
@@ -59,6 +61,9 @@ model Workspace {
   aiInsights      AiInsight[]
   dailyCards      DailyCard[]
   notifications   NotificationLog[]
+  insurancePlans  InsurancePlan[]
+  tissBatches     TissBatch[]
+  tissGuides      TissGuide[]
 }
 
 model Membership {
@@ -88,6 +93,7 @@ model Professional {
   // CRP, CRM, CRO, "sem_registro" (psicanalistas/terapeutas)
   councilType   String        @default("CRP")
   councilNumber String?       // pode ser nulo p/ "sem_registro"
+  councilUF     String?       // UF do conselho, código IBGE (TISS Tabela 59), ex.: "52" = GO
   noCouncil     Boolean       @default(false) // flag explícita - oceano azul "Sem CRP"
   specialty     String?
   bio           String?
@@ -119,9 +125,13 @@ model Patient {
   // Soft delete LGPD
   deletedAt     DateTime?
   anonymized    Boolean       @default(false)
+  // Convênio (TISS)
+  insurancePlanId     String?
+  insuranceCardNumber String?   // número da carteirinha
   createdAt     DateTime      @default(now())
 
   workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  insurancePlan InsurancePlan? @relation(fields: [insurancePlanId], references: [id], onDelete: SetNull)
   appointments  Appointment[]
   clinicalNotes ClinicalNote[]
   receipts      Receipt[]
@@ -162,13 +172,17 @@ model Appointment {
   price           Float
   notes           String?
   reminderSentAt  DateTime?
+  // Sessão faturada por convênio (sem cobrança particular); vira guia TISS depois de realizada.
+  insurancePlanId String?
   createdAt       DateTime      @default(now())
 
   workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   patient         Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   professional    Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  insurancePlan   InsurancePlan? @relation(fields: [insurancePlanId], references: [id], onDelete: SetNull)
   clinicalNote    ClinicalNote?
   charge          Charge?
+  tissGuide       TissGuide?
 
   @@index([workspaceId, startsAt])
 }
@@ -394,4 +408,60 @@ model NotificationLog {
   createdAt    DateTime @default(now())
 
   workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ----------------------- CONVÊNIOS / TISS ----------------------
+
+model InsurancePlan {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  name         String
+  ansRegistry  String   // registro ANS da operadora (6 dígitos)
+  providerCode String?  // código do prestador na operadora (senão usa o CNPJ do consultório)
+  sessionPrice Float    // valor contratado por consulta/sessão
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patients     Patient[]
+  appointments Appointment[]
+  batches      TissBatch[]
+
+  @@index([workspaceId])
+}
+
+// Lote de guias enviado à operadora (um tipo de guia por lote, até 100 guias).
+model TissBatch {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  insurancePlanId String
+  number          Int      // número do lote, sequencial por consultório
+  guideType       String   // consulta | sp_sadt
+  xml             String   // mensagem TISS gerada (versão 4.03.00)
+  hash            String   // hash MD5 do epílogo
+  totalAmount     Float
+  createdAt       DateTime @default(now())
+
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  insurancePlan   InsurancePlan @relation(fields: [insurancePlanId], references: [id], onDelete: Cascade)
+  guides          TissGuide[]
+
+  @@unique([workspaceId, number])
+}
+
+model TissGuide {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  batchId       String
+  appointmentId String   @unique
+  guideNumber   String   // numeroGuiaPrestador
+  procedureCode String   // TUSS (tabela 22)
+  amount        Float
+  createdAt     DateTime @default(now())
+
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  batch         TissBatch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
 }

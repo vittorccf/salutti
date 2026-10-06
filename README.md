@@ -93,6 +93,16 @@ Em Ajustes → Plano Salutti, quem é dono do consultório assina Starter ou Pro
 2. Crie o endpoint de webhook `https://<seu-domínio>/api/stripe/webhook` com os eventos `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted`, e preencha `STRIPE_WEBHOOK_SECRET`.
 3. Ative o Customer Portal do Stripe para o botão "Gerenciar assinatura e faturas".
 
+### Convênios e faturamento TISS
+
+Em **Convênios**, cadastre a operadora (registro ANS, valor contratado por sessão e, se houver, o código do prestador) e os dados do prestador (CNPJ e CNES). Vincule o paciente ao convênio com o número da carteirinha, agende a sessão com "Forma de pagamento: Convênio" e, depois de realizada, gere o lote em **Convênios → Faturar**. O XML sai no **Padrão TISS 4.03.00** (ISO-8859-1), pronto para enviar pelo portal da operadora.
+
+- Psicólogo: guia **SP/SADT**, procedimento TUSS **50000470** (sessão de psicoterapia individual por psicólogo), CRP 09, CBO 251510.
+- Psiquiatra/médico: guia de **consulta**, TUSS **10101012**, CRM 06.
+- Sessão online sai com regime 05 (telessaúde); presencial, 01 (ambulatorial). Sem CNES, a guia usa 9999999.
+- Odontologia (guia GTO) e profissionais sem conselho ainda não são faturáveis.
+- O XML é validado nos testes contra os XSD oficiais (`tests/fixtures/tiss-4.03.00`). Operadoras podem exigir autorização prévia, senha ou pedido médico: confira o contrato antes do primeiro envio.
+
 ### Videochamada (Google Meet e Zoom)
 
 Ao agendar uma sessão online, escolha Google Meet ou Zoom e o link é gerado na hora (também dá para gerar depois, na tela da sessão). Sem as chaves abaixo, o link é **simulado** e aparece com o selo "Simulado". O título da reunião é genérico ("Sessão · Salutti"): o nome do paciente não vai para o Google nem para o Zoom.
