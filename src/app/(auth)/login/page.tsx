@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -56,6 +57,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
   return (
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
+      <div className="fixed right-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <Logo variant="icon" size={48} className="mx-auto" />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTranslations } from "@/i18n/server";
 import { SignupForm } from "./signup-form";
@@ -7,6 +8,9 @@ export default async function SignupPage() {
   const t = await getTranslations("auth.signup");
   return (
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4 py-12">
+      <div className="fixed right-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-[560px]">
         <CardHeader className="text-center">
           <CardTitle>{t("title")}</CardTitle>
