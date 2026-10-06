@@ -20,6 +20,10 @@ model User {
   name          String
   passwordHash  String
   avatarUrl     String?
+  // Aniversário do próprio usuário (lembrete no painel). Só dia e mês importam para o lembrete.
+  birthDate     DateTime?
+  // Lembrete de aniversário de pacientes no painel (cada profissional decide; equipe e o próprio sempre aparecem).
+  showPatientBirthdays Boolean @default(true)
   createdAt     DateTime      @default(now())
   // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
   // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.
@@ -36,11 +40,21 @@ model Workspace {
   id              String         @id @default(cuid())
   name            String
   slug            String         @unique
-  // tipo da operação: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
+  // Tipo de conta, escolhido no cadastro e trocável em Ajustes: autonomo (um profissional) | clinica (equipe).
+  accountType     String         @default("autonomo")
+  // área de atendimento: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
   segment         String         @default("solo_psicologo")
   cnpj            String?
   // CNES do estabelecimento (TISS); sem CNES as guias usam 9999999, como manda a ANS.
   cnes            String?
+  // Endereço do consultório (CEP preenche rua, bairro, cidade e UF).
+  cep           String?
+  street        String?
+  addressNumber String?
+  complement    String?
+  district      String?
+  city          String?
+  state         String?
   legalRepName    String?
   trialEndsAt     DateTime?
   planTier        String         @default("trial") // trial | starter | pro | enterprise
@@ -99,6 +113,7 @@ model Professional {
   specialty     String?
   bio           String?
   hourlyRate    Float?
+  birthDate     DateTime?
   active        Boolean       @default(true)
   createdAt     DateTime      @default(now())
 
@@ -121,6 +136,14 @@ model Patient {
   responsibleName String?
   emergencyContact String?
   address       String?
+  // Endereço estruturado (CEP preenche rua, bairro, cidade e UF). "address" fica para dados antigos.
+  cep           String?
+  street        String?
+  addressNumber String?
+  complement    String?
+  district      String?
+  city          String?
+  state         String?
   notes         String?       // observações não-clínicas (campo "livre" não-sensível)
   active        Boolean       @default(true)
   // Soft delete LGPD
@@ -212,7 +235,7 @@ model ClinicalNote {
   noteType        String       @default("evolucao") // anamnese | evolucao | plano_terapeutico | alta
   // Conteúdo criptografado em produção; aqui texto puro p/ protótipo
   contentMarkdown String
-  // Sumário gerado pela IA LUMA
+  // Sumário gerado pela IA TOBI
   aiSummary       String?
   aiTopics        String?      // CSV de temas detectados
   signedAt        DateTime?

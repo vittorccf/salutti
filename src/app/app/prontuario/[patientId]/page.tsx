@@ -35,7 +35,7 @@ export default async function ProntuarioPatientPage({
         <div>
           <h1 className="text-2xl font-bold">Prontuário · {patient.fullName}</h1>
           <p className="text-sm text-muted-foreground">
-            {plural(patient.clinicalNotes.length, "registro", "registros")} · a LUMA resume cada evolução ao salvar.
+            {plural(patient.clinicalNotes.length, "registro", "registros")} · o TOBI resume cada evolução ao salvar.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -59,7 +59,7 @@ export default async function ProntuarioPatientPage({
               <Sparkles className="mx-auto h-6 w-6 text-primary-strong" aria-hidden />
               <p className="mt-3 font-semibold">Nenhuma evolução registrada</p>
               <p className="text-sm text-muted-foreground">
-                Registre a primeira evolução e a LUMA gera o resumo da sessão.
+                Registre a primeira evolução e o TOBI gera o resumo da sessão.
               </p>
             </CardContent>
           </Card>
@@ -87,7 +87,7 @@ export default async function ProntuarioPatientPage({
                 {n.aiSummary ? (
                   <div className="rounded-md border bg-accent/20 p-3 text-sm">
                     <p className="font-semibold flex items-center gap-2 text-primary-strong">
-                      <Sparkles className="h-4 w-4" aria-hidden /> Resumo da LUMA
+                      <Sparkles className="h-4 w-4" aria-hidden /> Resumo gerado por IA (TOBI) · revise antes de usar
                     </p>
                     <pre className="mt-2 whitespace-pre-wrap font-sans text-sm">{n.aiSummary}</pre>
                     {n.aiTopics ? (

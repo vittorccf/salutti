@@ -33,7 +33,7 @@ const features = [
   },
   {
     icon: <Brain className="h-5 w-5" />,
-    title: "LUMA - IA clínica + preditiva",
+    title: "TOBI - IA clínica + preditiva",
     desc: "Sumarização de sessões em segundos, insights financeiros (\"sua receita caiu 12%\") e detecção de churn.",
   },
   {

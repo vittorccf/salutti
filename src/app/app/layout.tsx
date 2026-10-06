@@ -10,6 +10,7 @@ import { UserMenu } from "./_components/user-menu";
 import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
 import { planTierLabel, segmentLabel } from "@/lib/labels";
+import { accountTypeLabel } from "@/lib/account";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getCurrentContext();
@@ -68,7 +69,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 <Logo size={20} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
-                {segmentLabel(ctx.workspace.segment)}
+                {accountTypeLabel(ctx.workspace.accountType)} · {segmentLabel(ctx.workspace.segment)}
               </Badge>
               <p className="hidden truncate text-sm text-muted-foreground lg:block">
                 LGPD ativo · auditoria habilitada · multi-tenant

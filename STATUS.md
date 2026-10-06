@@ -39,7 +39,7 @@ Pacientes e profissionais fictícios removidos do banco local (`prisma/prisma/de
 Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a partir deste código; tokens idênticos, conferidos nos dois temas).
 
 **Feito (tsc + lint ok em cada etapa; build completo ok no fim):**
-- Tokens do DS aplicados; todas as 26 telas seguindo as regras de uso (status pt-BR via `StatusBadge`, `plural`, formato BR, rótulos em `src/lib/labels.ts` e `src/lib/lgpd.ts`, humor sem emoji em `src/lib/mood.ts`, valores tabulares à direita, voz da LUMA em `insights.ts`).
+- Tokens do DS aplicados; todas as 26 telas seguindo as regras de uso (status pt-BR via `StatusBadge`, `plural`, formato BR, rótulos em `src/lib/labels.ts` e `src/lib/lgpd.ts`, humor sem emoji em `src/lib/mood.ts`, valores tabulares à direita, voz da TOBI em `insights.ts`).
 - Menu do perfil com tema claro/escuro (`next-themes`, chave `salutti-theme`); nav com item ativo; sidebar vira gaveta abaixo de `md`.
 - Contraste AA em todos os pares de texto nos dois temas: `muted-foreground` claro 47% → 44% e novo token `destructive-strong`.
 - Bugs pré-existentes corrigidos: logout por GET disparado pelo prefetch (agora só POST); `<div>` do Badge dentro de `<p>` (erro de hidratação #418); layout mobile com scroll horizontal; título invisível no aviso da tela Fiscal.
@@ -49,9 +49,9 @@ Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a parti
 1. ~~Rodar `npx next build`~~: build completo passou em 2026-10-06.
 2. ~~Espelhar no artifact do DS as mudanças de token~~: publicado em 2026-10-06 (versão 6 do artifact).
 3. ~~Fuso horário~~: corrigido na branch `fix/timezone` (`src/lib/dates.ts`): grava, exibe e compara em `America/Sao_Paulo`; campos só-data em 00:00 SP; vencida só a partir do dia seguinte. Testado com o servidor em UTC, São Paulo, Tóquio e Los Angeles (saída idêntica). Registros criados antes pelo formulário (só-data em 00:00 UTC) aparecem um dia antes; o seed não é afetado.
-4. **Insights da LUMA já salvos no banco** mantêm o texto antigo até "Recalcular insights" (ou novo seed).
+4. **Insights da TOBI já salvos no banco** mantêm o texto antigo até "Recalcular insights" (ou novo seed).
 5. Botões em `primary-strong` nas páginas públicas estão sobrescritos via `className`; considerar uma variante do `Button`.
-6. Imports sem uso antigos: `fiscal/page.tsx` (`Link`, `Button`, `formatDateTimeBR`, `Landmark`), `equipe/page.tsx` (`Link`), `luma/page.tsx` (`CardDescription`).
+6. Imports sem uso antigos: `fiscal/page.tsx` (`Link`, `Button`, `formatDateTimeBR`, `Landmark`), `equipe/page.tsx` (`Link`), `tobi/page.tsx` (`CardDescription`).
 
 ## Onde parou
 
@@ -62,7 +62,7 @@ Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a parti
 
 ## O que está funcionando (protótipo navegável completo)
 
-Agenda, prontuário (anamnese + evolução com sumarização LUMA), financeiro (cobranças, link de pagamento público, régua de cobrança), fiscal (NFS-e/recibos), comunicação (WhatsApp mock), IA preditiva financeira (LUMA), portal do paciente, LGPD (painel + exportação + audit log), multi-tenant com dois workspaces demo (psicólogo solo + UBS odonto). Todas as integrações externas são mocks deliberados e documentados (não são bugs).
+Agenda, prontuário (anamnese + evolução com sumarização TOBI), financeiro (cobranças, link de pagamento público, régua de cobrança), fiscal (NFS-e/recibos), comunicação (WhatsApp mock), IA preditiva financeira (TOBI), portal do paciente, LGPD (painel + exportação + audit log), multi-tenant com dois workspaces demo (psicólogo solo + UBS odonto). Todas as integrações externas são mocks deliberados e documentados (não são bugs).
 
 ## Pendências técnicas encontradas na retomada (além do roadmap do ARCHITECTURE.md §9)
 

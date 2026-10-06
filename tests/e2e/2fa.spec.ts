@@ -5,6 +5,7 @@ const PASSWORD = "senha-segura-123";
 
 async function signup(page: Page, email: string) {
   await page.goto("/signup");
+  await page.getByText("Profissional autônomo", { exact: true }).click();
   await page.locator("#name").fill("Conta 2FA");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill(PASSWORD);

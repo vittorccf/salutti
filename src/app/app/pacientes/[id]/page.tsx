@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
-import { CalendarPlus, FilePlus2, Receipt as ReceiptIcon, ShieldCheck, Smartphone } from "lucide-react";
+import { CalendarPlus, FilePlus2, Pencil, Receipt as ReceiptIcon, ShieldCheck, Smartphone } from "lucide-react";
 import { differenceInYears } from "date-fns";
 import { moodLabel } from "@/lib/mood";
 import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
@@ -17,6 +17,8 @@ import { assertInWorkspace, assertInsurancePlan } from "@/lib/tenant";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { PhoneText } from "@/components/ui/phone";
+import { formatAddress } from "@/lib/address";
 
 export const dynamic = "force-dynamic";
 
@@ -72,12 +74,26 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Paciente · {patient.fullName}</h1>
-          <p className="text-sm text-muted-foreground">
-            {age !== null ? `${age} anos · ` : ""}
-            {patient.phone ?? "sem telefone"} · {patient.email ?? "sem e-mail"}
-          </p>
+          {age !== null ? <p className="text-sm text-muted-foreground">{age} anos</p> : null}
+          {/* Contato e endereço recolhidos: a ficha costuma ficar aberta em telas compartilhadas (sigilo, art. 9º do Código de Ética). */}
+          <details className="mt-1 text-sm text-muted-foreground">
+            <summary className="cursor-pointer w-fit text-primary-strong">Ver contato e endereço</summary>
+            <div className="mt-1 space-y-0.5">
+              <p className="flex flex-wrap items-center gap-x-1.5">
+                <PhoneText value={patient.phone} fallback="sem telefone" />
+                <span>· {patient.email ?? "sem e-mail"}</span>
+              </p>
+              {formatAddress(patient) ? <p>{formatAddress(patient)}</p> : null}
+              {patient.address ? <p>Endereço anterior: {patient.address}</p> : null}
+            </div>
+          </details>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" asChild>
+            <Link href={`/app/pacientes/${patient.id}/editar`}>
+              <Pencil className="h-4 w-4" /> Editar
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href={`/app/agenda/novo?patientId=${patient.id}`}>
               <CalendarPlus className="h-4 w-4" /> Agendar sessão

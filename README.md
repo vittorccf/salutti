@@ -2,7 +2,7 @@
 
 > ERP SaaS para profissionais autônomos e clínicas de saúde mental (psicólogos, psicanalistas, terapeutas, psiquiatras), com expansão prevista para odontologia e UBS.
 >
-> Diferencial: **automação financeira-fiscal com IA preditiva (LUMA)** - vai além das "agendas bonitas" dos concorrentes (Sintropia, Sinappsy, Agendart).
+> Diferencial: **automação financeira-fiscal com IA preditiva (TOBI)** - vai além das "agendas bonitas" dos concorrentes (Sintropia, Sinappsy, Agendart).
 
 ## ⚡ Subir em 60 segundos
 
@@ -43,8 +43,8 @@ Cobertura completa do prompt original:
 | Régua de cobrança automática                                            | `/app/financeiro/regua` |
 | Anamnese personalizável por especialidade                                | `/app/prontuario/[patient]/anamnese` |
 | Receituário/Prontuário com assinatura ICP-Brasil (placeholder)          | `/app/prontuario/...` · hash SHA-256 sandbox |
-| **Sumarização IA de sessão (LUMA)**                                     | `/app/prontuario/[p]/nova-evolucao` · `lib/providers/llm.ts` |
-| **IA Financeira Preditiva** ("sua receita caiu 12%")                    | `/app/luma`, `lib/providers/insights.ts` |
+| **Sumarização IA de sessão (TOBI)**                                     | `/app/prontuario/[p]/nova-evolucao` · `lib/providers/llm.ts` |
+| **IA Financeira Preditiva** ("sua receita caiu 12%")                    | `/app/tobi`, `lib/providers/insights.ts` |
 | App do Paciente - cartões diários                                        | `/portal/[token]` |
 | Profissionais **sem CRP** (psicanalistas/terapeutas)                    | `/app/equipe` · flag `noCouncil` |
 | LGPD: bases legais, 9 direitos, audit log, anonimização, portabilidade | `/app/lgpd`, `api/lgpd/export` |
@@ -59,7 +59,7 @@ Cobertura completa do prompt original:
 - **shadcn/ui-style** (Radix + Tailwind) - design system enxuto montado à mão
 - **Multi-tenant** via `workspaceId` em todas as tabelas + cookie de workspace ativo (`salutti_ws`)
 - **Auth** JWT em cookie httpOnly (jose) - em produção: substituir por Auth.js + sessões em DB
-- **LUMA**: interface estável (`lib/providers/llm.ts`) - chama OpenAI se `OPENAI_API_KEY` setada, senão usa heurística determinística (zero-dependency demo)
+- **TOBI**: interface estável (`lib/providers/llm.ts`) - chama OpenAI se `OPENAI_API_KEY` setada, senão usa heurística determinística (zero-dependency demo)
 - **Audit log** automático em mutações sensíveis (criação de paciente, cobrança, exportação LGPD)
 
 Detalhes em `ARCHITECTURE.md`.

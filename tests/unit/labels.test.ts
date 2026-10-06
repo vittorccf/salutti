@@ -20,7 +20,7 @@ describe("rótulos em pt-BR", () => {
     expect(noteTypeLabel("plano_terapeutico")).toBe("Plano terapêutico");
     expect(modalityLabel("online")).toBe("Online");
     expect(planTierLabel("trial")).toBe("Teste grátis");
-    expect(segmentLabel("solo_psicologo")).toBe("Psicólogo autônomo");
+    expect(segmentLabel("solo_psicologo")).toBe("Psicologia");
     expect(professionalTypeLabel("psicologo")).toBe("Psicólogo");
     expect(legalBasisLabel("obrigacao_legal")).toBe("Obrigação legal");
     expect(consentPurposeLabel("tutela_saude")).toBe("Tutela da saúde");
