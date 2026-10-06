@@ -2,6 +2,10 @@
 
 > Última atualização deste arquivo: 2026-10-06 (migração para o Design System Salutti). Seção abaixo é a mais recente; o restante é da retomada de 2026-09-21.
 
+## Base limpa (2026-10-06) — branch `chore/base-limpa`
+
+Pacientes e profissionais fictícios removidos do banco local (`prisma/prisma/dev.db`) e do `prisma/seed.db` (demo da Vercel), com tudo ligado a eles (sessões, cobranças, prontuários, recibos, NFS-e, consentimentos, mensagens, insights, cartões, portal, auditoria). Ficam usuários, consultórios, vínculos e modelos de anamnese. O `seed.ts` não cria mais dados fictícios. Backup dos dois bancos em `prisma/backup-2026-10-06/` (ignorado pelo Git).
+
 ## Migração para o Design System (2026-10-06) — branch `feat/design-system-v2`
 
 Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a partir deste código; tokens idênticos, conferidos nos dois temas).
