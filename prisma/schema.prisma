@@ -41,6 +41,14 @@ model Workspace {
   cnpj            String?
   // CNES do estabelecimento (TISS); sem CNES as guias usam 9999999, como manda a ANS.
   cnes            String?
+  // Endereço do consultório (CEP preenche rua, bairro, cidade e UF).
+  cep           String?
+  street        String?
+  addressNumber String?
+  complement    String?
+  district      String?
+  city          String?
+  state         String?
   legalRepName    String?
   trialEndsAt     DateTime?
   planTier        String         @default("trial") // trial | starter | pro | enterprise
@@ -121,6 +129,14 @@ model Patient {
   responsibleName String?
   emergencyContact String?
   address       String?
+  // Endereço estruturado (CEP preenche rua, bairro, cidade e UF). "address" fica para dados antigos.
+  cep           String?
+  street        String?
+  addressNumber String?
+  complement    String?
+  district      String?
+  city          String?
+  state         String?
   notes         String?       // observações não-clínicas (campo "livre" não-sensível)
   active        Boolean       @default(true)
   // Soft delete LGPD

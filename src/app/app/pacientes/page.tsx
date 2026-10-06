@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Plus, UserPlus, Users } from "lucide-react";
 import { formatDateBR, plural } from "@/lib/utils";
+import { PhoneText } from "@/components/ui/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +111,7 @@ export default async function PatientsPage({
                       </Link>
                     </TD>
                     <TD className="text-muted-foreground text-sm">
-                      {p.phone ?? "-"}
+                      <PhoneText value={p.phone} />
                       <br />
                       {p.email ?? ""}
                     </TD>
