@@ -58,18 +58,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex-1 overflow-y-auto px-3 py-4">
         <SidebarNav clinical={canSeeClinical(ctx.role)} />
       </div>
-      <Separator />
-      <div className="p-3 space-y-3 text-sm">
-        {trialDays !== null ? (
-          <div className="rounded-md bg-warning/10 p-3 text-xs">
-            <p className="font-semibold text-warning-strong">{t("trialDays", { days: trialDays })}</p>
-            <p className="text-foreground/80">
-              {t("plan")} <strong className="text-foreground">{label("planTier", ctx.workspace.planTier)}</strong>
-            </p>
+      {trialDays !== null ? (
+        <>
+          <Separator />
+          <div className="p-3 text-sm">
+            <div className="rounded-md bg-warning/10 p-3 text-xs">
+              <p className="font-semibold text-warning-strong">{t("trialDays", { days: trialDays })}</p>
+              <p className="text-foreground/80">
+                {t("plan")} <strong className="text-foreground">{label("planTier", ctx.workspace.planTier)}</strong>
+              </p>
+            </div>
           </div>
-        ) : null}
-        <UserMenu name={ctx.user.name} email={ctx.user.email} avatarUrl={avatarUrl} />
-      </div>
+        </>
+      ) : null}
     </>
   );
 
@@ -92,6 +93,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 {t("compliance")}
               </p>
             </div>
+            <UserMenu name={ctx.user.name} email={ctx.user.email} avatarUrl={avatarUrl} />
           </div>
         </header>
         <div className="p-4 md:p-6">{children}</div>
