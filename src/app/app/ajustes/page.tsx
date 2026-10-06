@@ -7,6 +7,11 @@ import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
 import { plural } from "@/lib/utils";
 import { planTierLabel, segmentLabel } from "@/lib/labels";
 import { videoStatus } from "@/lib/providers/video";
+import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
+import { addLibraryTemplatesAction } from "../_actions/anamnesis";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 export const dynamic = "force-dynamic";
 
@@ -124,8 +129,8 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle>Modelos de anamnese</CardTitle>
             <CardDescription>
-              {plural(templates.length, "modelo ativo", "modelos ativos")}. Por enquanto a edição é feita pelo Prisma
-              Studio (<code>npx prisma studio</code>).
+              {plural(templates.length, "modelo ativo", "modelos ativos")}. Adicione outros da biblioteca abaixo; a edição
+              das perguntas ainda é feita pelo Prisma Studio (<code>npx prisma studio</code>).
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -138,6 +143,22 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
+            <form action={addLibraryTemplatesAction} className="mt-4 flex flex-wrap items-end gap-2">
+              <input type="hidden" name="back" value="ajustes" />
+              <div className="space-y-1">
+                <Label htmlFor="slug">Biblioteca de modelos</Label>
+                <Select id="slug" name="slug" className="w-auto">
+                  {ANAMNESIS_LIBRARY.filter((t) => !templates.some((x) => x.name === t.name)).map((t) => (
+                    <option key={t.slug} value={t.slug}>
+                      {t.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <Button type="submit" variant="outline" disabled={ANAMNESIS_LIBRARY.every((t) => templates.some((x) => x.name === t.name))}>
+                Adicionar da biblioteca
+              </Button>
+            </form>
           </CardContent>
         </Card>
 

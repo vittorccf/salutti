@@ -11,6 +11,9 @@ import { Select } from "@/components/ui/select";
 import { dateKeySP, parseDateOnly, parseDateTimeLocal, toDateTimeLocalSP } from "@/lib/dates";
 import { assertInWorkspace } from "@/lib/tenant";
 import { video } from "@/lib/providers/video";
+import Link from "next/link";
+import { CalendarPlus } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const schema = z.object({
   patientId: z.string(),
@@ -127,6 +130,30 @@ export default async function NewAppointmentPage({
     const d = new Date(Math.ceil((Date.now() + 1) / 3_600_000) * 3_600_000);
     return toDateTimeLocalSP(d);
   })();
+
+
+  if (professionals.length === 0 || patients.length === 0) {
+    return (
+      <div className="max-w-2xl">
+        <EmptyState
+          icon={<CalendarPlus className="h-6 w-6" />}
+          title={professionals.length === 0 ? "Nenhum profissional cadastrado" : "Nenhum paciente cadastrado"}
+          description={
+            professionals.length === 0
+              ? "Para agendar, cadastre primeiro quem atende."
+              : "Para agendar, cadastre primeiro o paciente."
+          }
+          action={
+            <Button asChild>
+              <Link href={professionals.length === 0 ? "/app/equipe" : "/app/pacientes/novo"}>
+                {professionals.length === 0 ? "Cadastrar profissional" : "Cadastrar paciente"}
+              </Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl">
