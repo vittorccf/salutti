@@ -17,22 +17,3 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 export const NAMESPACES = ["common", "auth", "public", "dashboard", "settings", "patients", "schedule", "finance"] as const;
 
 export const isLocale = (v: unknown): v is Locale => typeof v === "string" && (LOCALES as readonly string[]).includes(v);
-
-// Accept-Language do navegador → idioma suportado ("pt-PT,pt;q=0.9" → pt-PT; "pt" → pt-BR; "es-AR" → es).
-export function matchLocale(acceptLanguage: string | null | undefined): Locale {
-  const wanted = (acceptLanguage ?? "")
-    .split(",")
-    .map((part) => {
-      const [tag, q] = part.trim().split(";q=");
-      return { tag: tag.toLowerCase(), q: q ? Number(q) : 1 };
-    })
-    .filter((x) => x.tag)
-    .sort((a, b) => b.q - a.q);
-  for (const { tag } of wanted) {
-    if (tag === "pt-pt") return "pt-PT";
-    if (tag.startsWith("pt")) return "pt-BR";
-    if (tag.startsWith("es")) return "es";
-    if (tag.startsWith("en")) return "en";
-  }
-  return DEFAULT_LOCALE;
-}

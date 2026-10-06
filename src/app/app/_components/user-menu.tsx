@@ -1,7 +1,7 @@
 "use client";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { ChevronsUpDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
+import { ChevronDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import {
@@ -22,15 +22,15 @@ export const UserMenu = ({ name, email, avatarUrl }: Props) => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-        <Avatar src={avatarUrl} name={name} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium leading-tight">{name}</span>
-          <span className="block truncate text-xs text-muted-foreground">{email}</span>
-        </span>
-        <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      <DropdownMenuTrigger
+        aria-label={t("open", { name })}
+        className="flex max-w-[14rem] items-center gap-2 rounded-full p-0.5 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:rounded-md md:py-1 md:pl-1 md:pr-2"
+      >
+        <Avatar src={avatarUrl} name={name} className="h-8 w-8" />
+        <span className="hidden min-w-0 truncate text-sm font-medium md:block">{name}</span>
+        <ChevronDown className="hidden h-4 w-4 shrink-0 text-muted-foreground md:block" aria-hidden />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="top" className="w-[--radix-dropdown-menu-trigger-width]">
+      <DropdownMenuContent align="end" side="bottom" className="w-60">
         <DropdownMenuLabel className="font-normal">
           <span className="block truncate font-medium">{name}</span>
           <span className="block truncate text-xs text-muted-foreground">{email}</span>

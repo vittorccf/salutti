@@ -11,18 +11,13 @@ cd saluti-app
 npm install
 cp .env.example .env    # DATABASE_URL aponta para o Postgres local
 npm run db:local        # terminal 1: sobe o Postgres (localhost:5433) e aplica as migrations
-npm run db:seed         # terminal 2, só na primeira vez
+SEED_DEMO=1 npm run db:seed   # terminal 2, só na primeira vez: usuários de desenvolvimento
 npm run dev
 ```
 
 O `db:local` usa um Postgres embutido (binários oficiais via npm, dados em `.pgdata`): não precisa de Docker. Se preferir outro Postgres (Docker, Neon), basta trocar o `DATABASE_URL`.
 
-Abra http://localhost:3000 e use as credenciais demo:
-
-| Usuário                       | Senha       | Workspace                                          |
-| ----------------------------- | ----------- | -------------------------------------------------- |
-| `guilherme@salutti.dev`        | `salutti123` | Consultório psicólogo autônomo (Goiânia)           |
-| `kris@salutti.dev`             | `salutti123` | UBS Turvânia · clínica odontológica                |
+Abra http://localhost:3000 e crie uma conta em **Criar conta**. Localmente, `SEED_DEMO=1 npm run db:seed` cria usuários e consultórios só para desenvolvimento (veja `prisma/seed.ts`); sem `SEED_DEMO=1` o seed não cria usuários, e a tela de login não mostra nem pré-preenche credenciais.
 
 Os consultórios começam **sem pacientes nem profissionais** (base limpa). Cadastre um profissional em Profissionais e um paciente em Pacientes; o link do portal do paciente é gerado na ficha dele.
 
@@ -72,7 +67,7 @@ npm run build         # build produção
 npm run db:local      # Postgres local (localhost:5433)
 npm run db:migrate    # cria uma migration a partir de mudanças no schema.prisma
 npm run db:deploy     # aplica as migrations pendentes
-npm run db:seed       # recria usuários, consultórios e modelos de anamnese (sem pacientes)
+npm run db:seed       # com SEED_DEMO=1: recria usuários e consultórios de desenvolvimento (sem pacientes); sem ela, não cria usuários
 npm run db:reset      # apaga o banco, reaplica as migrations e roda o seed
 npm test              # testes unitários
 npm run test:e2e      # ponta a ponta (sobe um Postgres descartável sozinho)
@@ -103,7 +98,7 @@ Em Ajustes → Plano Salutti, quem é dono do consultório assina Starter ou Pro
 
 1. Crie um banco Postgres (ex.: **Neon** pelo Marketplace da Vercel, que já preenche o `DATABASE_URL`).
 2. Na Vercel, o script `vercel-build` aplica as migrations (`prisma migrate deploy`) antes do build, pela conexão direta (`DATABASE_URL_UNPOOLED`, criada pelo Neon): o pooler não suporta os locks das migrations.
-3. Para criar os logins de demonstração no banco novo, rode uma vez `DATABASE_URL=<url> npm run db:seed`.
+3. Não rode o seed com `SEED_DEMO=1` em produção: as contas nascem pelo cadastro (**Criar conta**).
 
 ### Convênios e faturamento TISS
 

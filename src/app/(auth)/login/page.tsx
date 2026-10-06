@@ -73,11 +73,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             {params.next ? <input type="hidden" name="next" value={params.next} /> : null}
             <div className="space-y-2">
               <Label htmlFor="email">{t("email")}</Label>
-              <Input id="email" name="email" type="text" required placeholder={t("emailPlaceholder")} defaultValue="guilherme@salutti.dev" />
+              <Input id="email" name="email" type="text" required placeholder={t("emailPlaceholder")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("password")}</Label>
-              <Input id="password" name="password" type="password" required defaultValue="salutti123" />
+              <Input id="password" name="password" type="password" required />
             </div>
             {error ? (
               <p className="text-sm text-destructive-strong" role="alert">{t(`errors.${error}`)}</p>
@@ -86,15 +86,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               {t("submit")}
             </Button>
           </form>
-          <div className="mt-6 rounded-md bg-muted/40 p-3 text-xs space-y-1">
-            <p className="font-semibold">
-              {t.rich("demoTitle", { password: "salutti123", code: (chunks) => <code>{chunks}</code> })}
-            </p>
-            <ul className="list-disc pl-4 text-muted-foreground">
-              <li>{t("demoAutonomo", { email: "guilherme@salutti.dev" })}</li>
-              <li>{t("demoClinica", { email: "kris@salutti.dev" })}</li>
-            </ul>
-          </div>
           <p className="mt-4 text-center text-sm">
             {t("newHere")}{" "}
             <Link className="text-primary-strong underline-offset-4 hover:underline" href="/signup">

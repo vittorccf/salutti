@@ -27,6 +27,7 @@
     "workspace": "Active practice"
   },
   "userMenu": {
+    "open": "Account menu for {name}",
     "lightTheme": "Switch to light theme",
     "darkTheme": "Switch to dark theme",
     "security": "Account security",
