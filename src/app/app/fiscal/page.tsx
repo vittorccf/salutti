@@ -109,7 +109,7 @@ export default async function FiscalPage() {
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-primary" /> NFS-e
             </CardTitle>
-            <CardDescription>Emissão via API "NF-e as a service" (NFE.io / Focus / Nuvem Fiscal).</CardDescription>
+            <CardDescription>Emissão via API “NF-e as a service” (NFE.io / Focus / Nuvem Fiscal).</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
