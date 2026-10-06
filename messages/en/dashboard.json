@@ -13,9 +13,9 @@
     "overdueCount": "{count, plural, one {# overdue charge} other {# overdue charges}}",
     "sessionsFromToday": "Sessions from today",
     "activePatients": "Active patients",
-    "insightsTitle": "TOBI · financial and clinical insights",
+    "insightsTitle": "Saluttin · financial and clinical insights",
     "insightsDescription": "Generated from your data in real time.",
-    "noInsights": "No insights yet. Once you log sessions and charges, TOBI analyzes the data here.",
+    "noInsights": "No insights yet. Once you log sessions and charges, Saluttin analyzes the data here.",
     "upcomingTitle": "Upcoming sessions",
     "patient": "Patient",
     "professional": "Professional",
@@ -61,11 +61,11 @@
     "optional": "Optional",
     "pending": "Pending"
   },
-  "tobi": {
-    "title": "TOBI · AI assistant",
-    "intro": "TOBI reads your financial and clinical data and points out what needs attention, with numbers and deadlines.",
+  "saluttin": {
+    "title": "Saluttin · AI assistant",
+    "intro": "Saluttin reads your financial and clinical data and points out what needs attention, with numbers and deadlines.",
     "recalculate": "Recalculate insights",
-    "watchTitle": "What TOBI keeps an eye on for you",
+    "watchTitle": "What Saluttin keeps an eye on for you",
     "watchRevenue": "<strong>Revenue:</strong> compares billing with last month and warns you when it drops.",
     "watchOverdue": "<strong>Overdue:</strong> adds up overdue charges and suggests a collection sequence.",
     "watchSchedule": "<strong>Schedule:</strong> flags weeks with fewer sessions than expected.",

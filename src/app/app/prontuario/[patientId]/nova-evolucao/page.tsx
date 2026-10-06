@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
-import { tobi } from "@/lib/providers/llm";
+import { saluttin } from "@/lib/providers/llm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -54,7 +54,7 @@ async function saveNoteAction(_prev: FormResult, formData: FormData): Promise<Fo
     appointmentId: data.appointmentId || null,
   });
 
-  const aiOutput = await tobi.summarizeSession({
+  const aiOutput = await saluttin.summarizeSession({
     text: data.contentMarkdown,
     patientName: patient.fullName,
   });
