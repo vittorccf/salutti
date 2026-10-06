@@ -1,6 +1,25 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-09-21 (retomada após ~3 meses parado).
+> Última atualização deste arquivo: 2026-10-06 (migração para o Design System Salutti). Seção abaixo é a mais recente; o restante é da retomada de 2026-09-21.
+
+## Migração para o Design System (2026-10-06) — branch `feat/design-system-v2`
+
+Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a partir deste código; tokens idênticos, conferidos nos dois temas).
+
+**Feito (tsc + lint ok em cada etapa; build completo validado até a Fase 1):**
+- Tokens do DS aplicados; todas as 26 telas seguindo as regras de uso (status pt-BR via `StatusBadge`, `plural`, formato BR, rótulos em `src/lib/labels.ts` e `src/lib/lgpd.ts`, humor sem emoji em `src/lib/mood.ts`, valores tabulares à direita, voz da LUMA em `insights.ts`).
+- Menu do perfil com tema claro/escuro (`next-themes`, chave `salutti-theme`); nav com item ativo; sidebar vira gaveta abaixo de `md`.
+- Contraste AA em todos os pares de texto nos dois temas: `muted-foreground` claro 47% → 44% e novo token `destructive-strong`.
+- Bugs pré-existentes corrigidos: logout por GET disparado pelo prefetch (agora só POST); `<div>` do Badge dentro de `<p>` (erro de hidratação #418); layout mobile com scroll horizontal; título invisível no aviso da tela Fiscal.
+- ESLint configurado (`.eslintrc.json`). `NEXT_DIST_DIR` permite builds de verificação em `.next-check` sem derrubar o dev server (o Next reescreve o `tsconfig.json` nesses builds — descartar com `git checkout -- tsconfig.json`).
+
+**Pendente:**
+1. **Rodar `npx next build`** na branch antes do merge (último build completo foi antes da Fase 2).
+2. **Espelhar no artifact do DS** as mudanças de token (`muted-foreground` 44% e `destructive-strong`). Não publicado: falta autorização.
+3. **Fuso horário (bug pré-existente, fora do escopo do DS):** campos só-data são gravados como meia-noite UTC e as datas/horas são formatadas no fuso do servidor (UTC na Vercel). Resultado: horários 3h adiantados em produção, cobrança "atrasada" às 21h do dia do vencimento, agenda agrupando dia errado. Corrigir gravação e exibição juntas (ex.: `@date-fns/tz` com `America/Sao_Paulo`); só a exibição desloca os campos só-data em -1 dia.
+4. **Insights da LUMA já salvos no banco** mantêm o texto antigo até "Recalcular insights" (ou novo seed).
+5. Botões em `primary-strong` nas páginas públicas estão sobrescritos via `className`; considerar uma variante do `Button`.
+6. Imports sem uso antigos: `fiscal/page.tsx` (`Link`, `Button`, `formatDateTimeBR`, `Landmark`), `equipe/page.tsx` (`Link`), `luma/page.tsx` (`CardDescription`).
 
 ## Onde parou
 
