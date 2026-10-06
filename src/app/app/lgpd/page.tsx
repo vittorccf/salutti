@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ShieldCheck, FileDown, Trash2, EyeOff } from "lucide-react";
 import { formatDateTimeBR } from "@/lib/utils";
+import { consentPurposeLabel } from "@/lib/lgpd";
 
 export const dynamic = "force-dynamic";
 
@@ -109,23 +110,23 @@ export default async function LgpdPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-primary" /> LGPD &amp; Conformidade
+          <ShieldCheck className="h-6 w-6 text-primary-strong" aria-hidden /> LGPD e conformidade
         </h1>
         <p className="text-sm text-muted-foreground">
-          Salutti opera como <strong>Operador</strong> de dados (você é Controlador). Bases legais aplicáveis:
-          consentimento, tutela da saúde, execução de contrato, obrigação legal.
+          Você é o controlador dos dados e a Salutti é a operadora. Bases legais usadas: consentimento, tutela da
+          saúde, execução de contrato e obrigação legal.
         </p>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>9 direitos do titular (art. 18 LGPD)</CardTitle>
-          <CardDescription>Salutti instrumenta cada um deles via ações abaixo + portabilidade JSON.</CardDescription>
+          <CardTitle>Os 9 direitos do titular (art. 18 da LGPD)</CardTitle>
+          <CardDescription>Cada direito é atendido pelas ações abaixo, incluindo a exportação dos dados.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 md:grid-cols-3 text-sm">
           {rights.map((r, idx) => (
             <div key={r} className="rounded-md border bg-card p-3">
-              <p className="text-xs text-muted-foreground">Direito #{idx + 1}</p>
+              <p className="text-xs text-muted-foreground">Direito {idx + 1}</p>
               <p className="font-medium leading-tight">{r}</p>
             </div>
           ))}
@@ -136,14 +137,14 @@ export default async function LgpdPage() {
         <CardHeader>
           <CardTitle>Exercer direitos por paciente</CardTitle>
           <CardDescription>
-            Exportar JSON portável · Anonimizar (mantém dados clínicos agregados) · Eliminar (soft delete c/ retenção legal).
+            Exporte os dados em JSON, anonimize (mantém só dados agregados) ou elimine (respeitando o prazo legal de guarda).
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-[1fr_auto_auto_auto]" action={exportDataAction}>
-            <div>
-              <Label>Paciente</Label>
-              <Select name="patientId" required>
+          <form className="grid gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end" action={exportDataAction}>
+            <div className="space-y-1">
+              <Label htmlFor="patientId">Paciente</Label>
+              <Select name="patientId" id="patientId" required>
                 <option value="">Selecione…</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -153,19 +154,19 @@ export default async function LgpdPage() {
               </Select>
             </div>
             <Button formAction={exportDataAction} type="submit" variant="outline">
-              <FileDown className="h-4 w-4" /> Exportar JSON
+              <FileDown className="h-4 w-4" /> Exportar dados
             </Button>
             <Button formAction={anonymizeAction} type="submit" variant="outline">
               <EyeOff className="h-4 w-4" /> Anonimizar
             </Button>
             <Button formAction={softDeleteAction} type="submit" variant="destructive">
-              <Trash2 className="h-4 w-4" /> Eliminar
+              <Trash2 className="h-4 w-4" /> Eliminar dados
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>Consentimentos recentes</CardTitle>
@@ -184,18 +185,18 @@ export default async function LgpdPage() {
                 {consents.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Sem registros.
+                      Nenhum consentimento registrado.
                     </TD>
                   </TR>
                 ) : (
                   consents.map((c) => (
                     <TR key={c.id}>
                       <TD>{c.patient.fullName}</TD>
-                      <TD className="capitalize">{c.purpose.replaceAll("_", " ")}</TD>
-                      <TD className="capitalize">{c.legalBasis.replaceAll("_", " ")}</TD>
+                      <TD>{consentPurposeLabel(c.purpose)}</TD>
+                      <TD>{consentPurposeLabel(c.legalBasis)}</TD>
                       <TD>
                         <Badge variant={c.granted && !c.revokedAt ? "success" : "muted"}>
-                          {c.granted && !c.revokedAt ? "concedido" : "revogado"}
+                          {c.granted && !c.revokedAt ? "Concedido" : "Revogado"}
                         </Badge>
                       </TD>
                     </TR>
@@ -208,8 +209,8 @@ export default async function LgpdPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Audit log (últimos 30 eventos)</CardTitle>
-            <CardDescription>Imutável. Em produção: armazenamento append-only externo (S3+ObjectLock).</CardDescription>
+            <CardTitle>Trilha de auditoria · últimos 30 eventos</CardTitle>
+            <CardDescription>Registros imutáveis de quem fez o quê e quando.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -225,14 +226,14 @@ export default async function LgpdPage() {
                 {auditLog.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Vazio.
+                      Nenhum evento registrado.
                     </TD>
                   </TR>
                 ) : (
                   auditLog.map((l) => (
                     <TR key={l.id}>
-                      <TD className="text-xs">{formatDateTimeBR(l.createdAt)}</TD>
-                      <TD className="text-xs">{l.user?.name ?? "sistema"}</TD>
+                      <TD className="whitespace-nowrap text-xs">{formatDateTimeBR(l.createdAt)}</TD>
+                      <TD className="text-xs">{l.user?.name ?? "Sistema"}</TD>
                       <TD className="font-mono text-xs">{l.action}</TD>
                       <TD className="font-mono text-xs">{l.entity}</TD>
                     </TR>

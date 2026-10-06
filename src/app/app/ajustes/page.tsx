@@ -2,7 +2,9 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
+import { plural } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -51,21 +53,21 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6 text-primary" /> Ajustes
+          <Settings className="h-6 w-6 text-primary-strong" /> Ajustes
         </h1>
-        <p className="text-sm text-muted-foreground">Workspace · Integrações · Plano · Templates clínicos.</p>
+        <p className="text-sm text-muted-foreground">Dados do consultório, integrações, modelos de anamnese e plano.</p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Workspace</CardTitle>
-            <CardDescription>Identificação para emissão fiscal e comunicação.</CardDescription>
+            <CardTitle>Consultório</CardTitle>
+            <CardDescription>Dados usados nas notas fiscais e nas mensagens aos pacientes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p><strong>Nome:</strong> {ctx.workspace.name}</p>
-            <p><strong>Slug:</strong> {ctx.workspace.slug}</p>
-            <p><strong>Segmento:</strong> {ctx.workspace.segment}</p>
+            <p><strong>Endereço curto:</strong> {ctx.workspace.slug}</p>
+            <p><strong>Segmento:</strong> {ctx.workspace.segment.replaceAll("_", " ")}</p>
             <p><strong>CNPJ:</strong> {ctx.workspace.cnpj ?? "-"}</p>
             <p><strong>Plano:</strong> <Badge>{ctx.workspace.planTier}</Badge></p>
           </CardContent>
@@ -74,14 +76,14 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-primary" /> Certificado A1 (ICP-Brasil)
+              <KeyRound className="h-5 w-5 text-primary-strong" /> Certificado A1 (ICP-Brasil)
             </CardTitle>
             <CardDescription>Para assinatura de receitas e NFS-e.</CardDescription>
           </CardHeader>
           <CardContent className="text-sm">
-            <p>Status: <Badge variant="muted">Sandbox</Badge></p>
+            <p>Status: <StatusBadge kind="integration" status="sandbox" /></p>
             <p className="text-muted-foreground mt-1">
-              Em produção: upload `.pfx` cifrado em AWS KMS + verificação de validade automática (alarme 30 dias antes).
+              O arquivo .pfx fica guardado cifrado, e você recebe um aviso 30 dias antes do vencimento.
             </p>
           </CardContent>
         </Card>
@@ -89,16 +91,16 @@ export default async function SettingsPage() {
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5 text-primary" /> Integrações
+              <Plug className="h-5 w-5 text-primary-strong" /> Integrações
             </CardTitle>
-            <CardDescription>Cada provider tem implementação mock pronta + interface estável para chave real.</CardDescription>
+            <CardDescription>Integrações em sandbox funcionam com dados simulados até você informar a chave real.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-3">
+          <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {integrations.map((i) => (
               <div key={i.name} className="rounded-md border bg-card p-3">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start gap-2">
                   <p className="font-semibold text-sm">{i.name}</p>
-                  <Badge variant={i.status === "real" ? "success" : "muted"}>{i.status}</Badge>
+                  <StatusBadge kind="integration" status={i.status} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{i.desc}</p>
               </div>
@@ -108,19 +110,19 @@ export default async function SettingsPage() {
 
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Templates de anamnese</CardTitle>
+            <CardTitle>Modelos de anamnese</CardTitle>
             <CardDescription>
-              {templates.length} template(s) ativo(s). Editar manualmente o JSON é possível pelo Prisma Studio (
-              <code>npx prisma studio</code>).
+              {plural(templates.length, "modelo ativo", "modelos ativos")}. Por enquanto a edição é feita pelo Prisma
+              Studio (<code>npx prisma studio</code>).
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
               {templates.map((t) => (
                 <li key={t.id} className="flex items-center gap-2">
-                  <Badge variant="muted">{t.specialty ?? "geral"}</Badge>
+                  <Badge variant="outline">{t.specialty ?? "Geral"}</Badge>
                   <span>{t.name}</span>
-                  {t.isDefault ? <Badge variant="success">padrão</Badge> : null}
+                  {t.isDefault ? <Badge variant="success">Padrão</Badge> : null}
                 </li>
               ))}
             </ul>
@@ -130,11 +132,11 @@ export default async function SettingsPage() {
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" /> Plano Salutti
+              <CreditCard className="h-5 w-5 text-primary-strong" /> Plano Salutti
             </CardTitle>
-            <CardDescription>Trial 15 dias · Sem cartão · Tier atual: {ctx.workspace.planTier}</CardDescription>
+            <CardDescription>Teste grátis de 15 dias, sem cartão · Plano atual: {ctx.workspace.planTier}</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-3 text-sm">
+          <CardContent className="grid gap-3 sm:grid-cols-3 text-sm">
             <div className="rounded-md border p-3">
               <p className="font-semibold">Starter - R$ 49/mês</p>
               <p className="text-muted-foreground">Solo · até 50 pacientes ativos</p>
