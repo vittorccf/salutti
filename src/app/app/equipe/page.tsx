@@ -11,8 +11,9 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { formatBRL } from "@/lib/utils";
+import { formatBRL, plural } from "@/lib/utils";
 import { Stethoscope } from "lucide-react";
+import { professionalTypeLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -69,17 +70,17 @@ export default async function TeamPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Stethoscope className="h-6 w-6 text-primary" /> Profissionais
+          <Stethoscope className="h-6 w-6 text-primary-strong" aria-hidden /> Profissionais
         </h1>
         <p className="text-sm text-muted-foreground">
-          Suporta psicanalistas, terapeutas e demais profissões <em>sem registro de conselho</em> - diferencial Salutti.
+          Inclui psicanalistas, terapeutas e outras profissões sem registro de conselho.
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] [&>*]:min-w-0">
         <Card>
           <CardHeader>
-            <CardTitle>Equipe ({professionals.length})</CardTitle>
+            <CardTitle>Equipe · {plural(professionals.length, "profissional", "profissionais")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -88,8 +89,8 @@ export default async function TeamPage() {
                   <TH>Nome</TH>
                   <TH>Especialidade</TH>
                   <TH>Registro</TH>
-                  <TH>Valor</TH>
-                  <TH>Sessões</TH>
+                  <TH className="text-right">Valor da hora</TH>
+                  <TH className="text-right">Sessões</TH>
                   <TH>Status</TH>
                 </TR>
               </THead>
@@ -97,25 +98,25 @@ export default async function TeamPage() {
                 {professionals.length === 0 ? (
                   <TR>
                     <TD colSpan={6} className="text-center text-muted-foreground">
-                      Cadastre o primeiro profissional.
+                      Nenhum profissional ainda. Cadastre o primeiro no formulário ao lado.
                     </TD>
                   </TR>
                 ) : (
                   professionals.map((p) => (
                     <TR key={p.id}>
                       <TD className="font-medium">{p.fullName}</TD>
-                      <TD>{p.specialty ?? p.professionalType}</TD>
+                      <TD>{p.specialty ?? professionalTypeLabel(p.professionalType)}</TD>
                       <TD>
                         {p.noCouncil ? (
-                          <Badge variant="muted">sem registro</Badge>
+                          <Badge variant="muted">Sem registro</Badge>
                         ) : (
                           `${p.councilType} ${p.councilNumber ?? ""}`
                         )}
                       </TD>
-                      <TD>{p.hourlyRate ? formatBRL(p.hourlyRate) : "-"}</TD>
-                      <TD>{p._count.appointments}</TD>
+                      <TD className="text-right">{p.hourlyRate ? formatBRL(p.hourlyRate) : "-"}</TD>
+                      <TD className="text-right">{p._count.appointments}</TD>
                       <TD>
-                        <Badge variant={p.active ? "success" : "muted"}>{p.active ? "ativo" : "inativo"}</Badge>
+                        <Badge variant={p.active ? "success" : "muted"}>{p.active ? "Ativo" : "Inativo"}</Badge>
                       </TD>
                     </TR>
                   ))
@@ -128,18 +129,18 @@ export default async function TeamPage() {
         <Card>
           <CardHeader>
             <CardTitle>Adicionar profissional</CardTitle>
-            <CardDescription>Marque "sem registro" para psicanalistas / terapeutas.</CardDescription>
+            <CardDescription>Para psicanalistas e terapeutas, marque “sem registro de conselho”.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={createProfessionalAction} className="space-y-3">
               <div className="space-y-1">
-                <Label>Nome completo</Label>
-                <Input name="fullName" required />
+                <Label htmlFor="fullName">Nome completo</Label>
+                <Input name="fullName" id="fullName" required />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label>Tipo</Label>
-                  <Select name="professionalType" defaultValue="psicologo">
+                  <Label htmlFor="professionalType">Tipo</Label>
+                  <Select name="professionalType" id="professionalType" defaultValue="psicologo">
                     <option value="psicologo">Psicólogo</option>
                     <option value="psicanalista">Psicanalista</option>
                     <option value="terapeuta">Terapeuta</option>
@@ -149,28 +150,28 @@ export default async function TeamPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label>Especialidade</Label>
-                  <Input name="specialty" placeholder="TCC, psicanálise, …" />
+                  <Label htmlFor="specialty">Especialidade</Label>
+                  <Input name="specialty" id="specialty" placeholder="TCC, psicanálise, …" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label>Email</Label>
-                  <Input name="email" type="email" />
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input name="email" id="email" type="email" />
                 </div>
                 <div className="space-y-1">
-                  <Label>Telefone</Label>
-                  <Input name="phone" />
+                  <Label htmlFor="phone">Telefone</Label>
+                  <Input name="phone" id="phone" />
                 </div>
               </div>
               <div className="rounded-md border p-2 text-sm flex items-center gap-2">
-                <input id="noCouncil" name="noCouncil" type="checkbox" />
+                <input id="noCouncil" name="noCouncil" type="checkbox" className="h-4 w-4 accent-primary" />
                 <Label htmlFor="noCouncil">Sem registro de conselho (CRP/CRM)</Label>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label>Tipo registro</Label>
-                  <Select name="councilType" defaultValue="CRP">
+                  <Label htmlFor="councilType">Conselho</Label>
+                  <Select name="councilType" id="councilType" defaultValue="CRP">
                     <option value="CRP">CRP</option>
                     <option value="CRM">CRM</option>
                     <option value="CRO">CRO</option>
@@ -178,15 +179,15 @@ export default async function TeamPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label>Número</Label>
-                  <Input name="councilNumber" placeholder="opcional" />
+                  <Label htmlFor="councilNumber">Número do registro</Label>
+                  <Input name="councilNumber" id="councilNumber" placeholder="06/12345" />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label>Valor da hora (R$)</Label>
-                <Input name="hourlyRate" type="number" step="0.01" />
+                <Label htmlFor="hourlyRate">Valor da hora (R$)</Label>
+                <Input name="hourlyRate" id="hourlyRate" type="number" step="0.01" />
               </div>
-              <Button type="submit" className="w-full">Cadastrar</Button>
+              <Button type="submit" className="w-full">Cadastrar profissional</Button>
             </form>
           </CardContent>
         </Card>

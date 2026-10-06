@@ -6,10 +6,11 @@ import { recordAudit } from "@/lib/audit";
 import { whatsapp } from "@/lib/providers/whatsapp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBRL, formatDateTimeBR, formatTimeBR } from "@/lib/utils";
 import { Calendar, MessageSquareText, Video, CheckCircle2, XCircle, FileSignature, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
+import { modalityLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -82,11 +83,11 @@ export default async function AppointmentDetailPage({
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary" /> Sessão
+            <Calendar className="h-6 w-6 text-primary-strong" aria-hidden /> Sessão · {appt.patient.fullName}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {formatDateTimeBR(appt.startsAt)} → {formatTimeBR(appt.endsAt)} ·{" "}
-            <Badge variant="muted" className="capitalize">{appt.status}</Badge>
+          <p className="text-sm text-muted-foreground tabular-nums">
+            {formatDateTimeBR(appt.startsAt)} até {formatTimeBR(appt.endsAt)} ·{" "}
+            <StatusBadge kind="appointment" status={appt.status} />
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -101,7 +102,7 @@ export default async function AppointmentDetailPage({
             <input type="hidden" name="id" value={appt.id} />
             <Button type="submit" variant="outline" disabled={!appt.patient.phone}>
               <MessageSquareText className="h-4 w-4" />
-              {appt.reminderSentAt ? "Reenviar lembrete" : "Enviar lembrete WhatsApp"}
+              {appt.reminderSentAt ? "Reenviar lembrete" : "Enviar lembrete"}
             </Button>
           </form>
         </div>
@@ -112,7 +113,7 @@ export default async function AppointmentDetailPage({
           <CardHeader>
             <CardTitle>Paciente</CardTitle>
             <CardDescription>
-              <Link href={`/app/pacientes/${appt.patient.id}`} className="underline">
+              <Link href={`/app/pacientes/${appt.patient.id}`} className="text-primary-strong underline-offset-4 hover:underline">
                 {appt.patient.fullName}
               </Link>{" "}
               · {appt.patient.phone ?? "sem telefone"}
@@ -120,8 +121,8 @@ export default async function AppointmentDetailPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm">Profissional: {appt.professional.fullName}</p>
-            <p className="text-sm">Modalidade: <span className="capitalize">{appt.modality}</span></p>
-            <p className="text-sm">Valor: {formatBRL(appt.price)}</p>
+            <p className="text-sm">Modalidade: {modalityLabel(appt.modality)}</p>
+            <p className="text-sm">Valor: <span className="tabular-nums">{formatBRL(appt.price)}</span></p>
             {appt.notes ? <p className="mt-2 text-sm text-muted-foreground">{appt.notes}</p> : null}
             {appt.reminderSentAt ? (
               <p className="mt-2 text-xs text-muted-foreground">
@@ -134,7 +135,7 @@ export default async function AppointmentDetailPage({
         <Card>
           <CardHeader>
             <CardTitle>Ações</CardTitle>
-            <CardDescription>Atualize status, gere evolução clínica ou aciona financeiro.</CardDescription>
+            <CardDescription>Atualize o status, registre a evolução ou veja a cobrança.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2 flex-wrap">
@@ -144,7 +145,7 @@ export default async function AppointmentDetailPage({
                   <input type="hidden" name="status" value={s} />
                   <Button type="submit" size="sm" variant={s === "done" ? "success" : s === "no_show" ? "destructive" : "outline"}>
                     {s === "done" ? <CheckCircle2 className="h-4 w-4" /> : s === "no_show" ? <XCircle className="h-4 w-4" /> : null}
-                    {{ confirmed: "Confirmar", done: "Marcar realizada", no_show: "No-show", cancelled: "Cancelar" }[s]}
+                    {{ confirmed: "Confirmar sessão", done: "Marcar realizada", no_show: "Registrar falta", cancelled: "Cancelar sessão" }[s]}
                   </Button>
                 </form>
               ))}
@@ -159,7 +160,7 @@ export default async function AppointmentDetailPage({
               ) : (
                 <Button asChild>
                   <Link href={`/app/prontuario/${appt.patient.id}/nova-evolucao?appointmentId=${appt.id}`}>
-                    <Sparkles className="h-4 w-4" /> Registrar evolução + LUMA
+                    <Sparkles className="h-4 w-4" /> Registrar evolução com a LUMA
                   </Link>
                 </Button>
               )}

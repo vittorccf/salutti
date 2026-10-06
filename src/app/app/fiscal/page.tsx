@@ -4,8 +4,9 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { formatBRL, formatDateTimeBR } from "@/lib/utils";
+import { formatBRL, formatDateTimeBR, plural } from "@/lib/utils";
 import { AlertCircle, Building2, FileSignature, Landmark, Receipt as ReceiptIcon, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -34,38 +35,38 @@ export default async function FiscalPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileSignature className="h-6 w-6 text-primary" /> Fiscal
+          <FileSignature className="h-6 w-6 text-primary-strong" aria-hidden /> Fiscal
         </h1>
         <p className="text-sm text-muted-foreground">
-          NFS-e (LC 116, código 14.01) · Recibos · Receita Saúde (obrigatória 01/2025) · Certificado A1 placeholder.
+          Recibos, notas fiscais (NFS-e, LC 116, código 14.01) e protocolos do Receita Saúde.
         </p>
       </header>
 
       <Card className="border-warning/30 bg-warning/5">
         <CardContent className="p-4 flex items-start gap-3 text-sm">
-          <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
+          <AlertCircle className="h-5 w-5 shrink-0 text-warning-strong mt-0.5" aria-hidden />
           <div>
-            <p className="font-semibold text-warning-foreground">Receita Saúde 2025 - gatilho de venda</p>
+            <p className="font-semibold text-warning-strong">Receita Saúde: recibos obrigatórios desde 2025</p>
             <p className="text-muted-foreground">
-              A partir de Jan/2025, profissionais de saúde PF devem emitir recibos via app Receita Saúde da Receita
-              Federal. Salutti envia o protocolo automaticamente quando o recibo é gerado.
+              Desde janeiro de 2025, profissionais de saúde pessoa física emitem recibos pelo Receita Saúde. A Salutti
+              envia o protocolo sozinha quando o recibo é gerado.
             </p>
-            <div className="mt-2 flex gap-3 text-xs">
-              <Badge variant="success">{rsConfirmed} confirmados</Badge>
-              <Badge variant="warning">{rsError} erro</Badge>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs">
+              <Badge variant="success">{plural(rsConfirmed, "confirmado", "confirmados")}</Badge>
+              <Badge variant={rsError > 0 ? "destructive" : "muted"}>{plural(rsError, "com erro", "com erro")}</Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <ReceiptIcon className="h-5 w-5 text-primary" /> Recibos digitais
+                <ReceiptIcon className="h-5 w-5 text-primary-strong" aria-hidden /> Recibos digitais
               </CardTitle>
-              <CardDescription>Receita Saúde + PDF público.</CardDescription>
+              <CardDescription>Protocolo do Receita Saúde e PDF para o paciente.</CardDescription>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -74,7 +75,7 @@ export default async function FiscalPage() {
                 <TR>
                   <TH>Número</TH>
                   <TH>Paciente</TH>
-                  <TH>Valor</TH>
+                  <TH className="text-right">Valor</TH>
                   <TH>Receita Saúde</TH>
                 </TR>
               </THead>
@@ -82,7 +83,7 @@ export default async function FiscalPage() {
                 {receipts.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Sem recibos emitidos.
+                      Nenhum recibo emitido. Eles são gerados quando uma cobrança é paga.
                     </TD>
                   </TR>
                 ) : (
@@ -90,11 +91,9 @@ export default async function FiscalPage() {
                     <TR key={r.id}>
                       <TD className="font-mono">{r.receiptNumber}</TD>
                       <TD>{r.patient.fullName}</TD>
-                      <TD>{formatBRL(r.amount)}</TD>
+                      <TD className="text-right">{formatBRL(r.amount)}</TD>
                       <TD>
-                        <Badge variant={r.receitaSaudeStatus === "confirmed" ? "success" : "warning"}>
-                          {r.receitaSaudeStatus ?? "-"}
-                        </Badge>
+                        <StatusBadge kind="receitaSaude" status={r.receitaSaudeStatus} />
                       </TD>
                     </TR>
                   ))
@@ -107,9 +106,9 @@ export default async function FiscalPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" /> NFS-e
+              <Building2 className="h-5 w-5 text-primary-strong" aria-hidden /> NFS-e
             </CardTitle>
-            <CardDescription>Emissão via API "NF-e as a service" (NFE.io / Focus / Nuvem Fiscal).</CardDescription>
+            <CardDescription>Emitidas por API de nota fiscal (NFE.io, Focus ou Nuvem Fiscal).</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -117,7 +116,7 @@ export default async function FiscalPage() {
                 <TR>
                   <TH>Número</TH>
                   <TH>Paciente</TH>
-                  <TH>Valor</TH>
+                  <TH className="text-right">Valor</TH>
                   <TH>Status</TH>
                 </TR>
               </THead>
@@ -125,7 +124,7 @@ export default async function FiscalPage() {
                 {invoices.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Sem notas emitidas.
+                      Nenhuma nota emitida.
                     </TD>
                   </TR>
                 ) : (
@@ -133,9 +132,9 @@ export default async function FiscalPage() {
                     <TR key={i.id}>
                       <TD className="font-mono">{i.invoiceNumber}</TD>
                       <TD>{i.patient.fullName}</TD>
-                      <TD>{formatBRL(i.amount)}</TD>
+                      <TD className="text-right">{formatBRL(i.amount)}</TD>
                       <TD>
-                        <Badge variant={i.issStatus === "issued" ? "success" : "warning"}>{i.issStatus}</Badge>
+                        <StatusBadge kind="invoice" status={i.issStatus} />
                       </TD>
                     </TR>
                   ))
@@ -149,14 +148,14 @@ export default async function FiscalPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" /> Certificado digital A1
+            <ShieldCheck className="h-5 w-5 text-primary-strong" aria-hidden /> Certificado digital A1
           </CardTitle>
-          <CardDescription>Necessário para assinar receitas e NFS-e em produção (ICP-Brasil).</CardDescription>
+          <CardDescription>Necessário para assinar receitas e notas fiscais (ICP-Brasil).</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Status: <Badge variant="muted">Sandbox</Badge> · Salutti aceita upload em <code>/app/ajustes</code> e
-            armazena cifrado (KMS). Integrações suportadas: Memed, SafeID, BirdID.
+            Status: <StatusBadge kind="integration" status="sandbox" /> · Envie o certificado em Ajustes; ele fica
+            guardado cifrado. Compatível com Memed, SafeID e BirdID.
           </p>
         </CardContent>
       </Card>

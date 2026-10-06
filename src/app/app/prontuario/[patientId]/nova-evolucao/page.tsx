@@ -100,17 +100,17 @@ export default async function NewClinicalNotePage({
         <CardHeader>
           <CardTitle>Nova evolução · {patient.fullName}</CardTitle>
           <CardDescription>
-            O LUMA sumariza imediatamente. Assinatura ICP-Brasil simulada via hash SHA-256 do conteúdo + timestamp.
+            A LUMA resume a evolução ao salvar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e do horário.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={saveNoteAction} className="space-y-4">
             <input type="hidden" name="patientId" value={patient.id} />
             {appointmentId ? <input type="hidden" name="appointmentId" value={appointmentId} /> : null}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label>Profissional</Label>
-                <Select name="professionalId" required>
+                <Label htmlFor="professionalId">Profissional</Label>
+                <Select name="professionalId" id="professionalId" required>
                   {professionals.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.fullName}
@@ -119,8 +119,8 @@ export default async function NewClinicalNotePage({
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Tipo de registro</Label>
-                <Select name="noteType" defaultValue="evolucao">
+                <Label htmlFor="noteType">Tipo de registro</Label>
+                <Select name="noteType" id="noteType" defaultValue="evolucao">
                   <option value="evolucao">Evolução</option>
                   <option value="anamnese">Anamnese</option>
                   <option value="plano_terapeutico">Plano terapêutico</option>
@@ -129,22 +129,22 @@ export default async function NewClinicalNotePage({
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Conteúdo (markdown)</Label>
+              <Label htmlFor="contentMarkdown">Conteúdo</Label>
               <Textarea
-                name="contentMarkdown"
+                name="contentMarkdown" id="contentMarkdown"
                 rows={14}
                 required
                 placeholder={`Sessão #__\nQueixa: …\nObservação clínica: …\nIntervenção: …\nPlano: …`}
               />
               <p className="text-xs text-muted-foreground">
-                O LUMA detecta temas (ansiedade, luto, sono, panico, vínculo conjugal etc.) e sugere próximos passos.
+                Aceita Markdown. A LUMA identifica temas (ansiedade, luto, sono, pânico, vínculo conjugal) e sugere próximos passos.
               </p>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <input id="sign" name="sign" type="checkbox" defaultChecked />
-              <Label htmlFor="sign">Assinar digitalmente (gera hash ICP-Brasil mock)</Label>
+              <input id="sign" name="sign" type="checkbox" defaultChecked className="h-4 w-4 accent-primary" />
+              <Label htmlFor="sign">Assinar digitalmente (simulação ICP-Brasil)</Label>
             </div>
-            <Button type="submit">Salvar e sumarizar com LUMA</Button>
+            <Button type="submit">Salvar evolução</Button>
           </form>
         </CardContent>
       </Card>

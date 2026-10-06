@@ -115,48 +115,48 @@ const defaultAnamnesis = {
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams;
   return (
-    <main className="min-h-screen grid place-content-center bg-gradient-to-br from-accent/30 to-background py-12">
-      <Card className="w-[480px]">
+    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4 py-12">
+      <Card className="w-full max-w-[480px]">
         <CardHeader className="text-center">
-          <CardTitle>Criar workspace Salutti</CardTitle>
+          <CardTitle>Criar sua conta na Salutti</CardTitle>
           <CardDescription>15 dias grátis. Sem cartão.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={signupAction} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="name">Seu nome</Label>
                 <Input id="name" name="name" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">E-mail</Label>
                 <Input id="email" name="email" type="email" required />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input id="password" name="password" type="password" required minLength={6} />
+              <Input id="password" name="password" type="password" required minLength={6} placeholder="Mínimo de 6 caracteres" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="workspaceName">Nome do consultório / clínica</Label>
-              <Input id="workspaceName" name="workspaceName" required placeholder="Ex: Espaço Acolher" />
+              <Label htmlFor="workspaceName">Nome do consultório ou clínica</Label>
+              <Input id="workspaceName" name="workspaceName" required placeholder="Espaço Acolher" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="segment">Tipo de operação</Label>
+              <Label htmlFor="segment">Tipo de atendimento</Label>
               <Select id="segment" name="segment" defaultValue="solo_psicologo">
                 <option value="solo_psicologo">Psicólogo autônomo</option>
-                <option value="solo_psicanalista">Psicanalista / terapeuta (sem CRP)</option>
+                <option value="solo_psicanalista">Psicanalista ou terapeuta (sem CRP)</option>
                 <option value="clinica">Clínica multi-profissional</option>
                 <option value="ubs">UBS / posto público</option>
                 <option value="odonto">Consultório odontológico</option>
               </Select>
             </div>
-            {params.error ? <p className="text-sm text-destructive">{params.error}</p> : null}
-            <Button className="w-full">Criar workspace</Button>
+            {params.error ? <p className="text-sm text-destructive-strong" role="alert">{params.error}</p> : null}
+            <Button className="w-full">Criar conta</Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Já tem conta?{" "}
-            <Link href="/login" className="text-primary underline">
+            <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
               Entrar
             </Link>
           </p>

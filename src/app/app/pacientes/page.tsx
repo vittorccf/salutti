@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Plus, UserPlus, Users } from "lucide-react";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, plural } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -48,10 +48,12 @@ export default async function PatientsPage({
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary" /> Pacientes
+            <Users className="h-6 w-6 text-primary-strong" aria-hidden /> Pacientes
           </h1>
           <p className="text-muted-foreground text-sm">
-            {patients.length} paciente(s) carregado(s). Inclui campo <em>"profissional sem CRP"</em> para psicanalistas e terapeutas.
+            {q
+              ? `${plural(patients.length, "resultado", "resultados")} para “${q}”`
+              : plural(patients.length, "paciente", "pacientes")}
           </p>
         </div>
         <Button asChild>
@@ -62,7 +64,7 @@ export default async function PatientsPage({
       </header>
 
       <form className="flex gap-2">
-        <Input name="q" defaultValue={q} placeholder="Buscar por nome, email ou CPF…" />
+        <Input name="q" defaultValue={q} placeholder="Nome, e-mail ou CPF" aria-label="Buscar pacientes" />
         <Button type="submit" variant="outline">
           Buscar
         </Button>
@@ -70,13 +72,17 @@ export default async function PatientsPage({
 
       {patients.length === 0 ? (
         <EmptyState
-          icon={<Users className="h-8 w-8" />}
-          title="Nenhum paciente cadastrado"
-          description="Comece criando o primeiro registro - sem exigência de CPF nem CRP."
+          icon={<Users className="h-6 w-6" />}
+          title={q ? "Nenhum paciente encontrado" : "Nenhum paciente cadastrado"}
+          description={
+            q
+              ? "Confira a grafia ou busque pelo CPF ou e-mail."
+              : "Cadastre o primeiro paciente. CPF e registro profissional são opcionais."
+          }
           action={
             <Button asChild>
               <Link href="/app/pacientes/novo">
-                <Plus className="h-4 w-4" /> Cadastrar
+                <Plus className="h-4 w-4" /> Cadastrar paciente
               </Link>
             </Button>
           }
@@ -90,7 +96,7 @@ export default async function PatientsPage({
                   <TH>Nome</TH>
                   <TH>Contato</TH>
                   <TH>Nascimento</TH>
-                  <TH>Sessões</TH>
+                  <TH className="text-right">Sessões</TH>
                   <TH>Consentimento</TH>
                   <TH></TH>
                 </TR>
@@ -109,10 +115,10 @@ export default async function PatientsPage({
                       {p.email ?? ""}
                     </TD>
                     <TD>{p.birthDate ? formatDateBR(p.birthDate) : "-"}</TD>
-                    <TD>{p._count.appointments}</TD>
+                    <TD className="text-right">{p._count.appointments}</TD>
                     <TD>
                       {p.consentRecords.length > 0 ? (
-                        <Badge variant="success">LGPD ok</Badge>
+                        <Badge variant="success">Consentido</Badge>
                       ) : (
                         <Badge variant="warning">Pendente</Badge>
                       )}

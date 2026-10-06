@@ -9,11 +9,11 @@ import {
   Brain,
   CalendarCheck,
   FileSignature,
-  HeartHandshake,
   MessageSquareText,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 const features = [
   {
@@ -67,19 +67,16 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-accent/30">
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
-        <div className="container flex items-center justify-between py-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <span className="grid h-8 w-8 place-content-center rounded-lg bg-primary text-primary-foreground">
-              <HeartHandshake className="h-5 w-5" />
-            </span>
-            Salutti
+        <div className="container flex items-center justify-between gap-3 py-4">
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Salutti">
+            <Logo size={24} />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
               <Link href="/login">Entrar</Link>
             </Button>
             <Button asChild>
-              <Link href="/signup">Começar trial 15 dias</Link>
+              <Link href="/signup">Testar grátis</Link>
             </Button>
           </div>
         </div>
@@ -87,27 +84,27 @@ export default function Home() {
 
       <section className="container py-20 text-center">
         <Badge variant="muted" className="mb-4">
-          <Sparkles className="mr-1 h-3 w-3" /> Conformidade LGPD & Receita Saúde 2025
+          <Sparkles className="h-3 w-3" aria-hidden /> Em dia com a LGPD e o Receita Saúde
         </Badge>
         <h1 className="mx-auto max-w-3xl text-4xl md:text-6xl font-bold tracking-tight">
           O <span className="text-primary">ERP de Saúde</span> que automatiza o que ninguém quer fazer.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas - não de planilha.
-          Agenda + Pix + NF-e + WhatsApp + IA preditiva em um único sistema.
+          Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas, não de planilhas.
+          Agenda, Pix, nota fiscal, WhatsApp e IA preditiva em um só sistema.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button size="lg" asChild>
             <Link href="/signup">
-              Criar workspace gratuito <ArrowRight className="h-4 w-4" />
+              Criar meu consultório <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
-            <Link href="/login">Acessar demo (Guilherme / Kris)</Link>
+            <Link href="/login">Ver demonstração</Link>
           </Button>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Trial de 15 dias · Sem cartão · Cancela em 1 clique
+          15 dias grátis · Sem cartão · Cancele quando quiser
         </p>
       </section>
 
@@ -125,13 +122,13 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="bg-primary text-primary-foreground py-16">
+      <section className="bg-primary-strong text-primary-foreground py-16">
         <div className="container grid gap-8 md:grid-cols-3">
           {differentiators.map((d) => (
             <div key={d.title}>
-              <Activity className="h-6 w-6" />
+              <Activity className="h-6 w-6" aria-hidden />
               <h3 className="mt-3 text-lg font-semibold">{d.title}</h3>
-              <p className="mt-1 text-sm opacity-80">{d.desc}</p>
+              <p className="mt-1 text-sm opacity-90">{d.desc}</p>
             </div>
           ))}
         </div>
@@ -139,8 +136,8 @@ export default function Home() {
 
       <footer className="container py-10 text-sm text-muted-foreground text-center">
         <p>
-          Salutti · Protótipo navegável · Multi-tenant · Compliance LGPD/HIPAA-ready ·{" "}
-          <Link href="/login" className="text-primary underline">
+          Salutti · ERP para quem cuida da saúde mental ·{" "}
+          <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
             Entrar
           </Link>
         </p>

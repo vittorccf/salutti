@@ -2,39 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentContext } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/brand/logo";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
-import {
-  Banknote,
-  CalendarDays,
-  ClipboardList,
-  FileSignature,
-  HeartHandshake,
-  LayoutDashboard,
-  LogOut,
-  ShieldCheck,
-  Sparkles,
-  Stethoscope,
-  Users,
-  UserSquare2,
-  MessageSquareText,
-} from "lucide-react";
+import { SidebarNav } from "./_components/sidebar-nav";
+import { UserMenu } from "./_components/user-menu";
+import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
-
-const nav = [
-  { href: "/app", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app/pacientes", label: "Pacientes", icon: Users },
-  { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/app/prontuario", label: "Prontuário", icon: ClipboardList },
-  { href: "/app/financeiro", label: "Financeiro", icon: Banknote },
-  { href: "/app/fiscal", label: "Fiscal", icon: FileSignature },
-  { href: "/app/luma", label: "LUMA · IA", icon: Sparkles },
-  { href: "/app/comunicacao", label: "Comunicação", icon: MessageSquareText },
-  { href: "/app/equipe", label: "Profissionais", icon: Stethoscope },
-  { href: "/app/lgpd", label: "LGPD", icon: ShieldCheck },
-  { href: "/app/ajustes", label: "Ajustes", icon: UserSquare2 },
-];
+import { planTierLabel, segmentLabel } from "@/lib/labels";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getCurrentContext();
@@ -44,85 +19,64 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? Math.max(0, differenceInDays(ctx.workspace.trialEndsAt, new Date()))
     : null;
 
-  return (
-    <div className="min-h-screen grid" style={{ gridTemplateColumns: "260px 1fr" }}>
-      <aside className="border-r bg-card flex flex-col">
-        <div className="p-5">
-          <Link href="/app" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-8 w-8 place-content-center rounded-lg bg-primary text-primary-foreground">
-              <HeartHandshake className="h-5 w-5" />
-            </span>
-            <span>
-              Salutti
-              <span className="block text-xs font-normal text-muted-foreground">
-                {ctx.workspace.name}
-              </span>
-            </span>
-          </Link>
-          <div className="mt-4">
-            <WorkspaceSwitcher
-              workspaces={ctx.allWorkspaces.map((w) => ({ id: w.id, name: w.name, slug: w.slug }))}
-              activeId={ctx.workspace.id}
-            />
-          </div>
+  const sidebar = (
+    <>
+      <div className="p-5">
+        <Link href="/app" className="block space-y-1.5 rounded-md pr-10 md:pr-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Logo size={22} />
+          <span className="block text-xs text-muted-foreground">{ctx.workspace.name}</span>
+        </Link>
+        <div className="mt-4">
+          <WorkspaceSwitcher
+            key={ctx.workspace.id}
+            workspaces={ctx.allWorkspaces.map((w) => ({ id: w.id, name: w.name, slug: w.slug }))}
+            activeId={ctx.workspace.id}
+          />
         </div>
-        <Separator />
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {nav.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
-              >
-                <Icon className="h-4 w-4 text-muted-foreground" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <Separator />
-        <div className="p-4 space-y-3 text-sm">
-          {trialDays !== null ? (
-            <div className="rounded-md bg-warning/10 p-3 text-warning-foreground text-xs">
-              <p className="font-semibold text-warning">Trial: {trialDays} dia(s) restantes</p>
-              <p className="text-muted-foreground">
-                Plano <strong className="text-foreground">{ctx.workspace.planTier}</strong>
-              </p>
-            </div>
-          ) : null}
-          <div>
-            <p className="font-medium leading-tight">{ctx.user.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{ctx.user.email}</p>
+      </div>
+      <Separator />
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <SidebarNav />
+      </div>
+      <Separator />
+      <div className="p-3 space-y-3 text-sm">
+        {trialDays !== null ? (
+          <div className="rounded-md bg-warning/10 p-3 text-xs">
+            <p className="font-semibold text-warning-strong">
+              Teste grátis: {trialDays} {trialDays === 1 ? "dia restante" : "dias restantes"}
+            </p>
+            <p className="text-foreground/80">
+              Plano <strong className="text-foreground">{planTierLabel(ctx.workspace.planTier)}</strong>
+            </p>
           </div>
-          <Button size="sm" variant="outline" className="w-full" asChild>
-            <Link href="/logout">
-              <LogOut className="h-4 w-4" /> Sair
-            </Link>
-          </Button>
-        </div>
-      </aside>
+        ) : null}
+        <UserMenu name={ctx.user.name} email={ctx.user.email} />
+      </div>
+    </>
+  );
 
-      <main className="bg-background min-h-screen">
+  return (
+    <div className="min-h-screen md:grid md:grid-cols-[260px_minmax(0,1fr)]">
+      <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:flex-col border-r bg-card">{sidebar}</aside>
+
+      <main className="bg-background min-h-screen min-w-0">
         <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-30">
-          <div className="flex items-center justify-between px-6 py-3">
-            <div className="flex items-center gap-3">
-              <Badge variant="muted">{ctx.workspace.segment.replace("_", " ")}</Badge>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <MobileNav>{sidebar}</MobileNav>
+              <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Início">
+                <Logo size={20} />
+              </Link>
+              <Badge variant="muted" className="hidden sm:inline-flex">
+                {segmentLabel(ctx.workspace.segment)}
+              </Badge>
+              <p className="hidden truncate text-sm text-muted-foreground lg:block">
                 LGPD ativo · auditoria habilitada · multi-tenant
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/app/luma">
-                  <Sparkles className="h-4 w-4" /> LUMA
-                </Link>
-              </Button>
-            </div>
           </div>
         </header>
-        <div className="p-6">{children}</div>
+        <div className="p-4 md:p-6">{children}</div>
       </main>
     </div>
   );

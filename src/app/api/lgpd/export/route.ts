@@ -23,7 +23,7 @@ export const GET = async (req: Request) => {
   });
   if (!patient) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  const filename = `saluti-portabilidade-${patient.fullName.replaceAll(" ", "_")}.json`;
+  const filename = `salutti-portabilidade-${patient.fullName.replaceAll(" ", "_")}.json`;
   return new NextResponse(JSON.stringify(patient, null, 2), {
     headers: {
       "content-type": "application/json",
