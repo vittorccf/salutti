@@ -17,7 +17,7 @@ export const EmptyState = ({ icon, title, description, action, className }: Prop
     )}
   >
     {icon ? <div className="mb-3 text-muted-foreground">{icon}</div> : null}
-    <h3 className="text-base font-semibold">{title}</h3>
+    <h3 className="font-sans text-base font-semibold">{title}</h3>
     {description ? <p className="mt-1 max-w-md text-sm text-muted-foreground">{description}</p> : null}
     {action ? <div className="mt-4">{action}</div> : null}
   </div>

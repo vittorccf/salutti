@@ -10,7 +10,8 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
-import { CalendarDays, HeartHandshake, Smartphone } from "lucide-react";
+import { CalendarDays, Smartphone } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -83,11 +84,9 @@ export default async function PatientPortalPage({
     <main className="min-h-screen bg-gradient-to-b from-accent/30 to-background">
       <header className="border-b bg-background/80 backdrop-blur sticky top-0">
         <div className="container flex items-center justify-between py-4">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-content-center rounded-lg bg-primary text-primary-foreground">
-              <HeartHandshake className="h-5 w-5" />
-            </span>
-            Salutti · Portal do paciente
+          <Link href="/" className="flex items-center gap-3">
+            <Logo size={22} />
+            <span className="text-sm font-medium text-muted-foreground">Portal do paciente</span>
           </Link>
           <Badge variant="muted">{patient.workspace.name}</Badge>
         </div>

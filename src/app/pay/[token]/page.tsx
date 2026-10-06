@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
-import { CheckCircle2, HeartHandshake } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -45,9 +46,7 @@ export default async function PublicPaymentPage({
     <main className="min-h-screen bg-gradient-to-br from-accent/20 to-background grid place-content-center p-4">
       <Card className="w-[440px]">
         <CardHeader className="text-center">
-          <div className="mx-auto grid h-12 w-12 place-content-center rounded-xl bg-primary text-primary-foreground">
-            <HeartHandshake className="h-6 w-6" />
-          </div>
+          <Logo variant="icon" size={48} className="mx-auto" />
           <CardTitle>Pagamento · {link.workspace.name}</CardTitle>
           <CardDescription>Link público (Salutti Pay)</CardDescription>
         </CardHeader>

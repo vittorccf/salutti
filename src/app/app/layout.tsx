@@ -4,13 +4,13 @@ import { getCurrentContext } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/brand/logo";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
 import {
   Banknote,
   CalendarDays,
   ClipboardList,
   FileSignature,
-  HeartHandshake,
   LayoutDashboard,
   LogOut,
   ShieldCheck,
@@ -48,16 +48,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen grid" style={{ gridTemplateColumns: "260px 1fr" }}>
       <aside className="border-r bg-card flex flex-col">
         <div className="p-5">
-          <Link href="/app" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-8 w-8 place-content-center rounded-lg bg-primary text-primary-foreground">
-              <HeartHandshake className="h-5 w-5" />
-            </span>
-            <span>
-              Salutti
-              <span className="block text-xs font-normal text-muted-foreground">
-                {ctx.workspace.name}
-              </span>
-            </span>
+          <Link href="/app" className="block space-y-1.5">
+            <Logo size={22} />
+            <span className="block text-xs text-muted-foreground">{ctx.workspace.name}</span>
           </Link>
           <div className="mt-4">
             <WorkspaceSwitcher
