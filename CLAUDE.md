@@ -18,10 +18,12 @@ npm run db:seed       # recria usuários, consultórios e modelos de anamnese, s
 npm run db:admin      # criar/atualizar usuário admin (admin/admin) — scripts/create-admin.ts
 npm run db:reset      # force-reset + seed
 npx prisma studio     # GUI dos dados
-node scripts/smoke-test.mjs <userId> <workspaceId>   # smoke test manual das rotas /app/*
+npm test              # unitários (Vitest): datas/fuso, rótulos, formatação, videochamada, insights
+npm run test:e2e      # ponta a ponta (Playwright): banco próprio prisma/e2e.db e servidor na porta 3300
+node scripts/smoke-test.mjs <userId> <workspaceId> [baseUrl]   # smoke test manual das rotas /app/*
 ```
 
-Não há suíte de testes automatizada (Vitest/Playwright) ainda — decisão deliberada documentada em `ARCHITECTURE.md`. Se for adicionar, `src/lib/providers/insights.ts` é o melhor ponto de partida (puro, determinístico, sem I/O).
+Testes: unitários em `tests/unit` (Vitest) e ponta a ponta em `tests/e2e` (Playwright). O CI (`.github/workflows/ci.yml`) roda lint, tipos, unitários com `TZ=UTC` e o e2e contra o build de produção em todo PR. Datas sempre via `src/lib/dates.ts` (fuso de São Paulo); ids vindos de formulário sempre via `src/lib/tenant.ts`.
 
 ## Convenções já estabelecidas (seguir, não reinventar)
 
