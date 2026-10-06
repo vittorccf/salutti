@@ -1,0 +1,3 @@
+# Migrations do Prisma sempre com LF: o checksum muda com CRLF (Windows) e acusaria migration alterada.
+prisma/migrations/**/*.sql text eol=lf
+prisma/migrations/migration_lock.toml text eol=lf
