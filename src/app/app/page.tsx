@@ -140,10 +140,10 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="ds2 ds2-glow -m-4 min-h-[calc(100vh-57px)] space-y-8 p-4 md:-m-6 md:p-6">
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-display">
             {myBirthdayToday ? tb("happyBirthday", { name: firstName }) : t("greeting", { greeting, name: firstName })}
           </h1>
           <p className="text-muted-foreground">

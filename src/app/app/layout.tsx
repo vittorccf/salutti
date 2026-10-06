@@ -1,9 +1,9 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentContext } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Logo } from "@/components/brand/logo";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
 import { SidebarNav } from "./_components/sidebar-nav";
 import { UserMenu } from "./_components/user-menu";
@@ -42,7 +42,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <span className="min-w-0 font-semibold leading-tight">{ctx.user.name}</span>
             </span>
           ) : (
-            <Logo size={22} />
+            <BrandLogo height={28} />
           )}
           <span className="block text-xs text-muted-foreground">{ctx.workspace.name}</span>
         </Link>
@@ -84,7 +84,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="flex min-w-0 items-center gap-3">
               <MobileNav>{sidebar}</MobileNav>
               <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t("home")}>
-                <Logo size={20} />
+                <BrandLogo variant="symbol" height={28} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
                 {label("accountType", ctx.workspace.accountType)} · {label("segment", ctx.workspace.segment)}

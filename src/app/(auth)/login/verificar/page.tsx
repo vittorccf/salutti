@@ -1,10 +1,10 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { clearPendingTwoFactor, createSession, getPendingTwoFactor, setActiveWorkspaceCookie } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { consumeRecoveryCode, decryptSecret, LOCK_AFTER, LOCK_MINUTES, verifyTotp } from "@/lib/totp";
-import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,7 @@ export default async function VerifyTwoFactorPage({ searchParams }: { searchPara
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
-          <Logo variant="icon" size={48} className="mx-auto" />
+          <BrandLogo variant="symbol" height={48} className="mx-auto" />
           <CardTitle>{t("title")}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
