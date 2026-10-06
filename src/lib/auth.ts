@@ -50,10 +50,14 @@ export const createSession = async (payload: SessionPayload) => {
   cookies().set(COOKIE_NAME, token, cookieBase);
   // Idioma escolhido em Ajustes vale em qualquer navegador onde a pessoa entrar.
   const user = await db.user.findUnique({ where: { id: payload.userId }, select: { locale: true } });
-  // Sem idioma no perfil, apaga o cookie: num computador compartilhado, a escolha de outra pessoa não fica.
+  // Perfil com idioma: ele vale. Sem idioma no perfil: a escolha feita na tela de login (cookie) passa a ser
+  // o idioma do perfil. O logout apaga o cookie, então num computador compartilhado não sobra a escolha de outra pessoa.
+  const chosen = cookies().get(LOCALE_COOKIE)?.value;
   if (user?.locale && isLocale(user.locale)) {
     cookies().set(LOCALE_COOKIE, user.locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
-  } else cookies().delete(LOCALE_COOKIE);
+  } else if (isLocale(chosen)) {
+    await db.user.update({ where: { id: payload.userId }, data: { locale: chosen } });
+  }
 };
 
 export const destroySession = () => {
