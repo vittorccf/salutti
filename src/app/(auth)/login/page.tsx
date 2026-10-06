@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { redirect } from "next/navigation";
@@ -8,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogoDialogo } from "@/components/brand/logo-dialogo";
 import { getTranslations } from "@/i18n/server";
 
 // Erros vindos por ?error= (código curto; o texto fica nas mensagens auth.login.errors).
@@ -64,7 +64,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </div>
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
-          <LogoDialogo variant="icon" size={48} className="mx-auto" />
+          <BrandLogo height={40} className="mx-auto" />
           <CardTitle>{t("title")}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
