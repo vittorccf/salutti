@@ -228,7 +228,7 @@ model ClinicalNote {
   noteType        String       @default("evolucao") // anamnese | evolucao | plano_terapeutico | alta
   // Conteúdo criptografado em produção; aqui texto puro p/ protótipo
   contentMarkdown String
-  // Sumário gerado pela IA LUMA
+  // Sumário gerado pela IA TOBI
   aiSummary       String?
   aiTopics        String?      // CSV de temas detectados
   signedAt        DateTime?

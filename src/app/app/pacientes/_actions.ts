@@ -7,6 +7,7 @@ import { recordAudit } from "@/lib/audit";
 import { parseDateOnly } from "@/lib/dates";
 import { assertInsurancePlan, assertInWorkspace } from "@/lib/tenant";
 import { ContactError, readAddress, validEmail, validPhone } from "@/lib/contact-validation";
+import type { FormResult } from "@/components/forms/action-form";
 
 const text = (max = 200) => z.string().trim().max(max).optional();
 const schema = z.object({
@@ -21,39 +22,49 @@ const schema = z.object({
   insuranceCardNumber: text(20),
 });
 
-async function readPatient(formData: FormData, workspaceId: string) {
+type Previous = { email: string | null; phone: string | null; address: string | null } | null;
+
+async function readPatient(formData: FormData, workspaceId: string, previous: Previous = null) {
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) throw new ContactError(parsed.error.issues[0].message);
   const d = parsed.data;
   if (d.insurancePlanId) await assertInsurancePlan(workspaceId, d.insurancePlanId);
+  // O select de convênio só aparece quando há planos; sem ele, o convênio atual fica como está.
+  const insurance = formData.has("insurancePlanId")
+    ? {
+        insurancePlanId: d.insurancePlanId || null,
+        insuranceCardNumber: d.insurancePlanId ? d.insuranceCardNumber || null : null,
+      }
+    : {};
   return {
     fullName: d.fullName,
-    email: await validEmail(formData.get("email")),
-    phone: validPhone(formData.get("phone")),
+    email: await validEmail(formData.get("email"), { previous: previous?.email }),
+    phone: validPhone(formData.get("phone"), { country: formData.get("phoneCountry"), previous: previous?.phone }),
     cpf: d.cpf || null,
     birthDate: d.birthDate ? parseDateOnly(d.birthDate) : null,
     pronouns: d.pronouns || null,
     responsibleName: d.responsibleName || null,
     emergencyContact: d.emergencyContact || null,
     notes: d.notes || null,
-    insurancePlanId: d.insurancePlanId || null,
-    insuranceCardNumber: d.insurancePlanId ? d.insuranceCardNumber || null : null,
+    ...insurance,
     ...readAddress(formData),
+    // Endereço antigo (texto livre) só some quando a pessoa pede.
+    ...(formData.get("clearLegacyAddress") === "on" ? { address: null } : {}),
   };
 }
 
-const fail = (path: string, e: unknown): never => {
-  if (e instanceof ContactError) redirect(`${path}?erro=${encodeURIComponent(e.message)}`);
+const fail = (e: unknown): FormResult => {
+  if (e instanceof ContactError) return { erro: e.message };
   throw e;
 };
 
-export async function createPatientAction(formData: FormData) {
+export async function createPatientAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   const ctx = await requireContext();
   let data: Awaited<ReturnType<typeof readPatient>>;
   try {
     data = await readPatient(formData, ctx.workspace.id);
   } catch (e) {
-    return fail("/app/pacientes/novo", e);
+    return fail(e);
   }
   const patient = await db.patient.create({
     data: {
@@ -78,15 +89,19 @@ export async function createPatientAction(formData: FormData) {
   redirect(`/app/pacientes/${patient.id}`);
 }
 
-export async function updatePatientAction(formData: FormData) {
+export async function updatePatientAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   const ctx = await requireContext();
   const patientId = String(formData.get("patientId"));
   await assertInWorkspace(ctx.workspace.id, { patientId });
+  const previous = await db.patient.findFirst({
+    where: { id: patientId, workspaceId: ctx.workspace.id },
+    select: { email: true, phone: true, address: true },
+  });
   let data: Awaited<ReturnType<typeof readPatient>>;
   try {
-    data = await readPatient(formData, ctx.workspace.id);
+    data = await readPatient(formData, ctx.workspace.id, previous);
   } catch (e) {
-    return fail(`/app/pacientes/${patientId}/editar`, e);
+    return fail(e);
   }
   await db.patient.updateMany({ where: { id: patientId, workspaceId: ctx.workspace.id }, data });
   await recordAudit({

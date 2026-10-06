@@ -13,8 +13,9 @@ test("paciente com telefone de Portugal, e-mail corrigido e endereço pelo CEP; 
 
   // País pelo seletor com busca.
   await page.getByRole("button", { name: /País do telefone/ }).click();
-  await page.getByRole("textbox", { name: "Buscar país ou DDI" }).fill("Portugal");
-  await page.getByRole("option", { name: /Portugal/ }).click();
+  // Busca e escolha pelo teclado (combobox): digitar e Enter.
+  await page.getByRole("combobox", { name: "Buscar país ou DDI" }).fill("Portugal");
+  await page.keyboard.press("Enter");
   await page.locator("#phone").fill("912345678");
   await expect(page.locator("#phone")).toHaveValue("912 345 678");
 
@@ -33,6 +34,9 @@ test("paciente com telefone de Portugal, e-mail corrigido e endereço pelo CEP; 
 
   await page.getByRole("button", { name: "Cadastrar paciente" }).click();
   await expect(page.getByRole("heading", { name: "Paciente · Inês Contato E2E" })).toBeVisible();
+  // Contato fica recolhido na ficha (sigilo em tela compartilhada).
+  await expect(page.getByText("+351 912 345 678")).toBeHidden();
+  await page.getByText("Ver contato e endereço").click();
   await expect(page.getByText("+351 912 345 678")).toBeVisible();
   await expect(page.locator('img[src="/flags/PT.svg"]').first()).toBeVisible();
   await expect(page.getByText("Avenida Goiás, 100 · Setor Central · Goiânia/GO · 74005-010")).toBeVisible();
@@ -42,7 +46,12 @@ test("paciente com telefone de Portugal, e-mail corrigido e endereço pelo CEP; 
   await expect(page.locator("#phone")).toHaveValue("912 345 678");
   await expect(page.locator("#street")).toHaveValue("Avenida Goiás");
   await page.locator("#phone").fill("12");
+  await page.locator("#phone").blur();
   await expect(page.getByText(/Número incompleto ou inválido/)).toBeVisible();
   await page.getByRole("button", { name: "Salvar alterações" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "Telefone inválido" })).toBeVisible();
+  // O erro vem sem recarregar: o que foi digitado continua nos campos e nada vai para a URL.
+  await expect(page.locator("#street")).toHaveValue("Avenida Goiás");
+  await expect(page.locator("#fullName")).toHaveValue("Inês Contato E2E");
+  expect(page.url()).not.toContain("erro=");
 });

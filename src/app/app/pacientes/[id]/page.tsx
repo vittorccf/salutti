@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
-import { formatAddress } from "@/lib/contact-validation";
+import { formatAddress } from "@/lib/address";
 
 export const dynamic = "force-dynamic";
 
@@ -74,12 +74,19 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Paciente · {patient.fullName}</h1>
-          <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
-            {age !== null ? <span>{age} anos ·</span> : null}
-            <PhoneText value={patient.phone} fallback="sem telefone" />
-            <span>· {patient.email ?? "sem e-mail"}</span>
-          </p>
-          {formatAddress(patient) ? <p className="text-sm text-muted-foreground">{formatAddress(patient)}</p> : null}
+          {age !== null ? <p className="text-sm text-muted-foreground">{age} anos</p> : null}
+          {/* Contato e endereço recolhidos: a ficha costuma ficar aberta em telas compartilhadas (sigilo, art. 9º do Código de Ética). */}
+          <details className="mt-1 text-sm text-muted-foreground">
+            <summary className="cursor-pointer w-fit text-primary-strong">Ver contato e endereço</summary>
+            <div className="mt-1 space-y-0.5">
+              <p className="flex flex-wrap items-center gap-x-1.5">
+                <PhoneText value={patient.phone} fallback="sem telefone" />
+                <span>· {patient.email ?? "sem e-mail"}</span>
+              </p>
+              {formatAddress(patient) ? <p>{formatAddress(patient)}</p> : null}
+              {patient.address ? <p>Endereço anterior: {patient.address}</p> : null}
+            </div>
+          </details>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" asChild>

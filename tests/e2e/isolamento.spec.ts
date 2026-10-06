@@ -12,6 +12,16 @@ test("paciente de outro consultório: 404 na ficha e LGPD não altera", async ({
   await login(k, "kris");
   await k.goto(`/app/pacientes/${patientId}`);
   await expect(k.getByText(/could not be found|não encontrad/i)).toBeVisible();
+  await k.goto(`/app/pacientes/${patientId}/editar`);
+  await expect(k.getByText(/could not be found|não encontrad/i)).toBeVisible();
+
+  // Kris troca o id escondido do próprio formulário de edição pelo do paciente do Guilherme.
+  const own = await createPatient(k, "Paciente da Kris E2E");
+  await k.goto(`${own}/editar`);
+  await k.locator('input[name="patientId"]').evaluate((el, id) => ((el as HTMLInputElement).value = id), patientId);
+  await k.locator("#fullName").fill("Nome Adulterado");
+  await k.getByRole("button", { name: "Salvar alterações" }).click();
+  await k.waitForLoadState("networkidle");
 
   // Kris adultera o formulário da LGPD para apontar para o paciente do Guilherme.
   await k.goto("/app/lgpd");

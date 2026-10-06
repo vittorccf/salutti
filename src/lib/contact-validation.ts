@@ -1,13 +1,17 @@
 // Validação de contato e endereço no servidor, compartilhada pelos formulários.
 import { emailSchema } from "./email";
 import { emailDomainAcceptsMail } from "./email-server";
-import { toE164 } from "./phone";
+import { DEFAULT_COUNTRY, isCountryCode, toE164 } from "./phone";
 import { normalizeCep } from "./cep";
 
 export class ContactError extends Error {}
 
 // E-mail opcional: vazio → null; formato inválido ou domínio que não recebe e-mail → erro.
-export async function validEmail(raw: FormDataEntryValue | null, { required = false } = {}): Promise<string | null> {
+// `previous`: na edição, e-mail que não mudou não passa de novo pelo DNS (domínio antigo não trava a ficha).
+export async function validEmail(
+  raw: FormDataEntryValue | null,
+  { required = false, previous }: { required?: boolean; previous?: string | null } = {},
+): Promise<string | null> {
   const value = String(raw ?? "").trim();
   if (!value) {
     if (required) throw new ContactError("Informe o e-mail.");
@@ -15,17 +19,23 @@ export async function validEmail(raw: FormDataEntryValue | null, { required = fa
   }
   const parsed = emailSchema.safeParse(value);
   if (!parsed.success) throw new ContactError("E-mail inválido. Confira o endereço.");
+  if (parsed.data === previous) return parsed.data;
   if (!(await emailDomainAcceptsMail(parsed.data))) {
-    throw new ContactError(`O domínio de ${parsed.data} não recebe e-mails. Confira o que vem depois do @.`);
+    throw new ContactError("O domínio do e-mail não recebe mensagens. Confira o que vem depois do @.");
   }
   return parsed.data;
 }
 
-// Telefone opcional, enviado pelo PhoneInput já em E.164 (ou como digitado, se inválido).
-export function validPhone(raw: FormDataEntryValue | null, label = "Telefone"): string | null {
+// Telefone opcional, enviado pelo PhoneInput já em E.164 (ou como digitado, se inválido) e o país escolhido.
+// `previous`: telefone antigo fora do padrão que não foi tocado continua como está.
+export function validPhone(
+  raw: FormDataEntryValue | null,
+  { label = "Telefone", country, previous }: { label?: string; country?: FormDataEntryValue | null; previous?: string | null } = {},
+): string | null {
   const value = String(raw ?? "").trim();
   if (!value) return null;
-  const e164 = toE164(value);
+  if (value === previous) return value;
+  const e164 = toE164(value, isCountryCode(country) ? country : DEFAULT_COUNTRY);
   if (!e164) throw new ContactError(`${label} inválido. Confira o país e o número.`);
   return e164;
 }
@@ -46,19 +56,3 @@ export function readAddress(formData: FormData) {
     state,
   };
 }
-
-export const formatAddress = (a: {
-  street?: string | null;
-  addressNumber?: string | null;
-  complement?: string | null;
-  district?: string | null;
-  city?: string | null;
-  state?: string | null;
-  cep?: string | null;
-  address?: string | null;
-}) => {
-  const line1 = [a.street, a.addressNumber].filter(Boolean).join(", ");
-  const parts = [line1, a.complement, a.district, [a.city, a.state].filter(Boolean).join("/"), a.cep?.replace(/^(\d{5})(\d{3})$/, "$1-$2")];
-  const structured = parts.filter(Boolean).join(" · ");
-  return structured || a.address || null;
-};

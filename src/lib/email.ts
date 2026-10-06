@@ -31,6 +31,13 @@ const COMMON_DOMAINS = [
   "aol.com",
 ];
 
+// Domínios reais e parecidos com os de cima: nunca "corrigir" para outro.
+const LEGIT_DOMAINS = new Set([
+  "ymail.com", "email.com", "mail.com", "msn.com", "gmx.de", "gmx.net", "live.com.pt", "outlook.pt",
+  "hotmail.com.br", "hotmail.es", "yahoo.es", "yahoo.com.ar", "yahoo.com.mx", "hotmail.co.uk", "yahoo.co.uk",
+  "googlemail.com", "zoho.com", "tutanota.com", "pm.me", "r7.com", "zipmail.com.br", "oi.com.br",
+]);
+
 function distance(a: string, b: string) {
   const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
   for (let j = 1; j <= b.length; j++) dp[0][j] = j;
@@ -43,7 +50,7 @@ function distance(a: string, b: string) {
 // "ana@gmial.con" → "ana@gmail.com". Sem sugestão quando o domínio já é conhecido ou está longe demais.
 export function suggestEmail(email: string): string | null {
   const [user, domain] = email.trim().toLowerCase().split("@");
-  if (!user || !domain || COMMON_DOMAINS.includes(domain)) return null;
+  if (!user || !domain || COMMON_DOMAINS.includes(domain) || LEGIT_DOMAINS.has(domain)) return null;
   let best: { d: string; dist: number } | null = null;
   for (const d of COMMON_DOMAINS) {
     const dist = distance(domain, d);
