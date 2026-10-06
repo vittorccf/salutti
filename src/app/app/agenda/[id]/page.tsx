@@ -15,6 +15,7 @@ import { ensureAffected } from "@/lib/tenant";
 import { isSimulatedMeeting, meetingPlatform, video } from "@/lib/providers/video";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
+import { PhoneText } from "@/components/ui/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -174,7 +175,7 @@ export default async function AppointmentDetailPage({
               <Link href={`/app/pacientes/${appt.patient.id}`} className="text-primary-strong underline-offset-4 hover:underline">
                 {appt.patient.fullName}
               </Link>{" "}
-              · {appt.patient.phone ?? "sem telefone"}
+              · <PhoneText value={appt.patient.phone} fallback="sem telefone" />
             </CardDescription>
           </CardHeader>
           <CardContent>
