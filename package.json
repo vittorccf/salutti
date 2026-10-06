@@ -16,7 +16,7 @@
     "db:local": "node scripts/postgres-local.mjs",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "prisma generate && DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" prisma migrate deploy && next build"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",

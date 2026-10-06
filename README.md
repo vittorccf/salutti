@@ -102,7 +102,7 @@ Em Ajustes → Plano Salutti, quem é dono do consultório assina Starter ou Pro
 ### Banco de produção (Postgres)
 
 1. Crie um banco Postgres (ex.: **Neon** pelo Marketplace da Vercel, que já preenche o `DATABASE_URL`).
-2. Na Vercel, o script `vercel-build` aplica as migrations (`prisma migrate deploy`) antes do build.
+2. Na Vercel, o script `vercel-build` aplica as migrations (`prisma migrate deploy`) antes do build, pela conexão direta (`DATABASE_URL_UNPOOLED`, criada pelo Neon): o pooler não suporta os locks das migrations.
 3. Para criar os logins de demonstração no banco novo, rode uma vez `DATABASE_URL=<url> npm run db:seed`.
 
 ### Convênios e faturamento TISS
