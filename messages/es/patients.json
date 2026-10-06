@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Historia clínica",
-    "description": "Notas de evolución y anamnesis de tus pacientes. TOBI resume cada nota al guardar; revísala antes de usarla.",
+    "description": "Notas de evolución y anamnesis de tus pacientes. Saluttin resume cada nota al guardar; revísala antes de usarla.",
     "emptyTitle": "No hay notas de evolución registradas",
     "emptyDescription": "Abre la ficha de un paciente para registrar la primera evolución.",
     "selectPatient": "Seleccionar paciente",
@@ -115,21 +115,21 @@
     "professional": "Profesional",
     "type": "Tipo",
     "updated": "Actualizado",
-    "tobi": "TOBI",
+    "saluttin": "Saluttin",
     "summarized": "Resumida",
     "pending": "Pendiente",
     "open": "Abrir"
   },
   "chart": {
     "title": "Historia clínica · {name}",
-    "subtitle": "{count, plural, one {# registro} other {# registros}} · TOBI resume cada evolución al guardar.",
+    "subtitle": "{count, plural, one {# registro} other {# registros}} · Saluttin resume cada evolución al guardar.",
     "applyAnamnesis": "Aplicar anamnesis",
     "newNote": "Nueva nota de evolución",
     "emptyTitle": "No hay evoluciones registradas",
-    "emptyDescription": "Registra la primera evolución y TOBI genera el resumen de la sesión.",
+    "emptyDescription": "Registra la primera evolución y Saluttin genera el resumen de la sesión.",
     "signed": "Firmado",
     "session": "Sesión {date}",
-    "aiSummary": "Resumen generado por IA (TOBI) · revísalo antes de usarlo",
+    "aiSummary": "Resumen generado por IA (Saluttin) · revísalo antes de usarlo",
     "security": "En producción: contenido cifrado en reposo + firma ICP-Brasil (A1 en la nube · Memed/SafeID). Hash actual: <code>{hash}</code>"
   },
   "anamnesis": {
@@ -143,12 +143,12 @@
   },
   "note": {
     "title": "Nueva nota de evolución · {name}",
-    "description": "TOBI resume la evolución al guardar. La firma digital se simula con un hash SHA-256 del contenido y la hora.",
+    "description": "Saluttin resume la evolución al guardar. La firma digital se simula con un hash SHA-256 del contenido y la hora.",
     "professional": "Profesional",
     "type": "Tipo de registro",
     "content": "Contenido",
     "placeholder": "Sesión #__\nMotivo de consulta: …\nObservación clínica: …\nIntervención: …\nPlan: …",
-    "hint": "Acepta Markdown. TOBI identifica temas (ansiedad, duelo, sueño, pánico, vínculo de pareja) y sugiere puntos para tu reflexión.",
+    "hint": "Acepta Markdown. Saluttin identifica temas (ansiedad, duelo, sueño, pánico, vínculo de pareja) y sugiere puntos para tu reflexión.",
     "sign": "Firmar digitalmente (simulación ICP-Brasil)",
     "submit": "Guardar nota de evolución",
     "errors": {

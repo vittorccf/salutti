@@ -279,7 +279,7 @@ export default async function DashboardPage() {
             <CardDescription>{t("insightsDescription")}</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/app/tobi">{tc("seeAll")}</Link>
+            <Link href="/app/saluttin">{tc("seeAll")}</Link>
           </Button>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">

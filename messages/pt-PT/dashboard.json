@@ -13,9 +13,9 @@
     "overdueCount": "{count, plural, one {# cobrança vencida} other {# cobranças vencidas}}",
     "sessionsFromToday": "Sessões a partir de hoje",
     "activePatients": "Pacientes ativos",
-    "insightsTitle": "TOBI · insights financeiros e clínicos",
+    "insightsTitle": "Saluttin · insights financeiros e clínicos",
     "insightsDescription": "Gerados a partir dos seus dados em tempo real.",
-    "noInsights": "Ainda não há insights. Quando registar sessões e cobranças, o TOBI analisa os dados aqui.",
+    "noInsights": "Ainda não há insights. Quando registar sessões e cobranças, o Saluttin analisa os dados aqui.",
     "upcomingTitle": "Próximas sessões",
     "patient": "Paciente",
     "professional": "Profissional",
@@ -61,11 +61,11 @@
     "optional": "Opcional",
     "pending": "Pendente"
   },
-  "tobi": {
-    "title": "TOBI · assistente de IA",
-    "intro": "O TOBI lê os seus dados financeiros e clínicos e indica o que requer atenção, com números e prazos.",
+  "saluttin": {
+    "title": "Saluttin · assistente de IA",
+    "intro": "O Saluttin lê os seus dados financeiros e clínicos e indica o que requer atenção, com números e prazos.",
     "recalculate": "Recalcular insights",
-    "watchTitle": "O que o TOBI acompanha por si",
+    "watchTitle": "O que o Saluttin acompanha por si",
     "watchRevenue": "<strong>Receita:</strong> compara a faturação com o mês anterior e avisa quando desce.",
     "watchOverdue": "<strong>Atrasos:</strong> soma as cobranças vencidas e sugere o plano de cobrança.",
     "watchSchedule": "<strong>Agenda:</strong> indica semanas com menos sessões do que o esperado.",

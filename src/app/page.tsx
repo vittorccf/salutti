@@ -21,7 +21,7 @@ const features = [
   { key: "schedule", icon: <CalendarCheck className="h-5 w-5" /> },
   { key: "finance", icon: <Banknote className="h-5 w-5" /> },
   { key: "tax", icon: <FileSignature className="h-5 w-5" /> },
-  { key: "tobi", icon: <Brain className="h-5 w-5" /> },
+  { key: "saluttin", icon: <Brain className="h-5 w-5" /> },
   { key: "whatsapp", icon: <MessageSquareText className="h-5 w-5" /> },
   { key: "lgpd", icon: <ShieldCheck className="h-5 w-5" /> },
 ];

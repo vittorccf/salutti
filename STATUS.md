@@ -2,6 +2,10 @@
 
 > Última atualização deste arquivo: 2026-10-06. A seção "Pacote de melhorias" é a mais recente; as demais ficam como histórico.
 
+## Assistente renomeado (2026-10-06)
+
+TOBI passou a se chamar **Saluttin** (rota `/app/saluttin`; `/app/tobi` e `/app/luma` redirecionam). Insights já salvos no banco mantêm o nome antigo até "Recalcular insights". O artifact do Design System ainda cita o nome antigo (publicar exige autorização do dono).
+
 ## Pacote de melhorias (2026-10-06) — PRs #14 e #15, e Lote E (idiomas)
 
 Pedido do dono em 10 itens + Google Meet por usuário. Cada lote passou pelos revisores do projeto (`.claude/agents/psicologo.md`, `advogado-do-diabo.md`, `qualidade.md`) e teve os bloqueantes corrigidos antes do commit.
