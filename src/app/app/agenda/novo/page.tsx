@@ -26,7 +26,7 @@ async function createAppointmentAction(formData: FormData) {
   const data = schema.parse(Object.fromEntries(formData.entries()));
   const startsAt = new Date(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
-  const meetingUrl = data.modality === "online" ? `https://meet.saluti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
+  const meetingUrl = data.modality === "online" ? `https://meet.salutti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
 
   const appointment = await db.appointment.create({
     data: {

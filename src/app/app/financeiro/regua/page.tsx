@@ -33,7 +33,7 @@ async function runDunningAction() {
       vars: {
         patient: c.patient.fullName.split(" ")[0],
         amount: formatBRL(c.amount),
-        link: c.paymentLink ? `https://saluti.app${c.paymentLink.url}` : "",
+        link: c.paymentLink ? `https://salutti.app${c.paymentLink.url}` : "",
       },
     });
     await db.charge.update({ where: { id: c.id }, data: { status: "overdue" } });

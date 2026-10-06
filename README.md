@@ -1,4 +1,4 @@
-# Saluti - ERP SaaS de Saúde (Protótipo navegável)
+# Salutti - ERP SaaS de Saúde (Protótipo navegável)
 
 > ERP SaaS para profissionais autônomos e clínicas de saúde mental (psicólogos, psicanalistas, terapeutas, psiquiatras), com expansão prevista para odontologia e UBS.
 >
@@ -7,7 +7,7 @@
 ## ⚡ Subir em 60 segundos
 
 ```bash
-cd saluti-app
+cd salutti-app
 npm install
 npx prisma db push --skip-generate
 npx prisma generate
@@ -19,8 +19,8 @@ Abra http://localhost:3000 e use as credenciais demo:
 
 | Usuário                       | Senha       | Workspace                                          |
 | ----------------------------- | ----------- | -------------------------------------------------- |
-| `guilherme@saluti.dev`        | `saluti123` | Consultório psicólogo autônomo (Goiânia)           |
-| `kris@saluti.dev`             | `saluti123` | UBS Turvânia · clínica odontológica                |
+| `guilherme@salutti.dev`        | `salutti123` | Consultório psicólogo autônomo (Goiânia)           |
+| `kris@salutti.dev`             | `salutti123` | UBS Turvânia · clínica odontológica                |
 
 **Portal do paciente (Ana Beatriz):** http://localhost:3000/portal/ana-demo-token-please-rotate
 
@@ -46,7 +46,7 @@ Cobertura completa do prompt original:
 | App do Paciente - cartões diários                                        | `/portal/[token]` |
 | Profissionais **sem CRP** (psicanalistas/terapeutas)                    | `/app/equipe` · flag `noCouncil` |
 | LGPD: bases legais, 9 direitos, audit log, anonimização, portabilidade | `/app/lgpd`, `api/lgpd/export` |
-| Multi-tenant (workspace switcher)                                       | Layout `/app` · cookie `saluti_ws` |
+| Multi-tenant (workspace switcher)                                       | Layout `/app` · cookie `salutti_ws` |
 | Trial 15 dias                                                           | Onboarding `/signup` |
 | Cobertura UBS / offline-first (caso Kris Fellipe)                        | Workspace `ubs-turvania` no seed |
 
@@ -55,7 +55,7 @@ Cobertura completa do prompt original:
 - **Next.js 14 (App Router) + TypeScript** - full-stack, Server Actions para todas as mutações
 - **Prisma + SQLite** no dev (provider trocável para PostgreSQL com 1 linha)
 - **shadcn/ui-style** (Radix + Tailwind) - design system enxuto montado à mão
-- **Multi-tenant** via `workspaceId` em todas as tabelas + cookie de workspace ativo (`saluti_ws`)
+- **Multi-tenant** via `workspaceId` em todas as tabelas + cookie de workspace ativo (`salutti_ws`)
 - **Auth** JWT em cookie httpOnly (jose) - em produção: substituir por Auth.js + sessões em DB
 - **LUMA**: interface estável (`lib/providers/llm.ts`) - chama OpenAI se `OPENAI_API_KEY` setada, senão usa heurística determinística (zero-dependency demo)
 - **Audit log** automático em mutações sensíveis (criação de paciente, cobrança, exportação LGPD)
