@@ -11,6 +11,8 @@ import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
 import { planTierLabel, segmentLabel } from "@/lib/labels";
 import { accountTypeLabel } from "@/lib/account";
+import { mediaUrl } from "@/lib/media";
+import { Avatar } from "@/components/ui/avatar";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getCurrentContext();
@@ -20,11 +22,25 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? Math.max(0, differenceInDays(ctx.workspace.trialEndsAt, new Date()))
     : null;
 
+  const avatarUrl = mediaUrl(ctx.user.avatarId);
+  const bannerUrl = mediaUrl(ctx.workspace.bannerId);
+  const brand = ctx.workspace.brandDisplay;
+
   const sidebar = (
     <>
       <div className="p-5">
         <Link href="/app" className="block space-y-1.5 rounded-md pr-10 md:pr-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <Logo size={22} />
+          {brand === "banner" && bannerUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- imagem privada servida por /api/media
+            <img src={bannerUrl} alt={ctx.workspace.name} className="max-h-16 w-full rounded-md object-contain object-left" />
+          ) : brand === "photo" && avatarUrl ? (
+            <span className="flex items-center gap-2.5">
+              <Avatar src={avatarUrl} name={ctx.user.name} className="h-10 w-10" />
+              <span className="min-w-0 font-semibold leading-tight">{ctx.user.name}</span>
+            </span>
+          ) : (
+            <Logo size={22} />
+          )}
           <span className="block text-xs text-muted-foreground">{ctx.workspace.name}</span>
         </Link>
         <div className="mt-4">
@@ -51,7 +67,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </p>
           </div>
         ) : null}
-        <UserMenu name={ctx.user.name} email={ctx.user.email} />
+        <UserMenu name={ctx.user.name} email={ctx.user.email} avatarUrl={avatarUrl} />
       </div>
     </>
   );

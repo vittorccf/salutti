@@ -9,6 +9,10 @@ import { autonomoBlockers, isAccountType, segmentAfterMigration } from "@/lib/ac
 import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
 import { ContactError, readAddress } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
+import { UploadError } from "@/lib/media";
+import { replaceImage } from "@/lib/media-store";
+
+
 
 // Perfil do próprio usuário: vale em todos os consultórios de que ele participa.
 export async function updateProfileAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
@@ -20,9 +24,17 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
     })
     .safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  let avatarId: string | null;
+  try {
+    avatarId = await replaceImage(formData, "avatar", ctx.user.avatarId, "user_avatar", { userId: ctx.user.id });
+  } catch (e) {
+    if (e instanceof UploadError) return { erro: e.message };
+    throw e;
+  }
   await db.user.update({
     where: { id: ctx.user.id },
     data: {
+      avatarId,
       name: parsed.data.name,
       birthDate: parsed.data.birthDate ? parseDateOnly(parsed.data.birthDate) : null,
       showPatientBirthdays: formData.get("showPatientBirthdays") === "on",
@@ -49,9 +61,19 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
     if (e instanceof ContactError) return { erro: e.message };
     throw e;
   }
+  const brandDisplay = String(formData.get("brandDisplay") ?? "salutti");
+  if (!["salutti", "photo", "banner"].includes(brandDisplay)) return { erro: "Escolha o que aparece no menu." };
+  let bannerId: string | null;
+  try {
+    bannerId = await replaceImage(formData, "banner", ctx.workspace.bannerId, "workspace_banner", { workspaceId: ctx.workspace.id });
+  } catch (e) {
+    if (e instanceof UploadError) return { erro: e.message };
+    throw e;
+  }
+  if (brandDisplay === "banner" && !bannerId) return { erro: "Envie o banner para usá-lo no menu." };
   await db.workspace.update({
     where: { id: ctx.workspace.id },
-    data: { name, cnpj: cnpjRaw ? (cnpjChanged ? formatCnpj(cnpjRaw) : ctx.workspace.cnpj) : null, ...address },
+    data: { brandDisplay, bannerId, name, cnpj: cnpjRaw ? (cnpjChanged ? formatCnpj(cnpjRaw) : ctx.workspace.cnpj) : null, ...address },
   });
   await recordAudit({
     workspaceId: ctx.workspace.id,
