@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { startOfMonth, subMonths, format } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -11,6 +11,7 @@ import { formatBRL, formatDateBR } from "@/lib/utils";
 import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 import { Banknote, MessageSquareText, Receipt as ReceiptIcon, PlusCircle } from "lucide-react";
 import { CashflowChart } from "./_components/cashflow-chart";
+import { inSP, isPastDue, startOfMonthSP } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function FinancialPage() {
   const wsId = ctx.workspace.id;
   const now = new Date();
 
-  const months = Array.from({ length: 6 }, (_, i) => startOfMonth(subMonths(now, 5 - i)));
+  const months = Array.from({ length: 6 }, (_, i) => startOfMonthSP(now, i - 5));
 
   const [charges, monthBuckets] = await Promise.all([
     db.charge.findMany({
@@ -30,7 +31,7 @@ export default async function FinancialPage() {
     }),
     Promise.all(
       months.map(async (m) => {
-        const next = startOfMonth(subMonths(m, -1));
+        const next = startOfMonthSP(m, 1);
         const paid = await db.charge.aggregate({
           where: { workspaceId: wsId, status: "paid", paidAt: { gte: m, lt: next } },
           _sum: { amount: true },
@@ -40,7 +41,7 @@ export default async function FinancialPage() {
           _sum: { amount: true },
         });
         return {
-          label: format(m, "MMM/yy", { locale: ptBR }),
+          label: format(inSP(m), "MMM/yy", { locale: ptBR }),
           paid: paid._sum.amount ?? 0,
           expected: expected._sum.amount ?? 0,
         };
@@ -53,7 +54,7 @@ export default async function FinancialPage() {
     pending: charges.filter((c) => c.status === "pending").reduce((s, c) => s + c.amount, 0),
     overdue: charges
       .filter((c) => c.status === "pending" || c.status === "overdue")
-      .filter((c) => c.dueDate < now && c.status !== "paid")
+      .filter((c) => isPastDue(c.dueDate, now))
       .reduce((s, c) => s + c.amount, 0),
   };
 

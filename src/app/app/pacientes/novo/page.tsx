@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { parseDateOnly } from "@/lib/dates";
 
 const schema = z.object({
   fullName: z.string().min(2),
@@ -34,7 +35,7 @@ async function createPatientAction(formData: FormData) {
       email: data.email || null,
       phone: data.phone || null,
       cpf: data.cpf || null,
-      birthDate: data.birthDate ? new Date(data.birthDate) : null,
+      birthDate: data.birthDate ? parseDateOnly(data.birthDate) : null,
       pronouns: data.pronouns || null,
       responsibleName: data.responsibleName || null,
       emergencyContact: data.emergencyContact || null,
