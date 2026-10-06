@@ -11,18 +11,19 @@ import { formatBRL, formatDateTimeBR, formatTimeBR } from "@/lib/utils";
 import { Calendar, MessageSquareText, Video, CheckCircle2, XCircle, FileSignature, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { modalityLabel } from "@/lib/labels";
+import { ensureAffected } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
+
+const APPOINTMENT_STATUSES = ["scheduled", "confirmed", "done", "no_show", "cancelled"] as const;
 
 async function setStatusAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const id = formData.get("id") as string;
-  const status = formData.get("status") as string;
-  const appt = await db.appointment.update({
-    where: { id },
-    data: { status },
-  });
+  const status = String(formData.get("status"));
+  if (!APPOINTMENT_STATUSES.includes(status as (typeof APPOINTMENT_STATUSES)[number])) notFound();
+  ensureAffected(await db.appointment.updateMany({ where: { id, workspaceId: ctx.workspace.id }, data: { status } }));
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -31,7 +32,7 @@ async function setStatusAction(formData: FormData) {
     entityId: id,
     metadata: { status },
   });
-  if (appt) redirect(`/app/agenda/${id}`);
+  redirect(`/app/agenda/${id}`);
 }
 
 async function sendReminderAction(formData: FormData) {
@@ -54,7 +55,7 @@ async function sendReminderAction(formData: FormData) {
       meeting: appt.meetingUrl ?? "(presencial)",
     },
   });
-  await db.appointment.update({ where: { id }, data: { reminderSentAt: new Date() } });
+  await db.appointment.updateMany({ where: { id, workspaceId: ctx.workspace.id }, data: { reminderSentAt: new Date() } });
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

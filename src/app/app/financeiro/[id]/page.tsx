@@ -13,6 +13,7 @@ import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 import { CheckCircle2, FileSignature, MessageSquareText, Receipt as ReceiptIcon } from "lucide-react";
 import { isPastDue } from "@/lib/dates";
+import { ensureAffected } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +21,12 @@ async function markPaidAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const id = formData.get("id") as string;
-  await db.charge.update({
-    where: { id },
-    data: { status: "paid", paidAt: new Date() },
-  });
+  ensureAffected(
+    await db.charge.updateMany({
+      where: { id, workspaceId: ctx.workspace.id, status: { not: "paid" } },
+      data: { status: "paid", paidAt: new Date() },
+    }),
+  );
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

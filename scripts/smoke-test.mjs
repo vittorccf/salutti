@@ -1,13 +1,18 @@
 // Smoke test ponta-a-ponta: cria session JWT manualmente, faz requests autenticados.
+// Usa o mesmo AUTH_SECRET do app (lido do .env) e o mesmo padrão de desenvolvimento de src/lib/auth.ts.
+// Uso: node scripts/smoke-test.mjs <userId> <workspaceId> [baseUrl]
 import { SignJWT } from "jose";
 
-const SECRET = new TextEncoder().encode("dev-secret-please-change-in-production-salutti-prototype-001");
-const BASE = "http://localhost:3030";
+try {
+  process.loadEnvFile?.(".env");
+} catch {}
+const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET ?? "dev-secret-salutti-prototype");
+const BASE = process.argv[4] ?? process.env.SMOKE_BASE_URL ?? "http://localhost:3000";
 
 const userId = process.argv[2];
 const workspaceId = process.argv[3];
 if (!userId || !workspaceId) {
-  console.error("Uso: node smoke-test.mjs <userId> <workspaceId>");
+  console.error("Uso: node scripts/smoke-test.mjs <userId> <workspaceId> [baseUrl]");
   process.exit(1);
 }
 

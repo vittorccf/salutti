@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { assertInWorkspace } from "@/lib/tenant";
 
 type AnamnesisSchema = {
   sections: {
@@ -27,6 +28,7 @@ async function applyAnamnesisAction(formData: FormData) {
     where: { id: templateId, workspaceId: ctx.workspace.id },
   });
   if (!template) redirect(`/app/prontuario/${patientId}`);
+  await assertInWorkspace(ctx.workspace.id, { patientId, professionalId });
   const schema = JSON.parse(template.schemaJson) as AnamnesisSchema;
 
   const answers: Record<string, string> = {};

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { dateKeySP, parseDateOnly, parseDateTimeLocal, toDateTimeLocalSP } from "@/lib/dates";
+import { assertInWorkspace } from "@/lib/tenant";
 
 const schema = z.object({
   patientId: z.string(),
@@ -25,6 +26,7 @@ async function createAppointmentAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const data = schema.parse(Object.fromEntries(formData.entries()));
+  await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId, professionalId: data.professionalId });
   const startsAt = parseDateTimeLocal(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
   const meetingUrl = data.modality === "online" ? `https://meet.salutti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
