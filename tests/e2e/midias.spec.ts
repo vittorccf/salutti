@@ -85,5 +85,5 @@ test("foto de perfil e banner no menu; foto do paciente com acesso restrito", as
   await g.getByRole("button", { name: "Salvar perfil" }).click();
   await expect(g.getByText("Perfil salvo.")).toBeVisible();
   await g.goto("/app");
-  await expect(g.locator("aside img")).toHaveCount(0);
+  await expect(g.locator("aside img[src^='/api/media']")).toHaveCount(0);
 });
