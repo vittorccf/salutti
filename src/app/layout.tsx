@@ -1,11 +1,27 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Figtree, Sora } from "next/font/google";
+import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const sora = Sora({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-sora", display: "swap" });
+// Salutti 2.0 (só nas telas de entrada, classe `ds2`): Geist e Instrument Serif itálico, servidas daqui.
+const geist = localFont({
+  src: [
+    { path: "./fonts/geist-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/geist-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/geist-latin-600-normal.woff2", weight: "600", style: "normal" },
+  ],
+  variable: "--font-geist",
+  display: "swap",
+});
+const serif = localFont({
+  src: [{ path: "./fonts/instrument-serif-latin-400-italic.woff2", weight: "400", style: "italic" }],
+  variable: "--font-serif",
+  display: "swap",
+});
 const figtree = Figtree({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-figtree", display: "swap" });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = all.settings as Record<string, unknown> | undefined;
   const messages = { common: all.common, auth: all.auth, finance: all.finance, settings: { access: settings?.access } };
   return (
-    <html lang={locale} suppressHydrationWarning className={`${sora.variable} ${figtree.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={`${sora.variable} ${figtree.variable} ${geist.variable} ${serif.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>{children}</ThemeProvider>
