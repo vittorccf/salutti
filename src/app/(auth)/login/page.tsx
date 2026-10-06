@@ -43,12 +43,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen grid place-content-center bg-gradient-to-br from-accent/30 to-background">
-      <Card className="w-[400px]">
+    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
+      <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <Logo variant="icon" size={48} className="mx-auto" />
           <CardTitle>Entrar na Salutti</CardTitle>
-          <CardDescription>Acesse seu workspace</CardDescription>
+          <CardDescription>Acesse seu consultório</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={loginAction} className="space-y-4">
@@ -68,7 +68,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </Button>
           </form>
           <div className="mt-6 rounded-md bg-muted/40 p-3 text-xs space-y-1">
-            <p className="font-semibold">Demos prontas (senha: <code>salutti123</code>):</p>
+            <p className="font-semibold">Contas de demonstração (senha <code>salutti123</code>):</p>
             <ul className="list-disc pl-4 text-muted-foreground">
               <li>guilherme@salutti.dev - psicólogo autônomo (Goiânia)</li>
               <li>kris@salutti.dev - clínica odontológica UBS Turvânia</li>
@@ -76,8 +76,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </div>
           <p className="mt-4 text-center text-sm">
             Novo por aqui?{" "}
-            <Link className="text-primary underline" href="/signup">
-              Criar workspace
+            <Link className="text-primary-strong underline-offset-4 hover:underline" href="/signup">
+              Criar conta
             </Link>
           </p>
         </CardContent>
