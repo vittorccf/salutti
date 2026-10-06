@@ -1,6 +1,7 @@
 "use client";
 import { useTheme } from "next-themes";
-import { ChevronsUpDown, LogOut, Moon, Sun } from "lucide-react";
+import Link from "next/link";
+import { ChevronsUpDown, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
 import { initials } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -38,6 +39,11 @@ export const UserMenu = ({ name, email }: Props) => {
         <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
           {isDark ? <Sun /> : <Moon />}
           {isDark ? "Ativar tema claro" : "Ativar tema escuro"}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/app/conta/seguranca">
+            <ShieldCheck /> Segurança da conta
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action="/logout" method="post">
