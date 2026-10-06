@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { startOfMonth, subMonths } from "date-fns";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,8 @@ import {
 } from "lucide-react";
 import { insightsEngine } from "@/lib/providers/insights";
 import { modalityLabel } from "@/lib/labels";
+import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
+import { onboardingProgress } from "@/lib/onboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,9 @@ export default async function DashboardPage() {
   const ctx = await requireContext();
   const wsId = ctx.workspace.id;
   const now = new Date();
-  const thisMonth = startOfMonth(now);
-  const lastMonth = startOfMonth(subMonths(now, 1));
+  const thisMonth = startOfMonthSP(now);
+  const lastMonth = startOfMonthSP(now, -1);
+  const today = startOfTodaySP(now);
   const next7 = new Date();
   next7.setDate(next7.getDate() + 7);
 
@@ -50,7 +52,7 @@ export default async function DashboardPage() {
       _sum: { amount: true },
     }),
     db.charge.aggregate({
-      where: { workspaceId: wsId, status: { in: ["pending", "overdue"] }, dueDate: { lt: now } },
+      where: { workspaceId: wsId, status: { in: ["pending", "overdue"] }, dueDate: { lt: today } },
       _sum: { amount: true },
       _count: true,
     }),
@@ -63,12 +65,14 @@ export default async function DashboardPage() {
     db.appointment.count({
       where: {
         workspaceId: wsId,
-        startsAt: { gte: new Date(now.toISOString().slice(0, 10)) },
+        startsAt: { gte: today },
       },
     }),
     db.patient.count({ where: { workspaceId: wsId, active: true, deletedAt: null } }),
     db.aiInsight.findMany({ where: { workspaceId: wsId }, orderBy: { createdAt: "desc" }, take: 4 }),
   ]);
+
+  const onboarding = await onboardingProgress(wsId);
 
   // Garante insights ao menos uma vez (auto-seed lazy)
   let liveInsights = insights;
@@ -104,6 +108,24 @@ export default async function DashboardPage() {
           </Button>
         </div>
       </header>
+
+      {!onboarding.complete ? (
+        <Card className="border-primary/30">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold">
+                Primeiros passos · {onboarding.done} de {onboarding.total}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Cadastre quem atende, os modelos de anamnese e o primeiro paciente para começar a agendar.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/app/primeiros-passos">Continuar</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-4">

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { ShieldCheck, FileDown, Trash2, EyeOff } from "lucide-react";
 import { formatDateTimeBR } from "@/lib/utils";
 import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
+import { assertInWorkspace, ensureAffected } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ async function exportDataAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const patientId = formData.get("patientId") as string;
+  await assertInWorkspace(ctx.workspace.id, { patientId });
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -44,8 +46,8 @@ async function anonymizeAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const patientId = formData.get("patientId") as string;
-  await db.patient.update({
-    where: { id: patientId },
+  const anonymized = await db.patient.updateMany({
+    where: { id: patientId, workspaceId: ctx.workspace.id },
     data: {
       fullName: "ANONIMIZADO",
       email: null,
@@ -57,6 +59,7 @@ async function anonymizeAction(formData: FormData) {
       active: false,
     },
   });
+  ensureAffected(anonymized);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -71,10 +74,12 @@ async function softDeleteAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const patientId = formData.get("patientId") as string;
-  await db.patient.update({
-    where: { id: patientId },
-    data: { deletedAt: new Date(), active: false },
-  });
+  ensureAffected(
+    await db.patient.updateMany({
+      where: { id: patientId, workspaceId: ctx.workspace.id },
+      data: { deletedAt: new Date(), active: false },
+    }),
+  );
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

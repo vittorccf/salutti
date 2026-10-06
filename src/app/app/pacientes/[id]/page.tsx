@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +12,35 @@ import { differenceInYears } from "date-fns";
 import { moodLabel } from "@/lib/mood";
 import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
 import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
+import { recordAudit } from "@/lib/audit";
+import { assertInWorkspace, assertInsurancePlan } from "@/lib/tenant";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 export const dynamic = "force-dynamic";
+
+async function updateInsuranceAction(formData: FormData) {
+  "use server";
+  const ctx = await requireContext();
+  const patientId = String(formData.get("patientId"));
+  const insurancePlanId = String(formData.get("insurancePlanId") ?? "") || null;
+  const card = String(formData.get("insuranceCardNumber") ?? "").trim().slice(0, 20) || null;
+  await assertInWorkspace(ctx.workspace.id, { patientId });
+  if (insurancePlanId) await assertInsurancePlan(ctx.workspace.id, insurancePlanId);
+  await db.patient.updateMany({
+    where: { id: patientId, workspaceId: ctx.workspace.id },
+    data: { insurancePlanId, insuranceCardNumber: insurancePlanId ? card : null },
+  });
+  await recordAudit({
+    workspaceId: ctx.workspace.id,
+    userId: ctx.user.id,
+    action: "patient.insurance",
+    entity: "Patient",
+    entityId: patientId,
+  });
+  redirect(`/app/pacientes/${patientId}`);
+}
 
 export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireContext();
@@ -28,9 +55,11 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       consentRecords: true,
       portalAccess: true,
       dailyCards: { orderBy: { date: "desc" }, take: 7 },
+      insurancePlan: true,
     },
   });
   if (!patient) notFound();
+  const plans = await db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } });
 
   const totalPaid = patient.charges.filter((c) => c.status === "paid").reduce((s, c) => s + c.amount, 0);
   const totalOpen = patient.charges
@@ -73,6 +102,42 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <SmallCard label="Sessões registradas" value={String(patient.appointments.length)} />
         <SmallCard label="Anotações clínicas" value={String(patient.clinicalNotes.length)} />
       </div>
+
+      {plans.length > 0 || patient.insurancePlan ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Convênio</CardTitle>
+            <CardDescription>
+              {patient.insurancePlan
+                ? `${patient.insurancePlan.name} · carteirinha ${patient.insuranceCardNumber ?? "não informada"}`
+                : "Atendimento particular."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={updateInsuranceAction} className="flex flex-wrap items-end gap-2">
+              <input type="hidden" name="patientId" value={patient.id} />
+              <div className="space-y-1">
+                <Label htmlFor="insurancePlanId">Convênio</Label>
+                <Select id="insurancePlanId" name="insurancePlanId" defaultValue={patient.insurancePlanId ?? ""} className="w-56">
+                  <option value="">Particular</option>
+                  {plans.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="insuranceCardNumber">Carteirinha</Label>
+                <Input id="insuranceCardNumber" name="insuranceCardNumber" defaultValue={patient.insuranceCardNumber ?? ""} maxLength={20} className="w-56" />
+              </div>
+              <Button type="submit" variant="outline">
+                Salvar convênio
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Portal & Cartões Diários */}
       <Card>
