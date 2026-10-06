@@ -1,8 +1,8 @@
 // Configuração do next-intl por requisição (sem idioma na URL): cookie salutti_locale (gravado ao escolher o
-// idioma em Ajustes e no login) → idioma do navegador → pt-BR.
-import { cookies, headers } from "next/headers";
+// idioma em Ajustes ou no seletor do login) → pt-BR. O idioma do navegador não é seguido: pt-BR é o principal.
+import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
-import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, matchLocale, NAMESPACES, type Locale } from "./config";
+import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, NAMESPACES, type Locale } from "./config";
 import { TZ } from "@/lib/dates";
 
 type Messages = Record<string, unknown>;
@@ -31,8 +31,7 @@ const merge = (base: Messages, over: Messages): Messages => {
 
 export const resolveLocale = (): Locale => {
   const fromCookie = cookies().get(LOCALE_COOKIE)?.value;
-  if (isLocale(fromCookie)) return fromCookie;
-  return matchLocale(headers().get("accept-language"));
+  return isLocale(fromCookie) ? fromCookie : DEFAULT_LOCALE;
 };
 
 export default getRequestConfig(async () => {

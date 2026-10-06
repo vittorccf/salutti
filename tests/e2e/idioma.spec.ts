@@ -1,5 +1,5 @@
 // Idioma da interface: escolha em Ajustes vale na hora, sobrevive ao login em outro navegador,
-// e sem escolha o app segue o idioma do navegador. Conta própria para não afetar os outros testes.
+// e sem escolha o app fica em pt-BR, qualquer que seja o idioma do navegador. Conta própria para não afetar os outros testes.
 import { expect, test } from "@playwright/test";
 
 test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", async ({ page, browser }) => {
@@ -49,13 +49,9 @@ test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", as
   await expect(other.locator("html")).toHaveAttribute("lang", "pt-PT");
 });
 
-test("sem escolha, segue o idioma do navegador", async ({ browser }) => {
+test("sem escolha, fica em pt-BR mesmo com o navegador em outro idioma", async ({ browser }) => {
   const en = await (await browser.newContext({ locale: "en-US" })).newPage();
   await en.goto("/login");
-  await expect(en.locator("html")).toHaveAttribute("lang", "en");
-  await expect(en.getByRole("button", { name: "Sign in" })).toBeVisible();
-
-  const pt = await (await browser.newContext({ locale: "pt-PT" })).newPage();
-  await pt.goto("/login");
-  await expect(pt.locator("html")).toHaveAttribute("lang", "pt-PT");
+  await expect(en.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await expect(en.getByRole("button", { name: "Entrar" })).toBeVisible();
 });

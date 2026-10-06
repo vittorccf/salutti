@@ -35,6 +35,13 @@ const defaultAnamnesis = {
 };
 
 async function main() {
+  // Usuários e consultórios de demonstração só existem em desenvolvimento e nos testes e2e (SEED_DEMO=1).
+  // Sem a variável, o seed não cria usuários nem apaga nada: em produção cada conta nasce pelo cadastro.
+  if (process.env.SEED_DEMO !== "1") {
+    console.log("ℹ️  SEED_DEMO não definido: nenhum usuário de demonstração criado. Use SEED_DEMO=1 para criá-los.");
+    return;
+  }
+
   console.log("🌱 Limpando dados existentes…");
   await db.notificationLog.deleteMany();
   await db.dailyCard.deleteMany();
