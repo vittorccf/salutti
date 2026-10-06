@@ -21,7 +21,7 @@ npm run db:admin      # criar/atualizar usuário admin (admin/admin) — scripts
 npm run db:reset      # force-reset + seed
 npx prisma studio     # GUI dos dados
 npm test              # unitários (Vitest): datas/fuso, rótulos, formatação, videochamada, insights
-npm run test:e2e      # ponta a ponta (Playwright): banco próprio prisma/e2e.db e servidor na porta 3300
+npm run test:e2e      # ponta a ponta (Playwright): Postgres descartável e servidor na porta 3300
 node scripts/smoke-test.mjs <userId> <workspaceId> [baseUrl]   # smoke test manual das rotas /app/*
 ```
 
@@ -38,6 +38,6 @@ Testes: unitários em `tests/unit` (Vitest) e ponta a ponta em `tests/e2e` (Play
 
 ## Armadilhas conhecidas
 
-- **Banco é Postgres em todo lugar.** Local: `npm run db:local` + `npm run db:seed`. Mudou o schema? `npm run db:migrate -- --name <descricao>` (nunca `db push`). Produção aplica migrations no `vercel-build`.
+- **Banco é Postgres em todo lugar.** Local: `npm run db:local` + `npm run db:seed`. Mudou o schema? `npm run db:migrate -- --name <descricao>` (nunca `db push`). Produção aplica migrations no `vercel-build`, pela conexão direta do Neon (`DATABASE_URL_UNPOOLED`).
 - Auth é implementação própria (jose + bcrypt) com 2FA TOTP (`src/lib/totp.ts`); não há SSO nem Auth.js.
 - No Windows, `prisma generate` falha com EPERM se um dev server estiver aberto (a DLL do motor fica travada); o cliente JS é gerado mesmo assim.

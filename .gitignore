@@ -17,3 +17,6 @@ test-results
 playwright-report
 # Postgres local (npm run db:local)
 .pgdata
+# Vercel CLI (vercel link / env pull)
+.vercel
+.env*.local
