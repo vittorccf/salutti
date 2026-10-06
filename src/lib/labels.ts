@@ -25,3 +25,27 @@ export const modalityLabel = lookup({
 // Cobrança pendente com vencimento passado aparece como atrasada, mesmo antes do job marcar "overdue".
 export const chargeDisplayStatus = (status: string, dueDate: Date, now = new Date()) =>
   status === "pending" && dueDate < now ? "overdue" : status;
+
+export const planTierLabel = lookup({
+  trial: "Teste grátis",
+  starter: "Starter",
+  pro: "Pro",
+  enterprise: "Clínica",
+});
+
+export const segmentLabel = lookup({
+  solo_psicologo: "Psicólogo autônomo",
+  solo_psicanalista: "Psicanalista ou terapeuta",
+  clinica: "Clínica",
+  ubs: "UBS",
+  odonto: "Odontologia",
+});
+
+export const professionalTypeLabel = lookup({
+  psicologo: "Psicólogo",
+  psicanalista: "Psicanalista",
+  terapeuta: "Terapeuta",
+  psiquiatra: "Psiquiatra",
+  dentista: "Dentista",
+  medico: "Médico",
+});

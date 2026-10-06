@@ -86,8 +86,10 @@ export default async function DunningPage({
         </CardHeader>
         <CardContent className="p-0">
           {params.sent ? (
-            <div className="bg-success/10 text-success-strong px-4 py-2 text-sm">
-              {plural(Number(params.sent), "lembrete enviado", "lembretes enviados")} (simulação).
+            <div className="bg-success/10 text-success-strong px-4 py-2 text-sm" role="status">
+              {Number.isFinite(Number(params.sent))
+                ? `${plural(Number(params.sent), "lembrete enviado", "lembretes enviados")} (simulação).`
+                : "Lembretes enviados (simulação)."}
             </div>
           ) : null}
           <Table>

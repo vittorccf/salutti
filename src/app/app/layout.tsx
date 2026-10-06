@@ -9,6 +9,7 @@ import { SidebarNav } from "./_components/sidebar-nav";
 import { UserMenu } from "./_components/user-menu";
 import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
+import { planTierLabel, segmentLabel } from "@/lib/labels";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getCurrentContext();
@@ -45,7 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               Teste grátis: {trialDays} {trialDays === 1 ? "dia restante" : "dias restantes"}
             </p>
             <p className="text-foreground/80">
-              Plano <strong className="text-foreground">{ctx.workspace.planTier}</strong>
+              Plano <strong className="text-foreground">{planTierLabel(ctx.workspace.planTier)}</strong>
             </p>
           </div>
         ) : null}
@@ -67,7 +68,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 <Logo size={20} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
-                {ctx.workspace.segment.replace("_", " ")}
+                {segmentLabel(ctx.workspace.segment)}
               </Badge>
               <p className="hidden truncate text-sm text-muted-foreground lg:block">
                 LGPD ativo · auditoria habilitada · multi-tenant

@@ -17,8 +17,8 @@ const statusMap = {
     pending: { label: "Pendente", variant: "warning" },
     paid: { label: "Pago", variant: "success" },
     overdue: { label: "Atrasado", variant: "destructive" },
-    cancelled: { label: "Cancelada", variant: "secondary" },
-    refunded: { label: "Estornada", variant: "secondary" },
+    cancelled: { label: "Cancelado", variant: "secondary" },
+    refunded: { label: "Estornado", variant: "secondary" },
   },
   receitaSaude: {
     queued: { label: "Na fila", variant: "muted" },

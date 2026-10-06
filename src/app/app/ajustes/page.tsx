@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
 import { plural } from "@/lib/utils";
+import { planTierLabel, segmentLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,7 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6 text-primary-strong" /> Ajustes
+          <Settings className="h-6 w-6 text-primary-strong" aria-hidden /> Ajustes
         </h1>
         <p className="text-sm text-muted-foreground">Dados do consultório, integrações, modelos de anamnese e plano.</p>
       </header>
@@ -67,16 +68,16 @@ export default async function SettingsPage() {
           <CardContent className="space-y-2 text-sm">
             <p><strong>Nome:</strong> {ctx.workspace.name}</p>
             <p><strong>Endereço curto:</strong> {ctx.workspace.slug}</p>
-            <p><strong>Segmento:</strong> {ctx.workspace.segment.replaceAll("_", " ")}</p>
+            <p><strong>Segmento:</strong> {segmentLabel(ctx.workspace.segment)}</p>
             <p><strong>CNPJ:</strong> {ctx.workspace.cnpj ?? "-"}</p>
-            <p><strong>Plano:</strong> <Badge>{ctx.workspace.planTier}</Badge></p>
+            <p><strong>Plano:</strong> <Badge>{planTierLabel(ctx.workspace.planTier)}</Badge></p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-primary-strong" /> Certificado A1 (ICP-Brasil)
+              <KeyRound className="h-5 w-5 text-primary-strong" aria-hidden /> Certificado A1 (ICP-Brasil)
             </CardTitle>
             <CardDescription>Para assinatura de receitas e NFS-e.</CardDescription>
           </CardHeader>
@@ -91,7 +92,7 @@ export default async function SettingsPage() {
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5 text-primary-strong" /> Integrações
+              <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> Integrações
             </CardTitle>
             <CardDescription>Integrações em sandbox funcionam com dados simulados até você informar a chave real.</CardDescription>
           </CardHeader>
@@ -132,9 +133,9 @@ export default async function SettingsPage() {
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary-strong" /> Plano Salutti
+              <CreditCard className="h-5 w-5 text-primary-strong" aria-hidden /> Plano Salutti
             </CardTitle>
-            <CardDescription>Teste grátis de 15 dias, sem cartão · Plano atual: {ctx.workspace.planTier}</CardDescription>
+            <CardDescription>Teste grátis de 15 dias, sem cartão · Plano atual: {planTierLabel(ctx.workspace.planTier)}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-3 text-sm">
             <div className="rounded-md border p-3">
