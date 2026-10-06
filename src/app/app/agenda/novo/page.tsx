@@ -14,6 +14,8 @@ import { video } from "@/lib/providers/video";
 import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { assertInsurancePlan } from "@/lib/tenant";
+import { formatBRL } from "@/lib/utils";
 
 const schema = z.object({
   patientId: z.string(),
@@ -25,6 +27,7 @@ const schema = z.object({
   notes: z.string().optional(),
   generateCharge: z.string().optional(),
   videoProvider: z.enum(["google_meet", "zoom", "none"]).default("google_meet"),
+  billing: z.string().default("particular"), // "particular" ou id do convênio
 });
 
 // Título genérico: nome do paciente não vai para Google/Zoom (dado de saúde, LGPD).
@@ -35,6 +38,11 @@ async function createAppointmentAction(formData: FormData) {
   const ctx = await requireContext();
   const data = schema.parse(Object.fromEntries(formData.entries()));
   await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId, professionalId: data.professionalId });
+  const insurancePlanId = data.billing !== "particular" ? data.billing : null;
+  if (insurancePlanId) await assertInsurancePlan(ctx.workspace.id, insurancePlanId);
+  // Pelo convênio, vale o valor contratado com a operadora.
+  const plan = insurancePlanId ? await db.insurancePlan.findUnique({ where: { id: insurancePlanId } }) : null;
+  const price = plan ? plan.sessionPrice : data.price;
   const startsAt = parseDateTimeLocal(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
   let meetingUrl: string | null = null;
@@ -64,12 +72,14 @@ async function createAppointmentAction(formData: FormData) {
       endsAt,
       modality: data.modality,
       meetingUrl,
-      price: data.price,
+      price,
+      insurancePlanId,
       notes: data.notes || null,
     },
   });
 
-  if (data.generateCharge === "on") {
+  // Sessão por convênio é paga pela operadora (lote TISS), não gera cobrança Pix.
+  if (data.generateCharge === "on" && !insurancePlanId) {
     // Cobrança da sessão vence no dia da sessão (campo só de data).
     const due = parseDateOnly(dateKeySP(startsAt));
     const { pix } = await import("@/lib/providers/pix");
@@ -114,7 +124,7 @@ export default async function NewAppointmentPage({
 }) {
   const ctx = await requireContext();
   const params = await searchParams;
-  const [patients, professionals] = await Promise.all([
+  const [patients, professionals, plans] = await Promise.all([
     db.patient.findMany({
       where: { workspaceId: ctx.workspace.id, deletedAt: null, active: true },
       orderBy: { fullName: "asc" },
@@ -123,6 +133,7 @@ export default async function NewAppointmentPage({
       where: { workspaceId: ctx.workspace.id, active: true },
       orderBy: { fullName: "asc" },
     }),
+    db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } }),
   ]);
 
   const defaultDate = (() => {
@@ -213,8 +224,21 @@ export default async function NewAppointmentPage({
                   <option value="none">Sem link por enquanto</option>
                 </Select>
               </div>
+              {plans.length > 0 ? (
+                <div className="space-y-1">
+                  <Label htmlFor="billing">Forma de pagamento</Label>
+                  <Select name="billing" id="billing" defaultValue="particular">
+                    <option value="particular">Particular</option>
+                    {plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        Convênio · {p.name} ({formatBRL(p.sessionPrice)})
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              ) : null}
               <div className="space-y-1">
-                <Label htmlFor="price">Valor (R$)</Label>
+                <Label htmlFor="price">Valor particular (R$)</Label>
                 <Input type="number" step="0.01" name="price" id="price" defaultValue={180} required />
               </div>
               <div className="sm:col-span-2 space-y-1">

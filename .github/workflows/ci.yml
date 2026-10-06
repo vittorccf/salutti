@@ -12,11 +12,26 @@ concurrency:
 jobs:
   verificar:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: salutti_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       # Mesmo fuso da Vercel: as datas não podem depender do fuso do servidor.
       TZ: UTC
-      DATABASE_URL: file:./ci.db
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/salutti_e2e
+      # O servidor dos testes ponta a ponta usa este banco em vez do Postgres embutido.
+      E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/salutti_e2e
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +48,9 @@ jobs:
 
       - name: Tipos
         run: npx tsc --noEmit
+
+      - name: Migrations aplicam do zero
+        run: npx prisma migrate deploy
 
       - name: Testes unitários
         run: npm test

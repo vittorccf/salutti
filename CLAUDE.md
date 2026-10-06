@@ -13,7 +13,9 @@ Guia rápido para sessões futuras do Claude Code neste repositório.
 ```bash
 npm run dev           # dev server
 npm run build         # prisma generate && next build
-npm run db:push       # sincronizar schema Prisma
+npm run db:local      # Postgres local embutido (localhost:5433, dados em .pgdata)
+npm run db:migrate    # nova migration a partir do schema.prisma
+npm run db:deploy     # aplica migrations pendentes
 npm run db:seed       # recria usuários, consultórios e modelos de anamnese, sem pacientes (tsx prisma/seed.ts)
 npm run db:admin      # criar/atualizar usuário admin (admin/admin) — scripts/create-admin.ts
 npm run db:reset      # force-reset + seed
@@ -36,7 +38,6 @@ Testes: unitários em `tests/unit` (Vitest) e ponta a ponta em `tests/e2e` (Play
 
 ## Armadilhas conhecidas
 
-- **Não existe `prisma/dev.db` até você rodar `db:push` + `db:seed`** — só `prisma/seed.db` (usado pelo modo demo da Vercel) está versionado.
-- **`scripts/smoke-test.mjs` assina o JWT com um segredo hardcoded** diferente do `AUTH_SECRET` do `.env` — ajuste um dos dois antes de confiar no resultado.
-- **Modo demo na Vercel não persiste dados entre cold starts** (`src/lib/db.ts` copia `seed.db` para `/tmp` a cada start) — comportamento esperado, não é bug.
-- Auth é implementação própria (jose + bcrypt), não Auth.js — migração está mapeada no roadmap, não presuma que já existe suporte a 2FA/SSO.
+- **Banco é Postgres em todo lugar.** Local: `npm run db:local` + `npm run db:seed`. Mudou o schema? `npm run db:migrate -- --name <descricao>` (nunca `db push`). Produção aplica migrations no `vercel-build`.
+- Auth é implementação própria (jose + bcrypt) com 2FA TOTP (`src/lib/totp.ts`); não há SSO nem Auth.js.
+- No Windows, `prisma generate` falha com EPERM se um dev server estiver aberto (a DLL do motor fica travada); o cliente JS é gerado mesmo assim.
