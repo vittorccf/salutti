@@ -207,7 +207,8 @@
     "action": "Ação",
     "entity": "Entidade",
     "noEvents": "Nenhum evento registado.",
-    "system": "Sistema"
+    "system": "Sistema",
+    "platformContact": "Dúvidas sobre como a Salutti, enquanto subcontratante, trata os dados da plataforma:"
   },
   "communication": {
     "title": "Comunicação",

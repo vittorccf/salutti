@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -91,6 +92,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <Link className="text-primary-strong underline-offset-4 hover:underline" href="/signup">
               {t("createAccount")}
             </Link>
+          </p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            {t("help")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
           </p>
         </CardContent>
       </Card>
