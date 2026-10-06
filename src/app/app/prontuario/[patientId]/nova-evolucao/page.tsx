@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 import crypto from "node:crypto";
 import { z } from "zod";
-import { requireContext } from "@/lib/auth";
+import { requireClinicalContext } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { saluttin } from "@/lib/providers/llm";
@@ -28,7 +28,7 @@ const schema = z.object({
 
 async function saveNoteAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireClinicalContext();
   const patientId = formData.get("patientId") as string;
   const parsed = schema.safeParse({
     professionalId: formData.get("professionalId"),
@@ -98,7 +98,7 @@ export default async function NewClinicalNotePage({
   params: Promise<{ patientId: string }>;
   searchParams: Promise<{ appointmentId?: string }>;
 }) {
-  const ctx = await requireContext();
+  const ctx = await requireClinicalContext();
   const { patientId } = await params;
   const { appointmentId } = await searchParams;
   const [patient, professionals] = await Promise.all([

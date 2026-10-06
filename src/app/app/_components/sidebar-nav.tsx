@@ -33,12 +33,12 @@ const nav = [
   { href: "/app/ajustes", label: "settings", icon: UserSquare2 },
 ] as const;
 
-export const SidebarNav = () => {
+export const SidebarNav = ({ clinical = true }: { clinical?: boolean }) => {
   const pathname = usePathname();
   const t = useTranslations("common.nav");
   return (
     <nav className="space-y-1">
-      {nav.map((item) => {
+      {nav.filter((item) => clinical || item.href !== "/app/prontuario").map((item) => {
         const Icon = item.icon;
         const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(`${item.href}/`));
         return (

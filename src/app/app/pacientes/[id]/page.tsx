@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
+import { canSeeClinical } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,8 @@ async function updateInsuranceAction(formData: FormData) {
 
 export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireContext();
+  // Recepção e financeiro veem cadastro, sessões e cobranças, mas não conteúdo clínico (src/lib/permissions.ts).
+  const clinical = canSeeClinical(ctx.role);
   const { id } = await params;
   const patient = await db.patient.findFirst({
     where: { id, workspaceId: ctx.workspace.id, deletedAt: null },
@@ -115,11 +118,13 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
               <ReceiptIcon className="h-4 w-4" /> {t("newCharge")}
             </Link>
           </Button>
+          {clinical ? (
           <Button asChild>
             <Link href={`/app/prontuario/${patient.id}/nova-evolucao`}>
               <FilePlus2 className="h-4 w-4" /> {t("newNote")}
             </Link>
           </Button>
+          ) : null}
         </div>
       </header>
 
@@ -127,7 +132,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <SmallCard label={t("totalPaid")} value={f.money(totalPaid)} />
         <SmallCard label={t("totalOpen")} value={f.money(totalOpen)} tone="warn" />
         <SmallCard label={t("sessionsCount")} value={f.number(patient.appointments.length)} />
-        <SmallCard label={t("notesCount")} value={f.number(patient.clinicalNotes.length)} />
+        {clinical ? <SmallCard label={t("notesCount")} value={f.number(patient.clinicalNotes.length)} /> : null}
       </div>
 
       {plans.length > 0 || patient.insurancePlan ? (
@@ -211,7 +216,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
           </form>
         </CardHeader>
         <CardContent>
-          {patient.dailyCards.length === 0 ? (
+          {!clinical ? null : patient.dailyCards.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("dailyCardsEmpty")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
