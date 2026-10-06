@@ -128,7 +128,7 @@ export default async function TeamPage() {
         <Card>
           <CardHeader>
             <CardTitle>Adicionar profissional</CardTitle>
-            <CardDescription>Marque "sem registro" para psicanalistas / terapeutas.</CardDescription>
+            <CardDescription>Marque “sem registro” para psicanalistas / terapeutas.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={createProfessionalAction} className="space-y-3">

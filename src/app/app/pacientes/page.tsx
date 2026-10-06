@@ -51,7 +51,7 @@ export default async function PatientsPage({
             <Users className="h-6 w-6 text-primary" /> Pacientes
           </h1>
           <p className="text-muted-foreground text-sm">
-            {patients.length} paciente(s) carregado(s). Inclui campo <em>"profissional sem CRP"</em> para psicanalistas e terapeutas.
+            {patients.length} paciente(s) carregado(s). Inclui campo <em>“profissional sem CRP”</em> para psicanalistas e terapeutas.
           </p>
         </div>
         <Button asChild>
