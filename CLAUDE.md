@@ -14,7 +14,7 @@ Guia rápido para sessões futuras do Claude Code neste repositório.
 npm run dev           # dev server
 npm run build         # prisma generate && next build
 npm run db:push       # sincronizar schema Prisma
-npm run db:seed       # repovoar dados demo (tsx prisma/seed.ts)
+npm run db:seed       # recria usuários, consultórios e modelos de anamnese, sem pacientes (tsx prisma/seed.ts)
 npm run db:admin      # criar/atualizar usuário admin (admin/admin) — scripts/create-admin.ts
 npm run db:reset      # force-reset + seed
 npx prisma studio     # GUI dos dados
