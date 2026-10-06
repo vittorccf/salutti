@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -136,7 +137,9 @@ export default async function LgpdPage() {
       <Card>
         <CardHeader>
           <CardTitle>{t("rightsTitle")}</CardTitle>
-          <CardDescription>{t("rightsDescription")}</CardDescription>
+          <CardDescription>
+            {t("rightsDescription")} {t("platformContact")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 md:grid-cols-3 text-sm">
           {rights.map((r, idx) => (

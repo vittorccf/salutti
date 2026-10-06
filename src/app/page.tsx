@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -107,6 +108,9 @@ export default async function Home() {
           <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
             {t("login")}
           </Link>
+        </p>
+        <p className="mt-2">
+          {t("contact")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
         </p>
       </footer>
     </main>

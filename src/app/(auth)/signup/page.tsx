@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -25,6 +26,9 @@ export default async function SignupPage() {
             <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
               {t("login")}
             </Link>
+          </p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            {t("help")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
           </p>
         </CardContent>
       </Card>

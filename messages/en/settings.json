@@ -207,7 +207,8 @@
     "action": "Action",
     "entity": "Entity",
     "noEvents": "No events recorded.",
-    "system": "System"
+    "system": "System",
+    "platformContact": "Questions about how Salutti, as data processor, handles platform data:"
   },
   "communication": {
     "title": "Communication",
