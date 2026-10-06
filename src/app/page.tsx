@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +14,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { LogoDialogo } from "@/components/brand/logo-dialogo";
 import { getTranslations } from "@/i18n/server";
 
 // Textos em public.home.features.<chave> e public.home.differentiators.<chave>.
@@ -35,7 +35,7 @@ export default async function Home() {
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="container flex items-center justify-between gap-3 py-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label="Salutti">
-            <LogoDialogo size={24} />
+            <BrandLogo height={30} />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
