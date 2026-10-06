@@ -22,6 +22,8 @@ model User {
   avatarUrl     String?
   // Aniversário do próprio usuário (lembrete no painel). Só dia e mês importam para o lembrete.
   birthDate     DateTime?
+  // Lembrete de aniversário de pacientes no painel (cada profissional decide; equipe e o próprio sempre aparecem).
+  showPatientBirthdays Boolean @default(true)
   createdAt     DateTime      @default(now())
   // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
   // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.

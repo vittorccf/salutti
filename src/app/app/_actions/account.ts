@@ -22,7 +22,11 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
   await db.user.update({
     where: { id: ctx.user.id },
-    data: { name: parsed.data.name, birthDate: parsed.data.birthDate ? parseDateOnly(parsed.data.birthDate) : null },
+    data: {
+      name: parsed.data.name,
+      birthDate: parsed.data.birthDate ? parseDateOnly(parsed.data.birthDate) : null,
+      showPatientBirthdays: formData.get("showPatientBirthdays") === "on",
+    },
   });
   revalidatePath("/app", "layout");
   return { ok: "Perfil salvo." };
@@ -35,7 +39,9 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
   const name = String(formData.get("name") ?? "").trim();
   if (name.length < 2 || name.length > 120) return { erro: "Informe o nome." };
   const cnpjRaw = String(formData.get("cnpj") ?? "").trim();
-  if (cnpjRaw && !isValidCnpj(cnpjRaw)) return { erro: "CNPJ inválido. Confira os números." };
+  // CNPJ que já estava salvo e não mudou não é revalidado (cadastros antigos não travam o formulário).
+  const cnpjChanged = cnpjRaw !== (ctx.workspace.cnpj ?? "");
+  if (cnpjRaw && cnpjChanged && !isValidCnpj(cnpjRaw)) return { erro: "CNPJ inválido. Confira os números." };
   let address;
   try {
     address = readAddress(formData);
@@ -45,7 +51,7 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
   }
   await db.workspace.update({
     where: { id: ctx.workspace.id },
-    data: { name, cnpj: cnpjRaw ? formatCnpj(cnpjRaw) : null, ...address },
+    data: { name, cnpj: cnpjRaw ? (cnpjChanged ? formatCnpj(cnpjRaw) : ctx.workspace.cnpj) : null, ...address },
   });
   await recordAudit({
     workspaceId: ctx.workspace.id,
@@ -69,7 +75,7 @@ export async function changeAccountTypeAction(_prev: FormResult, formData: FormD
   if (to === "autonomo") {
     const [activeProfessionals, members] = await Promise.all([
       db.professional.count({ where: { workspaceId: ctx.workspace.id, active: true } }),
-      db.membership.count({ where: { workspaceId: ctx.workspace.id } }),
+      db.membership.count({ where: { workspaceId: ctx.workspace.id, role: { notIn: ["receptionist", "financial"] } } }),
     ]);
     const blockers = autonomoBlockers({ activeProfessionals, members });
     if (blockers.length) return { erro: `Ainda não dá para virar conta de autônomo: ${blockers.join("; ")}.` };

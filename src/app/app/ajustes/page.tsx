@@ -42,7 +42,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const [templates, activeProfessionals, members] = await Promise.all([
     db.anamnesisTemplate.findMany({ where: { workspaceId: ws.id } }),
     db.professional.count({ where: { workspaceId: ws.id, active: true } }),
-    db.membership.count({ where: { workspaceId: ws.id } }),
+    db.membership.count({ where: { workspaceId: ws.id, role: { notIn: ["receptionist", "financial"] } } }),
   ]);
   const blockers = isClinic ? autonomoBlockers({ activeProfessionals, members }) : [];
 
@@ -115,7 +115,22 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <div className="space-y-1">
                 <Label htmlFor="profile-birthDate">Aniversário</Label>
                 <Input id="profile-birthDate" name="birthDate" type="date" defaultValue={ctx.user.birthDate ? dateKeySP(ctx.user.birthDate) : ""} />
+                <p className="text-xs text-muted-foreground">Usado só para o lembrete no painel da equipe.</p>
               </div>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="showPatientBirthdays"
+                  defaultChecked={ctx.user.showPatientBirthdays}
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                />
+                <span>
+                  Mostrar no painel os aniversários dos meus pacientes
+                  <span className="block text-xs text-muted-foreground">
+                    Na clínica, só os pacientes que você atende. Lembrar a data é uma escolha sua e do seu enquadre.
+                  </span>
+                </span>
+              </label>
               <p className="text-xs text-muted-foreground">E-mail de acesso: {ctx.user.email}</p>
               <Button type="submit" variant="outline" size="sm">Salvar perfil</Button>
             </ActionForm>
@@ -138,10 +153,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <input type="hidden" name="to" value={isClinic ? "autonomo" : "clinica"} />
                 <p>
                   {isClinic
-                    ? "Virar conta de profissional autônomo: a conta passa a ter um profissional ativo e um usuário."
+                    ? "Virar conta de profissional autônomo: a conta passa a ter um profissional ativo."
                     : "Virar clínica: libera cadastrar vários profissionais e trabalhar em equipe."}{" "}
                   Pacientes, agenda, prontuários e financeiro continuam como estão.
                 </p>
+                {isClinic ? (
+                  <p className="rounded-md border p-3 text-muted-foreground">
+                    Prontuários de profissionais desativados continuam guardados nesta conta e passam a ficar sob sua
+                    gestão. A guarda é de no mínimo 5 anos (Res. CFP 001/2009). Combine com quem atendeu antes de mudar.
+                  </p>
+                ) : null}
                 {blockers.length ? (
                   <p className="rounded-md bg-warning/10 p-3 text-warning-strong">
                     Antes de mudar: {blockers.join("; ")}.
