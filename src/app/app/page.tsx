@@ -19,6 +19,7 @@ import {
 import { insightsEngine } from "@/lib/providers/insights";
 import { modalityLabel } from "@/lib/labels";
 import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
+import { onboardingProgress } from "@/lib/onboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,8 @@ export default async function DashboardPage() {
     db.aiInsight.findMany({ where: { workspaceId: wsId }, orderBy: { createdAt: "desc" }, take: 4 }),
   ]);
 
+  const onboarding = await onboardingProgress(wsId);
+
   // Garante insights ao menos uma vez (auto-seed lazy)
   let liveInsights = insights;
   if (liveInsights.length === 0) {
@@ -105,6 +108,24 @@ export default async function DashboardPage() {
           </Button>
         </div>
       </header>
+
+      {!onboarding.complete ? (
+        <Card className="border-primary/30">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold">
+                Primeiros passos · {onboarding.done} de {onboarding.total}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Cadastre quem atende, os modelos de anamnese e o primeiro paciente para começar a agendar.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/app/primeiros-passos">Continuar</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-4">
