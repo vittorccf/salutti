@@ -5,7 +5,7 @@ import { insightsEngine } from "@/lib/providers/insights";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTimeBR } from "@/lib/utils";
+import { formatDateTimeBR, plural } from "@/lib/utils";
 import { Brain, Sparkles, RefreshCw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -38,11 +38,10 @@ export default async function LumaPage() {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" /> LUMA - IA preditiva &amp; clínica
+            <Sparkles className="h-6 w-6 text-primary-strong" aria-hidden /> LUMA · IA preditiva e clínica
           </h1>
           <p className="text-sm text-muted-foreground">
-            Núcleo de inteligência da Salutti. Calcula insights determinísticos dos seus dados; opera com OpenAI quando
-            <code>OPENAI_API_KEY</code> está configurada (fallback heurístico em modo demo).
+            A LUMA lê seus dados financeiros e clínicos e aponta o que pede atenção, com número e prazo.
           </p>
         </div>
         <form action={regenerateAction}>
@@ -52,17 +51,17 @@ export default async function LumaPage() {
         </form>
       </header>
 
-      <Card className="bg-accent/30 border-primary/20">
+      <Card>
         <CardContent className="p-4 text-sm flex items-start gap-3">
-          <Brain className="h-5 w-5 text-primary mt-0.5" />
+          <Brain className="h-5 w-5 shrink-0 text-primary-strong mt-0.5" aria-hidden />
           <div>
-            <p className="font-semibold">O que o LUMA observa por você</p>
+            <p className="font-semibold">O que a LUMA acompanha por você</p>
             <ul className="mt-1 list-disc pl-4 text-muted-foreground">
-              <li><strong>Receita preditiva:</strong> compara faturamento mensal e dispara alerta de queda.</li>
-              <li><strong>Inadimplência:</strong> mede atrasos e sugere régua de cobrança.</li>
-              <li><strong>Ocupação de agenda:</strong> identifica semanas com menos sessões que o esperado.</li>
-              <li><strong>Churn clínico:</strong> destaca pacientes ≥60 dias sem sessão.</li>
-              <li><strong>Sumarização de prontuário:</strong> condensa cada evolução em segundos (campos LUMA na ficha).</li>
+              <li><strong>Receita:</strong> compara o faturamento com o mês anterior e avisa quando cai.</li>
+              <li><strong>Atrasos:</strong> soma as cobranças vencidas e sugere a régua de cobrança.</li>
+              <li><strong>Agenda:</strong> aponta semanas com menos sessões que o esperado.</li>
+              <li><strong>Continuidade:</strong> destaca pacientes há 60 dias ou mais sem sessão.</li>
+              <li><strong>Prontuário:</strong> resume cada evolução ao salvar.</li>
             </ul>
           </div>
         </CardContent>
@@ -72,23 +71,23 @@ export default async function LumaPage() {
         {(["critical", "warn", "info"] as const).map((sev) => (
           <Card key={sev}>
             <CardHeader>
-              <CardTitle className="capitalize text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2">
                 <Badge variant={sev === "critical" ? "destructive" : sev === "warn" ? "warning" : "muted"}>
-                  {sev}
+                  {{ critical: "Crítico", warn: "Atenção", info: "Informativo" }[sev]}
                 </Badge>
-                {grouped[sev].length} insight(s)
+                {plural(grouped[sev].length, "insight", "insights")}
               </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
               {grouped[sev].length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nada nesta severidade no momento.</p>
+                <p className="text-sm text-muted-foreground">Nada neste nível agora.</p>
               ) : (
                 grouped[sev].map((i) => (
                   <div key={i.id} className="rounded-md border bg-card p-4">
                     <p className="font-semibold">{i.title}</p>
                     <p className="text-sm text-muted-foreground mt-1">{i.body}</p>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      {i.kind} · {formatDateTimeBR(i.createdAt)}
+                      {insightKindLabel(i.kind)} · {formatDateTimeBR(i.createdAt)}
                     </p>
                   </div>
                 ))
@@ -100,3 +99,11 @@ export default async function LumaPage() {
     </div>
   );
 }
+
+const insightKindLabel = (kind: string) =>
+  ({
+    revenue_drop: "Receita",
+    overdue_pattern: "Atrasos",
+    scheduling_gap: "Agenda",
+    churn_risk: "Continuidade",
+  })[kind] ?? kind;

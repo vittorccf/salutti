@@ -3,10 +3,10 @@ import { startOfMonth, subMonths } from "date-fns";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { formatBRL, formatDateTimeBR } from "@/lib/utils";
+import { formatBRL, formatDateTimeBR, formatPercentBR, greetingBR, plural } from "@/lib/utils";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -18,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import { insightsEngine } from "@/lib/providers/insights";
+import { modalityLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -83,9 +84,11 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Bom dia, {ctx.user.name.split(" ")[0]} 👋</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {greetingBR(now)}, {ctx.user.name.split(" ")[0]} 👋
+          </h1>
           <p className="text-muted-foreground">
-            Resumo do workspace <strong>{ctx.workspace.name}</strong> - {ctx.workspace.segment.replace("_", " ")}
+            Resumo de <strong className="text-foreground">{ctx.workspace.name}</strong>
           </p>
         </div>
         <div className="flex gap-2">
@@ -110,11 +113,19 @@ export default async function DashboardPage() {
           value={formatBRL(cur)}
           hint={
             pct === 0 ? (
-              "Sem dados anteriores"
-            ) : pct > 0 ? (
-              <span className="text-success">▲ {pct.toFixed(1)}% vs mês anterior</span>
+              "Sem dados do mês anterior"
             ) : (
-              <span className="text-destructive">▼ {pct.toFixed(1)}% vs mês anterior</span>
+              <span className="inline-flex items-center gap-1">
+                {pct > 0 ? (
+                  <TrendingUp className="h-3.5 w-3.5 text-success-strong" aria-hidden />
+                ) : (
+                  <TrendingDown className="h-3.5 w-3.5 text-destructive-strong" aria-hidden />
+                )}
+                <span className={pct > 0 ? "text-success-strong" : undefined}>
+                  {pct > 0 ? "+" : ""}
+                  {formatPercentBR(pct)} em relação ao mês anterior
+                </span>
+              </span>
             )
           }
         />
@@ -122,12 +133,12 @@ export default async function DashboardPage() {
           icon={<AlertTriangle className="h-4 w-4" />}
           label="A receber em atraso"
           value={formatBRL(overdueAgg._sum.amount ?? 0)}
-          hint={`${overdueAgg._count ?? 0} cobrança(s) vencida(s)`}
+          hint={plural(overdueAgg._count ?? 0, "cobrança vencida", "cobranças vencidas")}
           tone="warn"
         />
         <KpiCard
           icon={<CalendarDays className="h-4 w-4" />}
-          label="Sessões agendadas (hoje +)"
+          label="Sessões a partir de hoje"
           value={String(todayAppointments)}
         />
         <KpiCard
@@ -142,7 +153,8 @@ export default async function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" /> LUMA - insights financeiros &amp; clínicos
+              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> LUMA · insights financeiros e clínicos
+              <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
             </CardTitle>
             <CardDescription>Gerados a partir dos seus dados em tempo real.</CardDescription>
           </div>
@@ -153,7 +165,7 @@ export default async function DashboardPage() {
         <CardContent className="grid gap-3 md:grid-cols-2">
           {liveInsights.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Sem insights ainda - comece registrando sessões e cobranças.
+              Nenhum insight ainda. Quando você registrar sessões e cobranças, a LUMA analisa os dados aqui.
             </p>
           ) : (
             liveInsights.map((insight) => (
@@ -164,10 +176,10 @@ export default async function DashboardPage() {
                 <div
                   className={`mt-0.5 grid h-8 w-8 place-content-center rounded-md ${
                     insight.severity === "critical"
-                      ? "bg-destructive/10 text-destructive"
+                      ? "bg-destructive/10 text-destructive-strong"
                       : insight.severity === "warn"
-                        ? "bg-warning/10 text-warning"
-                        : "bg-primary/10 text-primary"
+                        ? "bg-warning/10 text-warning-strong"
+                        : "bg-primary/10 text-primary-strong"
                   }`}
                 >
                   {insight.kind === "revenue_drop" ? (
@@ -190,7 +202,7 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" /> Próximas sessões
+            <Clock className="h-5 w-5 text-primary-strong" aria-hidden /> Próximas sessões
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -208,7 +220,7 @@ export default async function DashboardPage() {
               {upcoming.length === 0 ? (
                 <TR>
                   <TD colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma sessão na próxima semana.
+                    Nenhuma sessão nos próximos 7 dias. Quando você agendar, ela aparece aqui.
                   </TD>
                 </TR>
               ) : (
@@ -216,10 +228,10 @@ export default async function DashboardPage() {
                   <TR key={a.id}>
                     <TD className="font-medium">{a.patient.fullName}</TD>
                     <TD>{a.professional.fullName}</TD>
-                    <TD>{formatDateTimeBR(a.startsAt)}</TD>
-                    <TD className="capitalize">{a.modality}</TD>
+                    <TD className="whitespace-nowrap">{formatDateTimeBR(a.startsAt)}</TD>
+                    <TD>{modalityLabel(a.modality)}</TD>
                     <TD>
-                      <Badge variant={a.status === "confirmed" ? "success" : "muted"}>{a.status}</Badge>
+                      <StatusBadge kind="appointment" status={a.status} />
                     </TD>
                   </TR>
                 ))
@@ -251,14 +263,14 @@ const KpiCard = ({
         <p className="text-sm text-muted-foreground">{label}</p>
         <div
           className={`grid h-8 w-8 place-content-center rounded-md ${
-            tone === "warn" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
+            tone === "warn" ? "bg-warning/10 text-warning-strong" : "bg-primary/10 text-primary-strong"
           }`}
         >
           {icon}
         </div>
       </div>
-      <p className="mt-3 text-2xl font-semibold">{value}</p>
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      <p className="mt-3 text-2xl font-semibold tabular-nums">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
     </CardContent>
   </Card>
 );

@@ -8,10 +8,10 @@ import { db } from "./db";
 import bcrypt from "bcryptjs";
 
 const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "dev-secret-saluti-prototype",
+  process.env.AUTH_SECRET ?? "dev-secret-salutti-prototype",
 );
-const COOKIE_NAME = "saluti_session";
-const COOKIE_WS = "saluti_ws";
+const COOKIE_NAME = "salutti_session";
+const COOKIE_WS = "salutti_ws";
 
 export type SessionPayload = {
   userId: string;

@@ -1,8 +1,10 @@
 // Engine de IA Preditiva Financeira - determinística.
+// Textos na voz da LUMA (design system): frases curtas, com número e prazo.
 // Calcula insights a partir dos dados do workspace.
 
 import { db } from "../db";
 import { differenceInDays, startOfMonth, subMonths } from "date-fns";
+import { formatBRL, formatPercentBR, plural } from "../utils";
 
 type InsightInput = { workspaceId: string };
 
@@ -67,7 +69,7 @@ const revenueTrend = async (workspaceId: string) => {
         kind: "revenue_drop",
         severity: "info" as const,
         title: "Primeiro mês de faturamento registrado",
-        body: `Receita acumulada no mês atual: R$ ${cur.toFixed(2)}. Defina meta mensal nos Ajustes para que o LUMA acompanhe a evolução.`,
+        body: `Você recebeu ${formatBRL(cur)} este mês. Defina uma meta mensal em Ajustes para a LUMA acompanhar a evolução.`,
         payload: { cur, prev },
       },
     ];
@@ -78,8 +80,8 @@ const revenueTrend = async (workspaceId: string) => {
       {
         kind: "revenue_drop",
         severity: "warn" as const,
-        title: `Receita caiu ${pct.toFixed(1)}% vs mês anterior`,
-        body: `O LUMA detectou queda de ${pct.toFixed(1)}% na receita realizada (R$ ${cur.toFixed(2)} este mês vs R$ ${prev.toFixed(2)} no anterior). Sugestão: revisar canais de captação e reativar pacientes inativos há mais de 60 dias.`,
+        title: `Receita caiu ${formatPercentBR(Math.abs(pct))} em relação ao mês anterior`,
+        body: `Foram ${formatBRL(cur)} este mês, contra ${formatBRL(prev)} no anterior. Convide esta semana os pacientes sem sessão há mais de 60 dias.`,
         payload: { cur, prev, pct },
       },
     ];
@@ -89,8 +91,8 @@ const revenueTrend = async (workspaceId: string) => {
       {
         kind: "revenue_drop",
         severity: "info" as const,
-        title: `Receita cresceu ${pct.toFixed(1)}% - tendência positiva`,
-        body: `Boa performance do mês. Receita atual: R$ ${cur.toFixed(2)}. Reaproveite o momento ajustando preço médio dos novos atendimentos.`,
+        title: `Receita cresceu ${formatPercentBR(pct)} em relação ao mês anterior`,
+        body: `Foram ${formatBRL(cur)} este mês. Bom momento para revisar o valor da sessão dos novos pacientes.`,
         payload: { cur, prev, pct },
       },
     ];
@@ -108,8 +110,8 @@ const overduePattern = async (workspaceId: string) => {
     {
       kind: "overdue_pattern",
       severity: overdue.length > 5 ? ("critical" as const) : ("warn" as const),
-      title: `${overdue.length} cobrança(s) em atraso - R$ ${total.toFixed(2)}`,
-      body: `Há ${overdue.length} cobrança(s) vencida(s) totalizando R$ ${total.toFixed(2)}. Ativar régua de cobrança automática via WhatsApp deve recuperar ~70% conforme benchmark do setor.`,
+      title: `${plural(overdue.length, "cobrança em atraso", "cobranças em atraso")} · ${formatBRL(total)}`,
+      body: `Ative a régua de cobrança no WhatsApp hoje. Ela costuma recuperar cerca de 70% do valor em atraso.`,
       payload: { count: overdue.length, total },
     },
   ];
@@ -130,7 +132,7 @@ const schedulingGap = async (workspaceId: string) => {
         kind: "scheduling_gap",
         severity: "warn" as const,
         title: "Agenda dos próximos 7 dias com ocupação baixa",
-        body: `Apenas ${upcoming} sessões agendadas para os próximos 7 dias (expectativa mínima: ${Math.round(expected * 0.5)}). Sugestão: campanha de reagendamento para pacientes ativos.`,
+        body: `${plural(upcoming, "sessão agendada", "sessões agendadas")} para os próximos 7 dias, abaixo do mínimo de ${Math.round(expected * 0.5)}. Convide os pacientes ativos para reagendar até sexta.`,
         payload: { upcoming, expected },
       },
     ];
@@ -157,8 +159,8 @@ const churnRisk = async (workspaceId: string) => {
     {
       kind: "churn_risk",
       severity: atRisk.length > 5 ? ("warn" as const) : ("info" as const),
-      title: `${atRisk.length} paciente(s) em risco de churn (60+ dias sem sessão)`,
-      body: `Pacientes com ausência prolongada têm 3x mais chance de descontinuar tratamento. Envie um lembrete personalizado ou ofereça reagendamento.`,
+      title: `${plural(atRisk.length, "paciente sem sessão", "pacientes sem sessão")} há mais de 60 dias`,
+      body: `Quem fica tanto tempo sem sessão tem 3 vezes mais chance de interromper o tratamento. Envie um lembrete esta semana.`,
       payload: { atRiskIds: atRisk.map((p) => p.id), names: atRisk.map((p) => p.fullName) },
     },
   ];

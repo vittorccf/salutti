@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { HeartHandshake } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 const schema = z.object({
   // Aceita email OU nome de usuário (ex.: "admin"). O valor é casado contra a coluna `email`.
@@ -43,43 +43,41 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen grid place-content-center bg-gradient-to-br from-accent/30 to-background">
-      <Card className="w-[400px]">
+    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
+      <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
-          <div className="mx-auto grid h-12 w-12 place-content-center rounded-xl bg-primary text-primary-foreground">
-            <HeartHandshake className="h-6 w-6" />
-          </div>
+          <Logo variant="icon" size={48} className="mx-auto" />
           <CardTitle>Entrar na Salutti</CardTitle>
-          <CardDescription>Acesse seu workspace</CardDescription>
+          <CardDescription>Acesse seu consultório</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={loginAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email ou usuário</Label>
-              <Input id="email" name="email" type="text" required placeholder="voce@clinica.com.br" defaultValue="guilherme@saluti.dev" />
+              <Input id="email" name="email" type="text" required placeholder="voce@clinica.com.br" defaultValue="guilherme@salutti.dev" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input id="password" name="password" type="password" required defaultValue="saluti123" />
+              <Input id="password" name="password" type="password" required defaultValue="salutti123" />
             </div>
             {params.error ? (
-              <p className="text-sm text-destructive">{params.error}</p>
+              <p className="text-sm text-destructive-strong" role="alert">{params.error}</p>
             ) : null}
             <Button type="submit" className="w-full">
               Entrar
             </Button>
           </form>
           <div className="mt-6 rounded-md bg-muted/40 p-3 text-xs space-y-1">
-            <p className="font-semibold">Demos prontas (senha: <code>saluti123</code>):</p>
+            <p className="font-semibold">Contas de demonstração (senha <code>salutti123</code>):</p>
             <ul className="list-disc pl-4 text-muted-foreground">
-              <li>guilherme@saluti.dev - psicólogo autônomo (Goiânia)</li>
-              <li>kris@saluti.dev - clínica odontológica UBS Turvânia</li>
+              <li>guilherme@salutti.dev - psicólogo autônomo (Goiânia)</li>
+              <li>kris@salutti.dev - clínica odontológica UBS Turvânia</li>
             </ul>
           </div>
           <p className="mt-4 text-center text-sm">
             Novo por aqui?{" "}
-            <Link className="text-primary underline" href="/signup">
-              Criar workspace
+            <Link className="text-primary-strong underline-offset-4 hover:underline" href="/signup">
+              Criar conta
             </Link>
           </p>
         </CardContent>

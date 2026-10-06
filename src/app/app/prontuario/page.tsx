@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ClipboardList, FilePlus2 } from "lucide-react";
 import { formatDateTimeBR } from "@/lib/utils";
+import { noteTypeLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -25,19 +26,19 @@ export default async function ProntuarioListPage() {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ClipboardList className="h-6 w-6 text-primary" /> Prontuário Eletrônico
+            <ClipboardList className="h-6 w-6 text-primary-strong" aria-hidden /> Prontuário
           </h1>
           <p className="text-sm text-muted-foreground">
-            Anotações criptografadas em produção · LUMA sumariza cada evolução em segundos.
+            Evoluções e anamneses dos seus pacientes. A LUMA resume cada evolução ao salvar.
           </p>
         </div>
       </header>
 
       {notes.length === 0 ? (
         <EmptyState
-          icon={<ClipboardList className="h-8 w-8" />}
+          icon={<ClipboardList className="h-6 w-6" />}
           title="Nenhuma evolução registrada"
-          description="Selecione um paciente para iniciar a primeira evolução clínica com sumarização IA."
+          description="Abra a ficha de um paciente para registrar a primeira evolução."
           action={
             <Button asChild>
               <Link href="/app/pacientes">
@@ -65,11 +66,11 @@ export default async function ProntuarioListPage() {
                   <TR key={n.id}>
                     <TD className="font-medium">{n.patient.fullName}</TD>
                     <TD>{n.professional.fullName}</TD>
-                    <TD className="capitalize">{n.noteType.replace("_", " ")}</TD>
-                    <TD>{formatDateTimeBR(n.updatedAt)}</TD>
+                    <TD>{noteTypeLabel(n.noteType)}</TD>
+                    <TD className="whitespace-nowrap">{formatDateTimeBR(n.updatedAt)}</TD>
                     <TD>
                       {n.aiSummary ? (
-                        <Badge variant="success">Sumarizado</Badge>
+                        <Badge variant="success">Resumida</Badge>
                       ) : (
                         <Badge variant="muted">Pendente</Badge>
                       )}

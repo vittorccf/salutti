@@ -6,8 +6,9 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CalendarPlus, Video } from "lucide-react";
-import { formatTimeBR } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { CalendarPlus, ChevronLeft, ChevronRight, Video } from "lucide-react";
+import { formatTimeBR, plural } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -43,15 +44,19 @@ export default async function AgendaPage({
           <h1 className="text-2xl font-bold">Agenda</h1>
           <p className="text-sm text-muted-foreground">
             Semana de {format(weekStart, "dd 'de' MMMM", { locale: ptBR })} ·{" "}
-            {appointments.length} sessão(ões)
+            {plural(appointments.length, "sessão", "sessões")}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
-            <Link href={`/app/agenda?week=${prevWeek}`}>← Semana anterior</Link>
+            <Link href={`/app/agenda?week=${prevWeek}`}>
+              <ChevronLeft className="h-4 w-4" /> Semana anterior
+            </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href={`/app/agenda?week=${nextWeek}`}>Próxima →</Link>
+            <Link href={`/app/agenda?week=${nextWeek}`}>
+              Próxima semana <ChevronRight className="h-4 w-4" />
+            </Link>
           </Button>
           <Button asChild>
             <Link href="/app/agenda/novo">
@@ -61,16 +66,16 @@ export default async function AgendaPage({
         </div>
       </header>
 
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {days.map((day) => {
           const dayAppointments = appointments.filter((a) => isSameDay(a.startsAt, day));
           const isToday = isSameDay(day, new Date());
           return (
             <Card key={day.toISOString()} className={isToday ? "border-primary/40" : ""}>
               <CardHeader className="p-3">
-                <CardTitle className="text-sm flex justify-between">
-                  <span>{format(day, "EEE dd", { locale: ptBR })}</span>
-                  {isToday ? <Badge variant="default">hoje</Badge> : null}
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span>{dayLabel(day)}</span>
+                  {isToday ? <Badge variant="default">Hoje</Badge> : null}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 space-y-2">
@@ -81,20 +86,16 @@ export default async function AgendaPage({
                     <Link
                       key={a.id}
                       href={`/app/agenda/${a.id}`}
-                      className="block rounded-md border bg-card p-2 text-xs hover:border-primary"
+                      className="block rounded-md border bg-card p-2 text-xs hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <p className="font-semibold">{formatTimeBR(a.startsAt)}</p>
+                      <p className="font-semibold tabular-nums">{formatTimeBR(a.startsAt)}</p>
                       <p className="truncate">{a.patient.fullName}</p>
                       <p className="text-muted-foreground truncate">{a.professional.fullName}</p>
                       <div className="mt-1 flex justify-between items-center">
-                        <Badge
-                          variant={
-                            a.status === "confirmed" ? "success" : a.status === "no_show" ? "destructive" : "muted"
-                          }
-                        >
-                          {a.status}
-                        </Badge>
-                        {a.modality === "online" ? <Video className="h-3 w-3 text-primary" /> : null}
+                        <StatusBadge kind="appointment" status={a.status} />
+                        {a.modality === "online" ? (
+                          <Video className="h-3.5 w-3.5 text-primary-strong" aria-label="Online" role="img" />
+                        ) : null}
                       </div>
                     </Link>
                   ))
@@ -107,3 +108,9 @@ export default async function AgendaPage({
     </div>
   );
 }
+
+// "Segunda, 05": sem o "-feira" e só a primeira letra maiúscula.
+const dayLabel = (day: Date) => {
+  const weekday = format(day, "EEEE", { locale: ptBR }).split("-")[0];
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)}, ${format(day, "dd")}`;
+};

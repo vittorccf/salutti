@@ -4,11 +4,14 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { CalendarPlus, FilePlus2, Receipt as ReceiptIcon, ShieldCheck, Smartphone } from "lucide-react";
 import { differenceInYears } from "date-fns";
+import { moodLabel } from "@/lib/mood";
+import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
+import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -39,21 +42,21 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{patient.fullName}</h1>
+          <h1 className="text-2xl font-bold">Paciente · {patient.fullName}</h1>
           <p className="text-sm text-muted-foreground">
             {age !== null ? `${age} anos · ` : ""}
-            {patient.phone ?? "sem telefone"} · {patient.email ?? "sem email"}
+            {patient.phone ?? "sem telefone"} · {patient.email ?? "sem e-mail"}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" asChild>
             <Link href={`/app/agenda/novo?patientId=${patient.id}`}>
-              <CalendarPlus className="h-4 w-4" /> Agendar
+              <CalendarPlus className="h-4 w-4" /> Agendar sessão
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href={`/app/financeiro/novo?patientId=${patient.id}`}>
-              <ReceiptIcon className="h-4 w-4" /> Cobrança
+              <ReceiptIcon className="h-4 w-4" /> Nova cobrança
             </Link>
           </Button>
           <Button asChild>
@@ -65,7 +68,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       </header>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <SmallCard label="Pago histórico" value={formatBRL(totalPaid)} />
+        <SmallCard label="Total recebido" value={formatBRL(totalPaid)} />
         <SmallCard label="A receber em aberto" value={formatBRL(totalOpen)} tone="warn" />
         <SmallCard label="Sessões registradas" value={String(patient.appointments.length)} />
         <SmallCard label="Anotações clínicas" value={String(patient.clinicalNotes.length)} />
@@ -73,21 +76,21 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
 
       {/* Portal & Cartões Diários */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-primary" /> Portal do paciente · Cartões diários
+              <Smartphone className="h-5 w-5 text-primary-strong" aria-hidden /> Portal do paciente · Cartões diários
             </CardTitle>
             <CardDescription>
               {patient.portalAccess ? (
                 <>
                   Link de acesso:{" "}
-                  <Link className="underline text-primary" href={`/portal/${patient.portalAccess.token}`}>
+                  <Link className="text-primary-strong underline-offset-4 hover:underline" href={`/portal/${patient.portalAccess.token}`}>
                     /portal/{patient.portalAccess.token.slice(0, 8)}…
                   </Link>
                 </>
               ) : (
-                "Sem portal configurado."
+                "O portal ainda não foi liberado para este paciente."
               )}
             </CardDescription>
           </div>
@@ -111,22 +114,23 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
             );
           }}>
             <Button size="sm" variant="outline" type="submit">
-              {patient.portalAccess ? "Renovar link" : "Gerar link"}
+              {patient.portalAccess ? "Renovar link" : "Gerar link do portal"}
             </Button>
           </form>
         </CardHeader>
         <CardContent>
           {patient.dailyCards.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Sem cartões registrados pelo paciente. O acesso ao portal habilita o auto-monitoramento.
+              Nenhum cartão diário ainda. Quando o paciente registrar o humor no portal, ele aparece aqui.
             </p>
           ) : (
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
               {patient.dailyCards.map((d) => (
                 <div key={d.id} className="rounded-md border p-2 text-center text-xs">
                   <p className="text-muted-foreground">{formatDateBR(d.date)}</p>
-                  <p className="text-2xl">{moodEmoji(d.mood)}</p>
-                  <p>Ansiedade {d.anxiety ?? "-"}/5</p>
+                  <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{d.mood}/5</p>
+                  <p className="font-medium">{moodLabel(d.mood)}</p>
+                  <p className="text-muted-foreground">Ansiedade {d.anxiety ?? "-"}/5</p>
                 </div>
               ))}
             </div>
@@ -134,7 +138,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>Histórico de sessões</CardTitle>
@@ -146,25 +150,25 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                   <TH>Data</TH>
                   <TH>Profissional</TH>
                   <TH>Status</TH>
-                  <TH>Valor</TH>
+                  <TH className="text-right">Valor</TH>
                 </TR>
               </THead>
               <TBody>
                 {patient.appointments.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Sem sessões.
+                      Nenhuma sessão registrada.
                     </TD>
                   </TR>
                 ) : (
                   patient.appointments.map((a) => (
                     <TR key={a.id}>
-                      <TD>{formatDateTimeBR(a.startsAt)}</TD>
+                      <TD className="whitespace-nowrap">{formatDateTimeBR(a.startsAt)}</TD>
                       <TD>{a.professional.fullName}</TD>
                       <TD>
-                        <Badge variant={a.status === "done" ? "success" : "muted"}>{a.status}</Badge>
+                        <StatusBadge kind="appointment" status={a.status} />
                       </TD>
-                      <TD>{formatBRL(a.price)}</TD>
+                      <TD className="text-right">{formatBRL(a.price)}</TD>
                     </TR>
                   ))
                 )}
@@ -182,33 +186,27 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
               <THead>
                 <TR>
                   <TH>Vencimento</TH>
-                  <TH>Valor</TH>
+                  <TH className="text-right">Valor</TH>
                   <TH>Status</TH>
-                  <TH>Método</TH>
+                  <TH>Forma de pagamento</TH>
                 </TR>
               </THead>
               <TBody>
                 {patient.charges.length === 0 ? (
                   <TR>
                     <TD colSpan={4} className="text-center text-muted-foreground">
-                      Sem cobranças.
+                      Nenhuma cobrança.
                     </TD>
                   </TR>
                 ) : (
                   patient.charges.map((c) => (
                     <TR key={c.id}>
                       <TD>{formatDateBR(c.dueDate)}</TD>
-                      <TD>{formatBRL(c.amount)}</TD>
+                      <TD className="text-right">{formatBRL(c.amount)}</TD>
                       <TD>
-                        <Badge
-                          variant={
-                            c.status === "paid" ? "success" : c.status === "overdue" ? "destructive" : "muted"
-                          }
-                        >
-                          {c.status}
-                        </Badge>
+                        <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate)} />
                       </TD>
-                      <TD className="capitalize">{c.method ?? "-"}</TD>
+                      <TD>{paymentMethodLabel(c.method)}</TD>
                     </TR>
                   ))
                 )}
@@ -221,19 +219,19 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" /> LGPD · Consentimentos &amp; direitos
+            <ShieldCheck className="h-5 w-5 text-primary-strong" aria-hidden /> LGPD · Consentimentos e direitos
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 md:grid-cols-2">
             {patient.consentRecords.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sem registros de consentimento.</p>
+              <p className="text-sm text-muted-foreground">Nenhum consentimento registrado.</p>
             ) : (
               patient.consentRecords.map((r) => (
                 <div key={r.id} className="rounded-md border p-3 text-sm">
-                  <p className="font-medium capitalize">{r.purpose.replaceAll("_", " ")}</p>
+                  <p className="font-medium">{consentPurposeLabel(r.purpose)}</p>
                   <p className="text-xs text-muted-foreground">
-                    Base legal: {r.legalBasis} · {r.granted ? "concedido" : "revogado"} ·{" "}
+                    Base legal: {legalBasisLabel(r.legalBasis)} · {r.granted ? "concedido" : "revogado"} ·{" "}
                     {formatDateTimeBR(r.grantedAt)}
                   </p>
                 </div>
@@ -242,7 +240,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
           </div>
           <div className="text-xs text-muted-foreground">
             Para exercer os 9 direitos do titular (acesso, portabilidade, eliminação etc.), abra a tela{" "}
-            <Link className="underline" href="/app/lgpd">
+            <Link className="text-primary-strong underline-offset-4 hover:underline" href="/app/lgpd">
               LGPD
             </Link>
             .
@@ -257,10 +255,8 @@ const SmallCard = ({ label, value, tone }: { label: string; value: string; tone?
   <Card>
     <CardContent className="p-4">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${tone === "warn" ? "text-warning" : ""}`}>{value}</p>
+      <p className={`mt-1 text-xl font-semibold tabular-nums ${tone === "warn" ? "text-warning-strong" : ""}`}>{value}</p>
     </CardContent>
   </Card>
 );
 
-const moodEmoji = (n: number) =>
-  ["😞", "😕", "😐", "🙂", "😊"][Math.max(0, Math.min(4, n - 1))];

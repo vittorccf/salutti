@@ -1,4 +1,4 @@
-// Saluti - schema multi-tenant.
+// Salutti - schema multi-tenant.
 // Tenant isolation: TODOS os modelos de domínio carregam workspaceId.
 // SQLite no protótipo; trocar provider para "postgresql" em produção.
 

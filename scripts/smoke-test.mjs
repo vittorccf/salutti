@@ -1,7 +1,7 @@
 // Smoke test ponta-a-ponta: cria session JWT manualmente, faz requests autenticados.
 import { SignJWT } from "jose";
 
-const SECRET = new TextEncoder().encode("dev-secret-please-change-in-production-saluti-prototype-001");
+const SECRET = new TextEncoder().encode("dev-secret-please-change-in-production-salutti-prototype-001");
 const BASE = "http://localhost:3030";
 
 const userId = process.argv[2];
@@ -17,7 +17,7 @@ const token = await new SignJWT({ userId, email: "test@test", name: "Test" })
   .setExpirationTime("30d")
   .sign(SECRET);
 
-const cookie = `saluti_session=${token}; saluti_ws=${workspaceId}`;
+const cookie = `salutti_session=${token}; salutti_ws=${workspaceId}`;
 
 const routes = [
   "/app",

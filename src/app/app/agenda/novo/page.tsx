@@ -26,7 +26,7 @@ async function createAppointmentAction(formData: FormData) {
   const data = schema.parse(Object.fromEntries(formData.entries()));
   const startsAt = new Date(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
-  const meetingUrl = data.modality === "online" ? `https://meet.saluti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
+  const meetingUrl = data.modality === "online" ? `https://meet.salutti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
 
   const appointment = await db.appointment.create({
     data: {
@@ -111,15 +111,15 @@ export default async function NewAppointmentPage({
         <CardHeader>
           <CardTitle>Nova sessão</CardTitle>
           <CardDescription>
-            Gera link de videoconsulta (modalidade online) e - opcionalmente - cobrança Pix vinculada.
+            Sessões online ganham link de videochamada. Se quiser, a cobrança Pix é criada junto.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createAppointmentAction} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-1">
-                <Label>Paciente</Label>
-                <Select name="patientId" defaultValue={params.patientId ?? ""} required>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2 space-y-1">
+                <Label htmlFor="patientId">Paciente</Label>
+                <Select name="patientId" id="patientId" defaultValue={params.patientId ?? ""} required>
                   <option value="">Selecione…</option>
                   {patients.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -129,8 +129,8 @@ export default async function NewAppointmentPage({
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Profissional</Label>
-                <Select name="professionalId" required>
+                <Label htmlFor="professionalId">Profissional</Label>
+                <Select name="professionalId" id="professionalId" required>
                   <option value="">Selecione…</option>
                   {professionals.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -141,34 +141,34 @@ export default async function NewAppointmentPage({
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Data &amp; hora</Label>
-                <Input type="datetime-local" name="startsAt" defaultValue={defaultDate} required />
+                <Label htmlFor="startsAt">Data e hora</Label>
+                <Input type="datetime-local" name="startsAt" id="startsAt" defaultValue={defaultDate} required />
               </div>
               <div className="space-y-1">
-                <Label>Duração (min)</Label>
-                <Input type="number" name="durationMinutes" defaultValue={50} min={15} max={240} required />
+                <Label htmlFor="durationMinutes">Duração (minutos)</Label>
+                <Input type="number" name="durationMinutes" id="durationMinutes" defaultValue={50} min={15} max={240} required />
               </div>
               <div className="space-y-1">
-                <Label>Modalidade</Label>
-                <Select name="modality" defaultValue="online">
+                <Label htmlFor="modality">Modalidade</Label>
+                <Select name="modality" id="modality" defaultValue="online">
                   <option value="presencial">Presencial</option>
                   <option value="online">Online (Meet/Zoom)</option>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Valor (R$)</Label>
-                <Input type="number" step="0.01" name="price" defaultValue={180} required />
+                <Label htmlFor="price">Valor (R$)</Label>
+                <Input type="number" step="0.01" name="price" id="price" defaultValue={180} required />
               </div>
-              <div className="col-span-2 space-y-1">
-                <Label>Observações</Label>
-                <Input name="notes" placeholder="Opcional" />
+              <div className="sm:col-span-2 space-y-1">
+                <Label htmlFor="notes">Observações</Label>
+                <Input name="notes" id="notes" placeholder="Opcional" />
               </div>
-              <div className="col-span-2 flex gap-2 items-center text-sm">
-                <input id="generateCharge" name="generateCharge" type="checkbox" defaultChecked />
-                <Label htmlFor="generateCharge">Gerar cobrança Pix automática</Label>
+              <div className="sm:col-span-2 flex gap-2 items-center text-sm">
+                <input id="generateCharge" name="generateCharge" type="checkbox" defaultChecked className="h-4 w-4 accent-primary" />
+                <Label htmlFor="generateCharge">Criar cobrança Pix desta sessão</Label>
               </div>
             </div>
-            <Button type="submit">Agendar</Button>
+            <Button type="submit">Agendar sessão</Button>
           </form>
         </CardContent>
       </Card>

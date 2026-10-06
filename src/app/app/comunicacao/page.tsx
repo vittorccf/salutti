@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDateTimeBR } from "@/lib/utils";
 import { MessageSquareText } from "lucide-react";
 
@@ -20,18 +21,17 @@ export default async function ComunicacaoPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquareText className="h-6 w-6 text-primary" /> Comunicação
+          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> Comunicação
         </h1>
         <p className="text-sm text-muted-foreground">
-          Log de mensagens disparadas (WhatsApp Business API · templates aprovados). Em produção: status entregue/lido
-          via webhook Meta.
+          Mensagens enviadas pelo WhatsApp com modelos aprovados: lembretes, cobranças e recibos.
         </p>
       </header>
 
       <Card>
         <CardHeader>
           <CardTitle>Mensagens recentes</CardTitle>
-          <CardDescription>Lembretes 24h/2h, cobranças, recibos e onboarding.</CardDescription>
+          <CardDescription>Lembretes de sessão, cobranças, recibos e boas-vindas.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -40,8 +40,8 @@ export default async function ComunicacaoPage() {
                 <TH>Quando</TH>
                 <TH>Canal</TH>
                 <TH>Destinatário</TH>
-                <TH>Template</TH>
-                <TH>Corpo</TH>
+                <TH>Modelo</TH>
+                <TH>Mensagem</TH>
                 <TH>Status</TH>
               </TR>
             </THead>
@@ -49,7 +49,7 @@ export default async function ComunicacaoPage() {
               {logs.length === 0 ? (
                 <TR>
                   <TD colSpan={6} className="text-center text-muted-foreground">
-                    Nenhuma mensagem disparada ainda.
+                    Nenhuma mensagem enviada ainda. Os lembretes de sessão aparecem aqui.
                   </TD>
                 </TR>
               ) : (
@@ -60,15 +60,15 @@ export default async function ComunicacaoPage() {
                   } catch {}
                   return (
                     <TR key={l.id}>
-                      <TD>{formatDateTimeBR(l.createdAt)}</TD>
+                      <TD className="whitespace-nowrap">{formatDateTimeBR(l.createdAt)}</TD>
                       <TD>
-                        <Badge variant="muted" className="capitalize">{l.channel}</Badge>
+                        <Badge variant="outline">{l.channel === "whatsapp" ? "WhatsApp" : l.channel}</Badge>
                       </TD>
                       <TD className="font-mono text-xs">{l.recipient}</TD>
-                      <TD className="capitalize">{l.template.replaceAll("_", " ")}</TD>
+                      <TD>{templateLabel(l.template)}</TD>
                       <TD className="max-w-[360px] truncate text-xs text-muted-foreground">{payload.body}</TD>
                       <TD>
-                        <Badge variant={l.status === "sent" ? "success" : "warning"}>{l.status}</Badge>
+                        <StatusBadge kind="message" status={l.status} />
                       </TD>
                     </TR>
                   );
@@ -81,3 +81,10 @@ export default async function ComunicacaoPage() {
     </div>
   );
 }
+
+const templateLabel = (template: string) =>
+  ({
+    reminder_24h: "Lembrete 24h",
+    charge_due: "Cobrança a vencer",
+    charge_overdue: "Cobrança atrasada",
+  })[template] ?? template.replaceAll("_", " ");
