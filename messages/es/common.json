@@ -58,10 +58,28 @@
     "templates": "{count, plural, one {# plantilla activa} other {# plantillas activas}}"
   },
   "labels": {
-    "noteType": { "anamnese": "Anamnesis", "evolucao": "Evolución", "plano_terapeutico": "Plan terapéutico", "alta": "Alta" },
-    "paymentMethod": { "pix": "Pix", "card": "Tarjeta", "boleto": "Boleto bancario", "dinheiro": "Efectivo" },
-    "modality": { "presencial": "Presencial", "online": "En línea" },
-    "planTier": { "trial": "Prueba gratis", "starter": "Starter", "pro": "Pro", "enterprise": "Clínica" },
+    "noteType": {
+      "anamnese": "Anamnesis",
+      "evolucao": "Nota de evolución",
+      "plano_terapeutico": "Plan terapéutico",
+      "alta": "Alta"
+    },
+    "paymentMethod": {
+      "pix": "Pix",
+      "card": "Tarjeta",
+      "boleto": "Boleto bancario",
+      "dinheiro": "Efectivo"
+    },
+    "modality": {
+      "presencial": "Presencial",
+      "online": "En línea"
+    },
+    "planTier": {
+      "trial": "Prueba gratis",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Clínica"
+    },
     "segment": {
       "solo_psicologo": "Psicología",
       "solo_psicanalista": "Psicoanálisis o terapia",
@@ -70,14 +88,17 @@
       "odonto": "Odontología"
     },
     "segmentOption": {
-      "solo_psicologo": "Psicología (con CRP)",
+      "solo_psicologo": "Psicología (colegiado/a)",
       "solo_psicanalista": "Psicoanálisis u otra terapia (sin exigencia de CRP)",
       "odonto": "Odontología",
       "clinica": "Clínica multiprofesional",
       "ubs": "Centro de salud (UBS) o servicio público",
       "odonto_clinica": "Clínica odontológica"
     },
-    "accountType": { "autonomo": "Profesional independiente", "clinica": "Clínica" },
+    "accountType": {
+      "autonomo": "Profesional independiente",
+      "clinica": "Clínica"
+    },
     "accountTypeDescription": {
       "autonomo": "Atiendes solo, en el consultorio o en línea. Un profesional en la cuenta.",
       "clinica": "Equipo con varios profesionales, recepción y datos de la empresa (CNPJ)."
@@ -90,7 +111,10 @@
       "dentista": "Dentista",
       "medico": "Médico"
     },
-    "guideType": { "consulta": "Guía de consulta", "sp_sadt": "Guía SP/SADT" },
+    "guideType": {
+      "consulta": "Guía de consulta",
+      "sp_sadt": "Guía SP/SADT"
+    },
     "consentPurpose": {
       "tutela_saude": "Protección de la salud",
       "comunicacao_marketing": "Comunicación y marketing",
@@ -104,7 +128,13 @@
       "obrigacao_legal": "Obligación legal",
       "execucao_contrato": "Ejecución de contrato"
     },
-    "mood": { "1": "Muy mal", "2": "Mal", "3": "Neutral", "4": "Bien", "5": "Muy bien" },
+    "mood": {
+      "1": "Muy mal",
+      "2": "Mal",
+      "3": "Neutral",
+      "4": "Bien",
+      "5": "Muy bien"
+    },
     "role": {
       "owner": "Propietario",
       "admin": "Administrador",
@@ -114,12 +144,41 @@
     }
   },
   "status": {
-    "appointment": { "scheduled": "Agendada", "confirmed": "Confirmada", "done": "Realizada", "no_show": "No asistió", "cancelled": "Cancelada" },
-    "charge": { "pending": "Pendiente", "paid": "Pagado", "overdue": "Vencido", "cancelled": "Cancelado", "refunded": "Reembolsado" },
-    "receitaSaude": { "queued": "En cola", "sent": "Esperando confirmación", "confirmed": "Confirmado", "error": "Falló" },
-    "invoice": { "queued": "En cola", "issued": "Factura emitida", "rejected": "Rechazada" },
-    "message": { "queued": "En cola", "sent": "Enviado", "failed": "Falló" },
-    "integration": { "real": "Activa", "sandbox": "Sandbox", "heurístico": "Heurístico" }
+    "appointment": {
+      "scheduled": "Agendada",
+      "confirmed": "Confirmada",
+      "done": "Realizada",
+      "no_show": "No asistió",
+      "cancelled": "Cancelada"
+    },
+    "charge": {
+      "pending": "Pendiente",
+      "paid": "Pagado",
+      "overdue": "Vencido",
+      "cancelled": "Cancelado",
+      "refunded": "Reembolsado"
+    },
+    "receitaSaude": {
+      "queued": "En cola",
+      "sent": "Esperando confirmación",
+      "confirmed": "Confirmado",
+      "error": "Falló"
+    },
+    "invoice": {
+      "queued": "En cola",
+      "issued": "Factura emitida",
+      "rejected": "Rechazada"
+    },
+    "message": {
+      "queued": "En cola",
+      "sent": "Enviado",
+      "failed": "Falló"
+    },
+    "integration": {
+      "real": "Activa",
+      "sandbox": "Sandbox",
+      "heurístico": "Heurístico"
+    }
   },
   "phone": {
     "countryButton": "País del teléfono: {country} ({dial})",

@@ -29,10 +29,13 @@ test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", as
   await expect(page.getByText("Perfil guardado.")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "es");
 
-  // Português de Portugal.
+  // Português de Portugal ("Perfil guardado." é igual ao do espanhol: recarrega para não confirmar a mensagem anterior).
+  await page.goto("/app/ajustes");
+  await expect(page.locator("html")).toHaveAttribute("lang", "es");
   await page.locator("#profile-locale").selectOption("pt-PT");
   await page.getByRole("button", { name: "Guardar perfil" }).click();
   await expect(page.getByText("Perfil guardado.")).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
   await page.goto("/app");
   await expect(page.getByRole("link", { name: "Definições" }).first()).toBeVisible();
 

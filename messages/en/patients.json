@@ -14,15 +14,15 @@
     "contact": "Contact",
     "birthDate": "Date of birth",
     "sessions": "Sessions",
-    "consent": "Consent",
-    "consented": "Given",
+    "consent": "Legal basis",
+    "consented": "Recorded",
     "pending": "Pending",
     "open": "Open"
   },
   "new": {
     "title": "New patient",
     "description": "Only the name is required. CPF and other details can be filled in later.",
-    "consentTitle": "I confirm data collection on the basis of health protection (LGPD).",
+    "consentTitle": "I confirm data collection on the basis of health protection (LGPD, Brazil's data protection law).",
     "consentDetail": "LGPD Art. 11, II, “f”. The record goes to the audit trail with date, IP and who added it.",
     "submit": "Add patient"
   },
@@ -48,7 +48,7 @@
     "legacyAddress": "Previous address (free text): {address}",
     "clearLegacyAddress": "Delete the previous address on save",
     "notes": "Administrative notes",
-    "notesPlaceholder": "Administrative details only. Clinical notes go in the record.",
+    "notesPlaceholder": "Administrative details only. Clinical notes go in the clinical record.",
     "photo": "Patient photo (optional)",
     "photoHint": "Helps recognize who is arriving. Shown only on the patient file, to this practice’s team.",
     "photoConsent": "The patient (or guardian, if a minor) authorized the use of the photo for identification."
@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Clinical records",
-    "description": "Progress notes and intake forms for your patients. TOBI summarizes each note when you save it.",
+    "description": "Progress notes and intake forms for your patients. TOBI summarizes each note when you save it; review before using.",
     "emptyTitle": "No progress notes yet",
     "emptyDescription": "Open a patient file to write the first progress note.",
     "selectPatient": "Select patient",
@@ -148,7 +148,7 @@
     "type": "Entry type",
     "content": "Content",
     "placeholder": "Session #__\nPresenting concern: …\nClinical observation: …\nIntervention: …\nPlan: …",
-    "hint": "Markdown supported. TOBI spots themes (anxiety, grief, sleep, panic, couple relationship) and suggests next steps.",
+    "hint": "Markdown supported. TOBI spots themes (anxiety, grief, sleep, panic, couple relationship) and suggests points for your review.",
     "sign": "Sign digitally (ICP-Brasil simulation)",
     "submit": "Save progress note",
     "errors": {

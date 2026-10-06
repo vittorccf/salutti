@@ -61,8 +61,8 @@
     "done": "Marcar como realizada",
     "noShow": "Registrar inasistencia",
     "cancel": "Cancelar sesión",
-    "viewNote": "Ver evolución",
-    "newNote": "Registrar evolución con TOBI",
+    "viewNote": "Ver nota de evolución",
+    "newNote": "Registrar nota de evolución con TOBI",
     "viewCharge": "Ver cobro"
   },
   "meetIssues": {

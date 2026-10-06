@@ -62,7 +62,7 @@
     "pending": "Pending"
   },
   "tobi": {
-    "title": "TOBI · predictive and clinical AI",
+    "title": "TOBI · AI assistant",
     "intro": "TOBI reads your financial and clinical data and points out what needs attention, with numbers and deadlines.",
     "recalculate": "Recalculate insights",
     "watchTitle": "What TOBI keeps an eye on for you",
@@ -70,7 +70,7 @@
     "watchOverdue": "<strong>Overdue:</strong> adds up overdue charges and suggests a collection sequence.",
     "watchSchedule": "<strong>Schedule:</strong> flags weeks with fewer sessions than expected.",
     "watchChurn": "<strong>Continuity:</strong> highlights patients with no session in 60 days or more.",
-    "watchRecords": "<strong>Records:</strong> summarizes each progress note when you save it.",
+    "watchRecords": "<strong>Clinical records:</strong> summarizes each progress note when you save it.",
     "severity": {
       "critical": "Critical",
       "warn": "Warning",

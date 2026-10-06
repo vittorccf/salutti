@@ -13,7 +13,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 export const dynamic = "force-dynamic";
 
-// Os avisos do TISS vêm em pt-BR de lib/tiss.ts e lib/tiss-service.ts; aqui viram chave de finance.tiss
+// Motivos de lib/tiss.ts (frases em pt-BR, usadas também nos testes do XML) viram chave de finance.tiss
 // para aparecer no idioma da interface. Texto desconhecido aparece como veio.
 const TISS_TEXT_KEY: Record<string, string> = {
   "Paciente sem número da carteirinha.": "noCard",
@@ -27,7 +27,9 @@ const TISS_TEXT_KEY: Record<string, string> = {
   "Informe o código do prestador na operadora ou o CNPJ do consultório.": "providerMissing",
   "Nenhuma sessão selecionada está pronta para faturar.": "noneReady",
 };
-const tissKey = (text: string) => (Object.hasOwn(TISS_TEXT_KEY, text) ? TISS_TEXT_KEY[text] : null);
+// tiss-service já lança/registra a chave; só o motivo de lib/tiss.ts ainda chega como frase.
+const TISS_KEYS = new Set(Object.values(TISS_TEXT_KEY));
+const tissKey = (text: string) => (TISS_KEYS.has(text) ? text : Object.hasOwn(TISS_TEXT_KEY, text) ? TISS_TEXT_KEY[text] : null);
 
 async function generateAction(formData: FormData) {
   "use server";

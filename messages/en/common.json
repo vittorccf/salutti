@@ -6,7 +6,7 @@
     "dashboard": "Dashboard",
     "patients": "Patients",
     "schedule": "Schedule",
-    "records": "Records",
+    "records": "Clinical records",
     "finance": "Finance",
     "insurance": "Insurance",
     "tax": "Taxes",
@@ -58,10 +58,28 @@
     "templates": "{count, plural, one {# active template} other {# active templates}}"
   },
   "labels": {
-    "noteType": { "anamnese": "Intake", "evolucao": "Progress note", "plano_terapeutico": "Treatment plan", "alta": "Discharge" },
-    "paymentMethod": { "pix": "Pix", "card": "Card", "boleto": "Boleto (bank slip)", "dinheiro": "Cash" },
-    "modality": { "presencial": "In person", "online": "Online" },
-    "planTier": { "trial": "Free trial", "starter": "Starter", "pro": "Pro", "enterprise": "Clinic" },
+    "noteType": {
+      "anamnese": "Intake",
+      "evolucao": "Progress note",
+      "plano_terapeutico": "Treatment plan",
+      "alta": "Discharge"
+    },
+    "paymentMethod": {
+      "pix": "Pix",
+      "card": "Card",
+      "boleto": "Boleto (bank slip)",
+      "dinheiro": "Cash"
+    },
+    "modality": {
+      "presencial": "In person",
+      "online": "Online"
+    },
+    "planTier": {
+      "trial": "Free trial",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Clinic"
+    },
     "segment": {
       "solo_psicologo": "Psychology",
       "solo_psicanalista": "Psychoanalysis or therapy",
@@ -70,14 +88,17 @@
       "odonto": "Dentistry"
     },
     "segmentOption": {
-      "solo_psicologo": "Psychology (with CRP)",
+      "solo_psicologo": "Psychology (licensed)",
       "solo_psicanalista": "Psychoanalysis or other therapy (CRP not required)",
       "odonto": "Dentistry",
       "clinica": "Multidisciplinary clinic",
       "ubs": "Public health unit (UBS) or public service",
       "odonto_clinica": "Dental clinic"
     },
-    "accountType": { "autonomo": "Independent professional", "clinica": "Clinic" },
+    "accountType": {
+      "autonomo": "Independent professional",
+      "clinica": "Clinic"
+    },
     "accountTypeDescription": {
       "autonomo": "You work on your own, in the office or online. One professional on the account.",
       "clinica": "A team with several professionals, front desk and company details (CNPJ)."
@@ -90,7 +111,10 @@
       "dentista": "Dentist",
       "medico": "Physician"
     },
-    "guideType": { "consulta": "Consultation form", "sp_sadt": "SP/SADT form" },
+    "guideType": {
+      "consulta": "Consultation form",
+      "sp_sadt": "SP/SADT form"
+    },
     "consentPurpose": {
       "tutela_saude": "Health protection",
       "comunicacao_marketing": "Communication and marketing",
@@ -104,7 +128,13 @@
       "obrigacao_legal": "Legal obligation",
       "execucao_contrato": "Performance of contract"
     },
-    "mood": { "1": "Very bad", "2": "Bad", "3": "Neutral", "4": "Good", "5": "Very good" },
+    "mood": {
+      "1": "Very bad",
+      "2": "Bad",
+      "3": "Neutral",
+      "4": "Good",
+      "5": "Very good"
+    },
     "role": {
       "owner": "Owner",
       "admin": "Administrator",
@@ -114,12 +144,41 @@
     }
   },
   "status": {
-    "appointment": { "scheduled": "Scheduled", "confirmed": "Confirmed", "done": "Completed", "no_show": "No-show", "cancelled": "Canceled" },
-    "charge": { "pending": "Pending", "paid": "Paid", "overdue": "Overdue", "cancelled": "Canceled", "refunded": "Refunded" },
-    "receitaSaude": { "queued": "Queued", "sent": "Awaiting confirmation", "confirmed": "Confirmed", "error": "Failed" },
-    "invoice": { "queued": "Queued", "issued": "Invoice issued", "rejected": "Rejected" },
-    "message": { "queued": "Queued", "sent": "Sent", "failed": "Failed" },
-    "integration": { "real": "Live", "sandbox": "Sandbox", "heurístico": "Heuristic" }
+    "appointment": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "done": "Completed",
+      "no_show": "No-show",
+      "cancelled": "Canceled"
+    },
+    "charge": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Canceled",
+      "refunded": "Refunded"
+    },
+    "receitaSaude": {
+      "queued": "Queued",
+      "sent": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "error": "Failed"
+    },
+    "invoice": {
+      "queued": "Queued",
+      "issued": "Invoice issued",
+      "rejected": "Rejected"
+    },
+    "message": {
+      "queued": "Queued",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "integration": {
+      "real": "Live",
+      "sandbox": "Sandbox",
+      "heurístico": "Heuristic"
+    }
   },
   "phone": {
     "countryButton": "Phone country: {country} ({dial})",

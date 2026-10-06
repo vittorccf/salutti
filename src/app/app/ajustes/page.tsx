@@ -1,3 +1,4 @@
+import { autonomoBlockers } from "@/lib/account";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,10 +69,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   ]);
   // Para virar autônomo, a conta precisa caber em um profissional e um usuário (mesma regra de autonomoBlockers).
   const blockers = isClinic
-    ? [
-        ...(activeProfessionals > 1 ? [t("accountType.blockerProfessionals", { count: activeProfessionals })] : []),
-        ...(members > 1 ? [t("accountType.blockerMembers", { count: members })] : []),
-      ]
+    ? autonomoBlockers({ activeProfessionals, members }).map((b) =>
+        t(b.code === "professionals" ? "accountType.blockerProfessionals" : "accountType.blockerMembers", { count: b.count }),
+      )
     : [];
   const clinic = String(isClinic);
 
