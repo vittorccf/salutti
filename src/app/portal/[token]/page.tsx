@@ -15,6 +15,7 @@ import { moodLabels, moodLabel } from "@/lib/mood";
 import { modalityLabel } from "@/lib/labels";
 import { Logo } from "@/components/brand/logo";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
+import { meetingPlatform } from "@/lib/providers/video";
 
 export const dynamic = "force-dynamic";
 
@@ -122,7 +123,7 @@ export default async function PatientPortalPage({
                     </p>
                     {a.meetingUrl ? (
                       <a className="text-sm font-medium text-primary-strong underline-offset-4 hover:underline" href={a.meetingUrl} target="_blank" rel="noreferrer">
-                        Entrar na sala
+                        Entrar no {meetingPlatform(a.meetingUrl)}
                       </a>
                     ) : null}
                   </div>

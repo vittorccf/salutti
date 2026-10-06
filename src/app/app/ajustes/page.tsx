@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
 import { plural } from "@/lib/utils";
 import { planTierLabel, segmentLabel } from "@/lib/labels";
+import { videoStatus } from "@/lib/providers/video";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,16 @@ export default async function SettingsPage() {
       status: process.env.STRIPE_SECRET_KEY?.startsWith("sk_") && !process.env.STRIPE_SECRET_KEY.includes("mock")
         ? "real"
         : "sandbox",
+    },
+    {
+      name: "Google Meet",
+      desc: "Link de videochamada pelo Google Agenda",
+      status: videoStatus.google_meet(),
+    },
+    {
+      name: "Zoom",
+      desc: "Link de videochamada pela API do Zoom",
+      status: videoStatus.zoom(),
     },
     {
       name: "Asaas / Iugu",

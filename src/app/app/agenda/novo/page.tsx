@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { dateKeySP, parseDateOnly, parseDateTimeLocal, toDateTimeLocalSP } from "@/lib/dates";
 import { assertInWorkspace } from "@/lib/tenant";
+import { video } from "@/lib/providers/video";
 
 const schema = z.object({
   patientId: z.string(),
@@ -20,7 +21,11 @@ const schema = z.object({
   price: z.coerce.number().min(0),
   notes: z.string().optional(),
   generateCharge: z.string().optional(),
+  videoProvider: z.enum(["google_meet", "zoom", "none"]).default("google_meet"),
 });
+
+// Título genérico: nome do paciente não vai para Google/Zoom (dado de saúde, LGPD).
+const MEETING_TOPIC = "Sessão · Salutti";
 
 async function createAppointmentAction(formData: FormData) {
   "use server";
@@ -29,7 +34,23 @@ async function createAppointmentAction(formData: FormData) {
   await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId, professionalId: data.professionalId });
   const startsAt = parseDateTimeLocal(data.startsAt);
   const endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
-  const meetingUrl = data.modality === "online" ? `https://meet.salutti.app/sessao/${Math.random().toString(36).slice(2, 10)}` : null;
+  let meetingUrl: string | null = null;
+  let videoFailed = false;
+  if (data.modality === "online" && data.videoProvider !== "none") {
+    try {
+      const meeting = await video.createMeeting({
+        provider: data.videoProvider,
+        topic: MEETING_TOPIC,
+        startsAt,
+        durationMinutes: data.durationMinutes,
+      });
+      meetingUrl = meeting.url;
+    } catch (e) {
+      // A sessão é criada mesmo assim; o link pode ser gerado depois na tela da sessão.
+      console.error("[video] falha ao criar reunião", e);
+      videoFailed = true;
+    }
+  }
 
   const appointment = await db.appointment.create({
     data: {
@@ -80,7 +101,7 @@ async function createAppointmentAction(formData: FormData) {
     entityId: appointment.id,
   });
 
-  redirect(`/app/agenda/${appointment.id}`);
+  redirect(`/app/agenda/${appointment.id}${videoFailed ? "?aviso=video" : ""}`);
 }
 
 export default async function NewAppointmentPage({
@@ -113,7 +134,7 @@ export default async function NewAppointmentPage({
         <CardHeader>
           <CardTitle>Nova sessão</CardTitle>
           <CardDescription>
-            Sessões online ganham link de videochamada. Se quiser, a cobrança Pix é criada junto.
+            Em sessões online, escolha Google Meet ou Zoom e o link é gerado na hora. Se quiser, a cobrança Pix é criada junto.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -154,7 +175,15 @@ export default async function NewAppointmentPage({
                 <Label htmlFor="modality">Modalidade</Label>
                 <Select name="modality" id="modality" defaultValue="online">
                   <option value="presencial">Presencial</option>
-                  <option value="online">Online (Meet/Zoom)</option>
+                  <option value="online">Online</option>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="videoProvider">Videochamada (sessão online)</Label>
+                <Select name="videoProvider" id="videoProvider" defaultValue="google_meet">
+                  <option value="google_meet">Gerar link do Google Meet</option>
+                  <option value="zoom">Gerar link do Zoom</option>
+                  <option value="none">Sem link por enquanto</option>
                 </Select>
               </div>
               <div className="space-y-1">

@@ -12,6 +12,9 @@ import { Calendar, MessageSquareText, Video, CheckCircle2, XCircle, FileSignatur
 import { redirect } from "next/navigation";
 import { modalityLabel } from "@/lib/labels";
 import { ensureAffected } from "@/lib/tenant";
+import { isSimulatedMeeting, meetingPlatform, video } from "@/lib/providers/video";
+import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/select";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +35,36 @@ async function setStatusAction(formData: FormData) {
     entityId: id,
     metadata: { status },
   });
+  redirect(`/app/agenda/${id}`);
+}
+
+async function createMeetingAction(formData: FormData) {
+  "use server";
+  const ctx = await requireContext();
+  const id = formData.get("id") as string;
+  const provider = formData.get("videoProvider") === "zoom" ? "zoom" : "google_meet";
+  const appt = await db.appointment.findFirst({ where: { id, workspaceId: ctx.workspace.id, modality: "online" } });
+  if (!appt) notFound();
+  try {
+    const meeting = await video.createMeeting({
+      provider,
+      topic: "Sessão · Salutti",
+      startsAt: appt.startsAt,
+      durationMinutes: Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000),
+    });
+    await db.appointment.updateMany({ where: { id, workspaceId: ctx.workspace.id }, data: { meetingUrl: meeting.url } });
+    await recordAudit({
+      workspaceId: ctx.workspace.id,
+      userId: ctx.user.id,
+      action: "appointment.meeting",
+      entity: "Appointment",
+      entityId: id,
+      metadata: { provider, simulated: meeting.simulated },
+    });
+  } catch (e) {
+    console.error("[video] falha ao criar reunião", e);
+    redirect(`/app/agenda/${id}?aviso=video`);
+  }
   redirect(`/app/agenda/${id}`);
 }
 
@@ -68,16 +101,20 @@ async function sendReminderAction(formData: FormData) {
 
 export default async function AppointmentDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ aviso?: string }>;
 }) {
   const ctx = await requireContext();
   const { id } = await params;
+  const { aviso } = await searchParams;
   const appt = await db.appointment.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
     include: { patient: true, professional: true, clinicalNote: true, charge: true },
   });
   if (!appt) notFound();
+  const platform = meetingPlatform(appt.meetingUrl);
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -95,9 +132,23 @@ export default async function AppointmentDetailPage({
           {appt.meetingUrl ? (
             <Button variant="outline" asChild>
               <a href={appt.meetingUrl} target="_blank" rel="noreferrer">
-                <Video className="h-4 w-4" /> Sala da consulta
+                <Video className="h-4 w-4" /> Entrar no {platform}
+                {isSimulatedMeeting(appt.meetingUrl) ? (
+                  <Badge variant="muted" className="ml-1">Simulado</Badge>
+                ) : null}
               </a>
             </Button>
+          ) : appt.modality === "online" ? (
+            <form action={createMeetingAction} className="flex gap-2">
+              <input type="hidden" name="id" value={appt.id} />
+              <Select name="videoProvider" defaultValue="google_meet" aria-label="Plataforma da videochamada" className="w-auto">
+                <option value="google_meet">Google Meet</option>
+                <option value="zoom">Zoom</option>
+              </Select>
+              <Button type="submit" variant="outline">
+                <Video className="h-4 w-4" /> Gerar link
+              </Button>
+            </form>
           ) : null}
           <form action={sendReminderAction}>
             <input type="hidden" name="id" value={appt.id} />
@@ -108,6 +159,12 @@ export default async function AppointmentDetailPage({
           </form>
         </div>
       </header>
+
+      {aviso === "video" ? (
+        <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive-strong">
+          Não foi possível gerar o link da videochamada. Confira as credenciais em Ajustes e tente gerar de novo.
+        </p>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
