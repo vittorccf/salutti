@@ -1,13 +1,14 @@
 // Salutti - schema multi-tenant.
 // Tenant isolation: TODOS os modelos de domínio carregam workspaceId.
-// SQLite no protótipo; trocar provider para "postgresql" em produção.
+// Postgres em todos os ambientes (local: npm run db:local; produção: Neon/Vercel).
+// Mudanças de schema: npx prisma migrate dev --name <descricao> (gera prisma/migrations).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
