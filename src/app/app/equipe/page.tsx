@@ -22,6 +22,9 @@ import { parseDateOnly } from "@/lib/dates";
 import { assertInWorkspace } from "@/lib/tenant";
 import { revalidatePath } from "next/cache";
 import { PhoneInput } from "@/components/forms/phone-input";
+import { InviteForm } from "./_components/invite-form";
+import { changeRoleAction, removeMemberAction, revokeInviteAction } from "../_actions/team";
+import { rolesFor } from "@/lib/invitations";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 
 export const dynamic = "force-dynamic";
@@ -141,6 +144,22 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   const t = await getTranslations("settings.team");
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));
+  const ta = await getTranslations("settings.access");
+  // Acessos à conta (quem entra no sistema) e convites pendentes; só dono e administrador veem e gerenciam.
+  const [allMembers, invites] = manage
+    ? await Promise.all([
+        db.membership.findMany({
+          where: { workspaceId: ctx.workspace.id },
+          include: { user: { select: { id: true, name: true, email: true } } },
+          orderBy: { createdAt: "asc" },
+        }),
+        db.invitation.findMany({
+          where: { workspaceId: ctx.workspace.id, acceptedAt: null, revokedAt: null, expiresAt: { gt: new Date() } },
+          orderBy: { createdAt: "desc" },
+        }),
+      ])
+    : [[], []];
+  const roles = rolesFor(ctx.workspace.accountType);
 
   return (
     <div className="space-y-6">
@@ -328,6 +347,79 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
         </Card>
         )}
       </div>
+
+      {manage ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{ta("title")}</CardTitle>
+            <CardDescription>{autonomo ? ta("descriptionAutonomo") : ta("description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
+            <div className="space-y-3">
+              <ul className="divide-y rounded-md border">
+                {allMembers.map((m) => {
+                  const locked = m.role === "owner" || m.user.id === ctx.user.id || (m.role === "admin" && ctx.role !== "owner");
+                  return (
+                    <li key={m.id} className="flex flex-wrap items-center gap-2 p-3 text-sm">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{m.user.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{m.user.email}</p>
+                      </div>
+                      {locked ? (
+                        <Badge variant="muted">{label("role", m.role)}</Badge>
+                      ) : (
+                        <>
+                          <form action={changeRoleAction} className="flex items-center gap-1">
+                            <input type="hidden" name="membershipId" value={m.id} />
+                            <Select name="role" defaultValue={m.role} aria-label={ta("roleOf", { name: m.user.name })} className="h-8 w-auto text-xs">
+                              {roles.filter((r) => r !== "admin" || ctx.role === "owner").map((r) => (
+                                <option key={r} value={r}>
+                                  {label("role", r)}
+                                </option>
+                              ))}
+                            </Select>
+                            <Button type="submit" size="sm" variant="ghost">{ta("saveRole")}</Button>
+                          </form>
+                          <form action={removeMemberAction}>
+                            <input type="hidden" name="membershipId" value={m.id} />
+                            <Button type="submit" size="sm" variant="ghost" aria-label={ta("removeOf", { name: m.user.name })}>
+                              {ta("remove")}
+                            </Button>
+                          </form>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              {invites.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{ta("pending")}</p>
+                  <ul className="divide-y rounded-md border">
+                    {invites.map((inv) => (
+                      <li key={inv.id} className="flex flex-wrap items-center gap-2 p-3 text-sm">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate">{inv.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {label("role", inv.role)} · {ta("expires", { date: f.date(inv.expiresAt) })}
+                          </p>
+                        </div>
+                        <form action={revokeInviteAction}>
+                          <input type="hidden" name="invitationId" value={inv.id} />
+                          <Button type="submit" size="sm" variant="ghost" aria-label={ta("revokeOf", { email: inv.email })}>
+                            {ta("revoke")}
+                          </Button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+            <InviteForm roles={ctx.role === "owner" ? roles : roles.filter((r) => r !== "admin")} />
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

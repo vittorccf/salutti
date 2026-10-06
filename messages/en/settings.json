@@ -243,5 +243,33 @@
     "workspaceSaved": "Details saved.",
     "nowClinic": "Done: this is now a clinic account.",
     "nowAutonomo": "Done: this is now an independent professional account."
+  },
+  "access": {
+    "title": "Account access",
+    "description": "Who can sign in and with which role. Front desk and billing can't see clinical records.",
+    "descriptionAutonomo": "On an independent practitioner account you can give access to front desk and billing. They can't see clinical records.",
+    "email": "Person's email",
+    "role": "Role",
+    "invite": "Create invite",
+    "inviteCreated": "Invite created. Copy the link and send it to the person; it works once and for 7 days.",
+    "linkLabel": "Invite link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "linkHint": "Only someone signing in with the invited email can use this link.",
+    "pending": "Pending invites",
+    "expires": "valid until {date}",
+    "revoke": "Cancel",
+    "revokeOf": "Cancel invite for {email}",
+    "saveRole": "Save",
+    "roleOf": "Role of {name}",
+    "remove": "Remove",
+    "removeOf": "Remove access for {name}",
+    "errors": {
+      "noPermission": "Only the owner or an admin manages access.",
+      "email": "Invalid email. Check the address.",
+      "role": "Choose a role available for this account.",
+      "adminOnlyOwner": "Only the account owner can invite admins.",
+      "alreadyMember": "This person already has access to this account."
+    }
   }
 }

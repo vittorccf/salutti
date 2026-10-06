@@ -243,5 +243,33 @@
     "workspaceSaved": "Datos guardados.",
     "nowClinic": "Listo: ahora la cuenta es de clínica.",
     "nowAutonomo": "Listo: ahora la cuenta es de profesional independiente."
+  },
+  "access": {
+    "title": "Accesos a la cuenta",
+    "description": "Quién entra al sistema y con qué rol. Recepción y finanzas no ven la historia clínica.",
+    "descriptionAutonomo": "En la cuenta de profesional independiente puedes dar acceso a recepción y finanzas. No ven la historia clínica.",
+    "email": "Correo de la persona",
+    "role": "Rol",
+    "invite": "Generar invitación",
+    "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona; vale 7 días y una sola vez.",
+    "linkLabel": "Enlace de la invitación",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "linkHint": "Solo quien entre con el correo invitado puede usar este enlace.",
+    "pending": "Invitaciones pendientes",
+    "expires": "válida hasta {date}",
+    "revoke": "Cancelar",
+    "revokeOf": "Cancelar invitación de {email}",
+    "saveRole": "Guardar",
+    "roleOf": "Rol de {name}",
+    "remove": "Quitar",
+    "removeOf": "Quitar acceso de {name}",
+    "errors": {
+      "noPermission": "Solo el titular o un administrador gestiona los accesos.",
+      "email": "Correo inválido. Revisa la dirección.",
+      "role": "Elige un rol disponible para esta cuenta.",
+      "adminOnlyOwner": "Solo el titular de la cuenta invita administradores.",
+      "alreadyMember": "Esa persona ya tiene acceso a esta cuenta."
+    }
   }
 }
