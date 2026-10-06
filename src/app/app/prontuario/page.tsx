@@ -57,7 +57,7 @@ export default async function ProntuarioListPage() {
                   <TH>{t("professional")}</TH>
                   <TH>{t("type")}</TH>
                   <TH>{t("updated")}</TH>
-                  <TH>{t("tobi")}</TH>
+                  <TH>{t("saluttin")}</TH>
                   <TH></TH>
                 </TR>
               </THead>

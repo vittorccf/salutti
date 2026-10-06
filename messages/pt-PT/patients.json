@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Processo clínico",
-    "description": "Notas de sessão e anamneses dos seus pacientes. O TOBI resume cada nota ao guardar; reveja antes de usar.",
+    "description": "Notas de sessão e anamneses dos seus pacientes. O Saluttin resume cada nota ao guardar; reveja antes de usar.",
     "emptyTitle": "Nenhuma nota de sessão registada",
     "emptyDescription": "Abra a ficha de um paciente para registar a primeira evolução.",
     "selectPatient": "Selecionar paciente",
@@ -115,21 +115,21 @@
     "professional": "Profissional",
     "type": "Tipo",
     "updated": "Atualizado",
-    "tobi": "TOBI",
+    "saluttin": "Saluttin",
     "summarized": "Resumida",
     "pending": "Pendente",
     "open": "Abrir"
   },
   "chart": {
     "title": "Processo clínico · {name}",
-    "subtitle": "{count, plural, one {# registo} other {# registos}} · o TOBI resume cada evolução ao guardar.",
+    "subtitle": "{count, plural, one {# registo} other {# registos}} · o Saluttin resume cada evolução ao guardar.",
     "applyAnamnesis": "Aplicar anamnese",
     "newNote": "Nova nota de sessão",
     "emptyTitle": "Nenhuma evolução registada",
-    "emptyDescription": "Registe a primeira evolução e o TOBI gera o resumo da sessão.",
+    "emptyDescription": "Registe a primeira evolução e o Saluttin gera o resumo da sessão.",
     "signed": "Assinado",
     "session": "Sessão {date}",
-    "aiSummary": "Resumo gerado por IA (TOBI) · reveja antes de utilizar",
+    "aiSummary": "Resumo gerado por IA (Saluttin) · reveja antes de utilizar",
     "security": "Em produção: conteúdo cifrado em repouso + assinatura ICP-Brasil (A1 na nuvem · Memed/SafeID). Hash atual: <code>{hash}</code>"
   },
   "anamnesis": {
@@ -143,12 +143,12 @@
   },
   "note": {
     "title": "Nova nota de sessão · {name}",
-    "description": "O TOBI resume a evolução ao guardar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e da hora.",
+    "description": "O Saluttin resume a evolução ao guardar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e da hora.",
     "professional": "Profissional",
     "type": "Tipo de registo",
     "content": "Conteúdo",
     "placeholder": "Sessão #__\nQueixa: …\nObservação clínica: …\nIntervenção: …\nPlano: …",
-    "hint": "Aceita Markdown. O TOBI identifica temas (ansiedade, luto, sono, pânico, relação conjugal) e sugere pontos para a sua reflexão.",
+    "hint": "Aceita Markdown. O Saluttin identifica temas (ansiedade, luto, sono, pânico, relação conjugal) e sugere pontos para a sua reflexão.",
     "sign": "Assinar digitalmente (simulação ICP-Brasil)",
     "submit": "Guardar nota de sessão",
     "errors": {

@@ -14,10 +14,10 @@ async function regenerateAction() {
   "use server";
   const ctx = await requireContext();
   await insightsEngine.regenerate({ workspaceId: ctx.workspace.id });
-  redirect("/app/tobi");
+  redirect("/app/saluttin");
 }
 
-export default async function TobiPage() {
+export default async function SaluttinPage() {
   const ctx = await requireContext();
   let insights = await db.aiInsight.findMany({
     where: { workspaceId: ctx.workspace.id },
@@ -27,7 +27,7 @@ export default async function TobiPage() {
     insights = await insightsEngine.regenerate({ workspaceId: ctx.workspace.id });
   }
 
-  const t = await getTranslations("dashboard.tobi");
+  const t = await getTranslations("dashboard.saluttin");
   const f = await getFormat();
   const strong = (chunks: React.ReactNode) => <strong>{chunks}</strong>;
 

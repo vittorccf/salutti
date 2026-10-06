@@ -26,7 +26,7 @@ const nav = [
   { href: "/app/financeiro", label: "finance", icon: Banknote },
   { href: "/app/convenios", label: "insurance", icon: Handshake },
   { href: "/app/fiscal", label: "tax", icon: FileSignature },
-  { href: "/app/tobi", label: "tobi", icon: Sparkles },
+  { href: "/app/saluttin", label: "saluttin", icon: Sparkles },
   { href: "/app/comunicacao", label: "communication", icon: MessageSquareText },
   { href: "/app/equipe", label: "team", icon: Stethoscope },
   { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck },

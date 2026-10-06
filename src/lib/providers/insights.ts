@@ -1,5 +1,5 @@
 // Engine de IA Preditiva Financeira - determinística.
-// Textos na voz do TOBI (design system): frases curtas, com número e prazo.
+// Textos na voz do Saluttin (design system): frases curtas, com número e prazo.
 // Calcula insights a partir dos dados do workspace.
 
 import { db } from "../db";
@@ -70,7 +70,7 @@ const revenueTrend = async (workspaceId: string) => {
         kind: "revenue_drop",
         severity: "info" as const,
         title: "Primeiro mês de faturamento registrado",
-        body: `Você recebeu ${formatBRL(cur)} este mês. Defina uma meta mensal em Ajustes para o TOBI acompanhar a evolução.`,
+        body: `Você recebeu ${formatBRL(cur)} este mês. Defina uma meta mensal em Ajustes para o Saluttin acompanhar a evolução.`,
         payload: { cur, prev },
       },
     ];

@@ -1,4 +1,4 @@
-// Motor de insights do TOBI com o banco simulado: regras e textos (voz do design system).
+// Motor de insights do Saluttin com o banco simulado: regras e textos (voz do design system).
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const db = vi.hoisted(() => ({
@@ -22,7 +22,7 @@ beforeEach(() => {
   db.patient.findMany.mockResolvedValue([]);
 });
 
-describe("insights do TOBI", () => {
+describe("insights do Saluttin", () => {
   it("sem dados, nenhum insight", async () => {
     expect(await insightsEngine.computeAll({ workspaceId: "w" })).toEqual([]);
   });

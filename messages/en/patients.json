@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Clinical records",
-    "description": "Progress notes and intake forms for your patients. TOBI summarizes each note when you save it; review before using.",
+    "description": "Progress notes and intake forms for your patients. Saluttin summarizes each note when you save it; review before using.",
     "emptyTitle": "No progress notes yet",
     "emptyDescription": "Open a patient file to write the first progress note.",
     "selectPatient": "Select patient",
@@ -115,21 +115,21 @@
     "professional": "Professional",
     "type": "Type",
     "updated": "Updated",
-    "tobi": "TOBI",
+    "saluttin": "Saluttin",
     "summarized": "Summarized",
     "pending": "Pending",
     "open": "Open"
   },
   "chart": {
     "title": "Clinical record · {name}",
-    "subtitle": "{count, plural, one {# entry} other {# entries}} · TOBI summarizes each note when you save it.",
+    "subtitle": "{count, plural, one {# entry} other {# entries}} · Saluttin summarizes each note when you save it.",
     "applyAnamnesis": "Fill in intake form",
     "newNote": "New progress note",
     "emptyTitle": "No progress notes yet",
-    "emptyDescription": "Write the first progress note and TOBI creates the session summary.",
+    "emptyDescription": "Write the first progress note and Saluttin creates the session summary.",
     "signed": "Signed",
     "session": "Session {date}",
-    "aiSummary": "AI-generated summary (TOBI) · review before using",
+    "aiSummary": "AI-generated summary (Saluttin) · review before using",
     "security": "In production: content encrypted at rest + ICP-Brasil signature (cloud A1 · Memed/SafeID). Current hash: <code>{hash}</code>"
   },
   "anamnesis": {
@@ -143,12 +143,12 @@
   },
   "note": {
     "title": "New progress note · {name}",
-    "description": "TOBI summarizes the note when you save it. The digital signature is simulated with a SHA-256 hash of the content and time.",
+    "description": "Saluttin summarizes the note when you save it. The digital signature is simulated with a SHA-256 hash of the content and time.",
     "professional": "Professional",
     "type": "Entry type",
     "content": "Content",
     "placeholder": "Session #__\nPresenting concern: …\nClinical observation: …\nIntervention: …\nPlan: …",
-    "hint": "Markdown supported. TOBI spots themes (anxiety, grief, sleep, panic, couple relationship) and suggests points for your review.",
+    "hint": "Markdown supported. Saluttin spots themes (anxiety, grief, sleep, panic, couple relationship) and suggests points for your review.",
     "sign": "Sign digitally (ICP-Brasil simulation)",
     "submit": "Save progress note",
     "errors": {
