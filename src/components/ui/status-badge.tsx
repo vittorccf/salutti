@@ -22,7 +22,7 @@ const statusMap = {
   },
   receitaSaude: {
     queued: { label: "Na fila", variant: "muted" },
-    sent: { label: "Enviado", variant: "warning" },
+    sent: { label: "Aguardando confirmação", variant: "warning" },
     confirmed: { label: "Confirmado", variant: "success" },
     error: { label: "Falhou", variant: "destructive" },
   },
@@ -39,7 +39,6 @@ const statusMap = {
   integration: {
     real: { label: "Ativa", variant: "success" },
     sandbox: { label: "Sandbox", variant: "warning" },
-    mock: { label: "Simulada", variant: "muted" },
     heurístico: { label: "Heurístico", variant: "muted" },
   },
 } satisfies Record<string, Record<string, Entry>>;
@@ -50,7 +49,8 @@ type Props = Omit<BadgeProps, "variant" | "children"> & { kind: StatusKind; stat
 
 export const StatusBadge = ({ kind, status, ...props }: Props) => {
   if (!status) return <Badge variant="muted" {...props}>-</Badge>;
-  const entry: Entry | undefined = (statusMap[kind] as Record<string, Entry>)[status];
+  const map = statusMap[kind] as Record<string, Entry>;
+  const entry = Object.hasOwn(map, status) ? map[status] : undefined;
   return (
     <Badge variant={entry?.variant ?? "muted"} {...props}>
       {entry?.label ?? status}
