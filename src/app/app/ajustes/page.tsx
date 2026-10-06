@@ -35,7 +35,7 @@ const AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
 };
 
 const GOOGLE_AVISOS: Record<string, { tone: "ok" | "erro"; text: string }> = {
-  ok: { tone: "ok", text: "Google conectado. As próximas sessões online com Meet nascem na sua agenda." },
+  ok: { tone: "ok", text: "Google conectado. As próximas sessões online com Meet são criadas na sua agenda." },
   desconectado: { tone: "ok", text: "Google desconectado. O acesso da Salutti à sua agenda foi revogado." },
   escopo: {
     tone: "erro",
@@ -264,8 +264,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> Google Meet
             </CardTitle>
             <CardDescription>
-              Conecte a sua conta Google para que o link do Meet das suas sessões seja criado na sua própria agenda.
-              Cada pessoa da equipe conecta a própria conta.
+              O link do Meet de cada sessão é criado na conta Google de quem atende: só essa pessoa controla quem entra
+              na sala. Cada profissional conecta a própria conta; sem conexão, a sessão fica sem link.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -287,15 +287,29 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   <StatusBadge kind="integration" status="real" /> Conectado como{" "}
                   <strong>{googleConn.accountEmail ?? "conta Google"}</strong>
                 </p>
+                {googleConn.accountEmail && googleConn.accountEmail.toLowerCase() !== ctx.user.email.toLowerCase() ? (
+                  <p className="rounded-md bg-warning/10 p-3 text-warning-strong">
+                    A conta Google conectada ({googleConn.accountEmail}) é diferente do seu e-mail na Salutti. Confira se é
+                    mesmo a sua: as reuniões das suas sessões ficam nela.
+                  </p>
+                ) : null}
                 <p className="text-muted-foreground">
-                  O evento é criado sem convidados e com o título genérico “Sessão · Salutti”: o nome do paciente não vai
+                  O evento é privado, sem convidados e com o título genérico “Sessão · Salutti”: o nome do paciente não vai
                   para o Google.
                 </p>
                 <form action={disconnectGoogleAction}>
                   <Button type="submit" variant="outline" size="sm">Desconectar Google</Button>
                 </form>
               </>
-            ) : googleOAuthConfigured() ? (
+            ) : null}
+            {googleOAuthConfigured() ? (
+              <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                <li>Mantenha desligadas a gravação, a transcrição e as anotações automáticas do Meet nas sessões.</li>
+                <li>Informe o Google Meet como plataforma no seu cadastro e-Psi (Res. CFP 11/2018) e ao paciente.</li>
+                <li>Prefira uma conta Google Workspace com contrato de tratamento de dados a um Gmail pessoal.</li>
+              </ul>
+            ) : null}
+            {googleConn ? null : googleOAuthConfigured() ? (
               <>
                 <p className="text-muted-foreground">
                   Na tela do Google, deixe marcada a permissão de ver e editar eventos da agenda. A Salutti só cria o

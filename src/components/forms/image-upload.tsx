@@ -60,11 +60,11 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
   }, [preview]);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const picked = e.target.files?.[0];
-    if (!picked) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
     setStatus({ text: "Preparando a imagem…" });
     try {
-      const small = await shrink(picked, shape);
+      const small = await shrink(file, shape);
       const dt = new DataTransfer();
       dt.items.add(small);
       e.target.files = dt.files;
@@ -116,10 +116,10 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
               variant="outline"
               size="sm"
               onClick={() => fileRef.current?.click()}
-              aria-label={`${preview ? "Trocar" : "Enviar"} ${label.replace(/ \(opcional\)$/, "").toLowerCase()}`}
               aria-describedby={`${id}-dica`}
             >
-              <ImagePlus className="h-4 w-4" /> {preview ? "Trocar imagem" : "Enviar imagem"}
+              <ImagePlus className="h-4 w-4" aria-hidden /> {preview ? "Trocar imagem" : "Enviar imagem"}
+              <span className="sr-only"> ({label.replace(/ \(opcional\)$/, "").toLowerCase()})</span>
             </Button>
             {currentUrl ? (
               <label className="flex items-center gap-2 text-sm">

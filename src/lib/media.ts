@@ -25,7 +25,8 @@ export function imageSize(b: Uint8Array): { w: number; h: number } | null {
   const le16 = (i: number) => b[i] | (b[i + 1] << 8);
   const le24 = (i: number) => b[i] | (b[i + 1] << 8) | (b[i + 2] << 16);
   const type = sniffImage(b);
-  if (type === "image/png" && b.length >= 24) return { w: (b[16] << 24) | (b[17] << 16) | be16(18), h: (b[20] << 24) | (b[21] << 16) | be16(22) };
+  const be32 = (i: number) => ((b[i] << 24) | (b[i + 1] << 16) | be16(i + 2)) >>> 0;
+  if (type === "image/png" && b.length >= 24) return { w: be32(16), h: be32(20) };
   if (type === "image/jpeg") {
     let i = 2;
     while (i + 9 < b.length) {
@@ -55,7 +56,7 @@ export async function readImageUpload(formData: FormData, name: string): Promise
   const mime = sniffImage(bytes);
   if (!mime) throw new UploadError("Formato não aceito. Envie JPG, PNG ou WebP.");
   const size = imageSize(bytes);
-  if (!size || size.w > MAX_IMAGE_SIDE || size.h > MAX_IMAGE_SIDE) throw new UploadError("Imagem com dimensões inválidas ou grandes demais.");
+  if (!size || size.w < 1 || size.h < 1 || size.w > MAX_IMAGE_SIDE || size.h > MAX_IMAGE_SIDE) throw new UploadError("Imagem com dimensões inválidas ou grandes demais.");
   return { mime, bytes };
 }
 

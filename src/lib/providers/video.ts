@@ -3,7 +3,7 @@
 //
 // Google Meet: app OAuth da plataforma (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) e a conta Google que cada
 //   usuário conecta em Ajustes (src/lib/providers/google-oauth.ts). O Meet nasce na agenda principal de quem
-//   atende. Reserva opcional: GOOGLE_REFRESH_TOKEN, uma conta única da plataforma/consultório.
+//   atende (a escolha da conta fica em src/lib/video-connections.ts).
 // Zoom: app "Server-to-Server OAuth" com escopo meeting:write.
 //   ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET
 import { TZ } from "../dates";
@@ -22,8 +22,6 @@ export type MeetingInput = {
 
 export type Meeting = { url: string; externalId: string; simulated: boolean };
 
-const googleToken = (input: { googleRefreshToken?: string | null }) =>
-  googleOAuthConfigured() ? input.googleRefreshToken || process.env.GOOGLE_REFRESH_TOKEN || null : null;
 const zoomConfigured = () =>
   Boolean(process.env.ZOOM_ACCOUNT_ID && process.env.ZOOM_CLIENT_ID && process.env.ZOOM_CLIENT_SECRET);
 
@@ -48,6 +46,9 @@ async function createGoogleMeet({ topic, startsAt, durationMinutes }: MeetingInp
       headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
       body: JSON.stringify({
         summary: topic,
+        // Agenda compartilhada com família ou equipe não mostra o compromisso; o horário fica ocupado.
+        visibility: "private",
+        transparency: "opaque",
         start: { dateTime: startsAt.toISOString(), timeZone: TZ },
         end: { dateTime: endsAt.toISOString(), timeZone: TZ },
         conferenceData: {
@@ -94,14 +95,27 @@ async function createZoom({ topic, startsAt, durationMinutes }: MeetingInput): P
 }
 
 export const video = {
+  deleteGoogleEvent,
   async createMeeting(input: MeetingInput): Promise<Meeting> {
     if (input.provider === "google_meet") {
-      const token = googleToken(input);
-      return token ? createGoogleMeet(input, token) : simulated("google_meet");
+      return googleOAuthConfigured() && input.googleRefreshToken
+        ? createGoogleMeet(input, input.googleRefreshToken)
+        : simulated("google_meet");
     }
     return zoomConfigured() ? createZoom(input) : simulated("zoom");
   },
 };
+
+// Apaga o evento (e com ele o Meet) da agenda de quem atende.
+export async function deleteGoogleEvent(refreshToken: string, eventId: string) {
+  const access_token = await accessTokenFrom(refreshToken);
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(eventId)}?sendUpdates=none`,
+    { method: "DELETE", headers: { authorization: `Bearer ${access_token}` } },
+  );
+  // 404/410: o evento já não existe (apagado na agenda); tudo certo.
+  if (!res.ok && res.status !== 404 && res.status !== 410) throw new Error(`Google Agenda: ${res.status}`);
+}
 
 // Nome da plataforma a partir do link salvo na sessão (não há coluna própria no banco).
 export const meetingPlatform = (url: string | null | undefined) => {

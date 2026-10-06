@@ -8,7 +8,6 @@ const idToken = (email: string) => `x.${Buffer.from(JSON.stringify({ email })).t
 beforeEach(() => {
   vi.stubEnv("GOOGLE_CLIENT_ID", "cliente");
   vi.stubEnv("GOOGLE_CLIENT_SECRET", "segredo");
-  vi.stubEnv("GOOGLE_REFRESH_TOKEN", "");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -60,6 +59,8 @@ describe("conexão do Google por usuário", () => {
     const event = JSON.parse(f.mock.calls[1][1].body);
     expect(event.summary).toBe("Sessão · Salutti");
     expect(event.attendees).toBeUndefined();
+    // Agenda compartilhada não mostra o compromisso.
+    expect(event.visibility).toBe("private");
 
     expect((await video.createMeeting(input)).simulated).toBe(true);
   });

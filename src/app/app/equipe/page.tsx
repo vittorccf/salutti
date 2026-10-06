@@ -35,6 +35,7 @@ const schema = z.object({
   specialty: z.string().optional(),
   hourlyRate: z.coerce.number().optional(),
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  userId: z.string().optional(),
 });
 
 const AUTONOMO_LIMIT =
@@ -53,6 +54,14 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
   if (!parsed.success) return { erro: "Confira o nome, o tipo de profissional e o valor da hora." };
   const data = parsed.data;
   if (ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) return { erro: AUTONOMO_LIMIT };
+  // Vínculo com um usuário da Salutti (o Meet nasce na conta Google dele): precisa ser membro e não ter outro cadastro ativo.
+  let userId: string | null = null;
+  if (data.userId) {
+    const member = await db.membership.findFirst({ where: { workspaceId: ctx.workspace.id, userId: data.userId } });
+    const taken = await db.professional.count({ where: { workspaceId: ctx.workspace.id, userId: data.userId, active: true } });
+    if (!member || taken) return { erro: "Esse usuário não pode ser vinculado (não é da equipe ou já tem cadastro ativo)." };
+    userId = data.userId;
+  }
   let email: string | null, phone: string | null;
   try {
     email = await validEmail(formData.get("email"));
@@ -76,6 +85,7 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
       specialty: data.specialty || null,
       hourlyRate: data.hourlyRate || null,
       birthDate: data.birthDate ? parseDateOnly(data.birthDate) : null,
+      userId,
     },
   });
   await recordAudit({
@@ -122,6 +132,10 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
     orderBy: { createdAt: "desc" },
   });
   const autonomo = ctx.workspace.accountType === "autonomo";
+  const linked = new Set(professionals.filter((p) => p.active && p.userId).map((p) => p.userId));
+  const members = (
+    await db.membership.findMany({ where: { workspaceId: ctx.workspace.id }, include: { user: { select: { id: true, name: true, email: true } } } })
+  ).filter((m) => !linked.has(m.user.id));
   const active = professionals.filter((p) => p.active).length;
   const manage = canManage(ctx.role);
   const canAdd = manage && (!autonomo || active === 0);
@@ -249,6 +263,18 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                   <Label htmlFor="specialty">Especialidade</Label>
                   <Input name="specialty" id="specialty" placeholder="TCC, psicanálise, …" />
                 </div>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="userId">Acessa a Salutti como</Label>
+                <Select name="userId" id="userId" defaultValue={autonomo ? ctx.user.id : ""}>
+                  <option value="">Não acessa o sistema</option>
+                  {members.map((m) => (
+                    <option key={m.user.id} value={m.user.id}>
+                      {m.user.name} · {m.user.email}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-xs text-muted-foreground">O link do Google Meet das sessões é criado na conta Google dessa pessoa.</p>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="email">E-mail</Label>

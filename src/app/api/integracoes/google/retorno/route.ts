@@ -4,10 +4,13 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { encryptSecret } from "@/lib/totp";
-import { exchangeCode, GoogleScopeError, OAUTH_COOKIE } from "@/lib/providers/google-oauth";
+import { exchangeCode, GoogleScopeError, OAUTH_COOKIE, googleRedirectUri } from "@/lib/providers/google-oauth";
 
-const same = (a: string, b: string) =>
-  a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+const same = (a: string, b: string) => {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+};
 
 // Retorno do Google: confere state (CSRF) e se é o mesmo usuário que começou; troca o código e guarda o
 // refresh token cifrado. Resultado volta para Ajustes como ?google=ok|negado|escopo|erro.
@@ -34,7 +37,7 @@ export const GET = async (req: NextRequest) => {
   if (!code) return back("erro");
 
   try {
-    const redirectUri = new URL("/api/integracoes/google/retorno", req.url).toString();
+    const redirectUri = googleRedirectUri(req.url);
     const result = await exchangeCode({ code, redirectUri, verifier: saved.verifier });
     await db.integrationConnection.upsert({
       where: { userId_provider: { userId: session.userId, provider: "google" } },

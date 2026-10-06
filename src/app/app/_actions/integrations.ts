@@ -13,7 +13,11 @@ export async function disconnectGoogleAction() {
     where: { userId_provider: { userId: ctx.user.id, provider: "google" } },
   });
   if (conn) {
-    await revoke(decryptSecret(conn.refreshToken));
+    try {
+      await revoke(decryptSecret(conn.refreshToken));
+    } catch {
+      // Segredo ilegível (chave trocada): apaga mesmo assim; a pessoa pode revogar em myaccount.google.com.
+    }
     await db.integrationConnection.delete({ where: { id: conn.id } });
     await recordAudit({
       workspaceId: ctx.workspace.id,

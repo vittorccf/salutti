@@ -26,6 +26,8 @@ model User {
   birthDate     DateTime?
   // Lembrete de aniversário de pacientes no painel (cada profissional decide; equipe e o próprio sempre aparecem).
   showPatientBirthdays Boolean @default(true)
+  // Idioma da interface: pt-BR | pt-PT | es | en. Nulo = automático (cookie ou idioma do navegador).
+  locale        String?
   createdAt     DateTime      @default(now())
   // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
   // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.
@@ -114,6 +116,8 @@ model Professional {
   // CRP, CRM, CRO, "sem_registro" (psicanalistas/terapeutas)
   councilType   String        @default("CRP")
   councilNumber String?       // pode ser nulo p/ "sem_registro"
+  // Usuário da Salutti que é este profissional (o Meet nasce na conta Google dele). Nulo para quem não acessa o sistema.
+  userId        String?
   councilUF     String?       // UF do conselho, código IBGE (TISS Tabela 59), ex.: "52" = GO
   noCouncil     Boolean       @default(false) // flag explícita - oceano azul "Sem CRP"
   specialty     String?
@@ -200,6 +204,9 @@ model Appointment {
   endsAt          DateTime
   modality        String        @default("presencial") // presencial | online
   meetingUrl      String?
+  // Evento do Google Agenda que contém o Meet, e de quem é a agenda (para apagar ao cancelar a sessão).
+  meetingEventId String?
+  meetingOwnerId String?
   status          String        @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
   price           Float
   notes           String?
