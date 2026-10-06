@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+// DNS simulado: o teste não depende de rede.
+const dnsMock = vi.hoisted(() => ({ resolveMx: vi.fn(), resolve4: vi.fn() }));
+vi.mock("node:dns", () => ({ promises: dnsMock }));
 import { countryOptions, describePhone, toE164, whatsappLink } from "@/lib/phone";
 import { suggestEmail } from "@/lib/email";
-import { formatAddress, readAddress, validPhone, ContactError } from "@/lib/contact-validation";
+import { readAddress, validEmail, validPhone, ContactError } from "@/lib/contact-validation";
+import { formatAddress } from "@/lib/address";
 import { lookupCep } from "@/lib/cep";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -37,6 +42,20 @@ describe("telefone internacional", () => {
     expect(() => validPhone("999")).toThrow(ContactError);
     expect(whatsappLink("+5562999990000", "Oi")).toBe("https://wa.me/5562999990000?text=Oi");
   });
+
+  it("recusa celular sem o 9º dígito, 0800 e interpreta pelo país escolhido", () => {
+    expect(toE164("(62) 9999-0000", "BR")).toBeNull();
+    expect(toE164("0800 123 4567", "BR")).toBeNull();
+    expect(toE164("(62) 3221-0000", "BR")).toBe("+556232210000");
+    // Número digitado sem DDI com Portugal escolhido não vira brasileiro.
+    expect(validPhone("912345678", { country: "PT" })).toBe("+351912345678");
+    expect(() => validPhone("912345678", { country: "BR" })).toThrow(ContactError);
+  });
+
+  it("telefone antigo fora do padrão, não alterado, continua como está", () => {
+    expect(validPhone("ligar p/ mãe", { previous: "ligar p/ mãe" })).toBe("ligar p/ mãe");
+    expect(() => validPhone("ligar p/ mãe")).toThrow(ContactError);
+  });
 });
 
 describe("e-mail", () => {
@@ -46,6 +65,26 @@ describe("e-mail", () => {
     expect(suggestEmail("ana@gmail.con")).toBe("ana@gmail.com");
     expect(suggestEmail("ana@gmail.com")).toBeNull();
     expect(suggestEmail("ana@clinicaacolher.com.br")).toBeNull();
+    // Domínios reais parecidos com os comuns não são "corrigidos".
+    expect(suggestEmail("ana@ymail.com")).toBeNull();
+    expect(suggestEmail("ana@msn.com")).toBeNull();
+  });
+
+  it("domínio sem MX nem A é recusado, sem citar o e-mail na mensagem; falha de rede não bloqueia", async () => {
+    const nx = Object.assign(new Error("x"), { code: "ENOTFOUND" });
+    dnsMock.resolveMx.mockRejectedValue(nx);
+    dnsMock.resolve4.mockRejectedValue(nx);
+    const err = await validEmail("ana@dominio-que-nao-existe.com").catch((e) => e);
+    expect(err).toBeInstanceOf(ContactError);
+    expect(err.message).not.toContain("ana@");
+    // E-mail que não mudou na edição não passa pelo DNS.
+    expect(await validEmail("ana@dominio-que-nao-existe.com", { previous: "ana@dominio-que-nao-existe.com" })).toBe(
+      "ana@dominio-que-nao-existe.com",
+    );
+    dnsMock.resolveMx.mockRejectedValue(Object.assign(new Error("x"), { code: "ECONNREFUSED" }));
+    expect(await validEmail("Ana@Exemplo.com")).toBe("ana@exemplo.com");
+    dnsMock.resolveMx.mockResolvedValue([{ exchange: "mx.exemplo.com", priority: 10 }]);
+    expect(await validEmail("ana@exemplo.com")).toBe("ana@exemplo.com");
   });
 });
 
@@ -62,7 +101,7 @@ describe("endereço e CEP", () => {
     expect(formatAddress(a)).toBe("Rua 1, 10 · Goiânia/GO · 74000-000");
     fd.set("cep", "123");
     expect(() => readAddress(fd)).toThrow(ContactError);
-    expect(formatAddress({ address: "Endereço antigo" })).toBe("Endereço antigo");
+    expect(formatAddress({})).toBeNull();
   });
 
   it("ViaCEP responde: usa o endereço dele", async () => {

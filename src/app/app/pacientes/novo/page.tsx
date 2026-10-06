@@ -2,13 +2,12 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormError } from "@/components/forms/form-error";
+import { ActionForm } from "@/components/forms/action-form";
 import { PatientFields } from "../_components/patient-form";
 import { createPatientAction } from "../_actions";
 
-export default async function NewPatientPage({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
+export default async function NewPatientPage() {
   const ctx = await requireContext();
-  const { erro } = await searchParams;
   const plans = await db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } });
   return (
     <div className="max-w-3xl space-y-6">
@@ -18,8 +17,7 @@ export default async function NewPatientPage({ searchParams }: { searchParams: P
           <CardDescription>Só o nome é obrigatório. CPF e os demais dados podem ser preenchidos depois.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={createPatientAction} className="space-y-6">
-            <FormError message={erro} />
+          <ActionForm action={createPatientAction} className="space-y-6">
             <PatientFields plans={plans} />
             <div className="rounded-md border p-3 bg-accent/30 text-sm flex gap-3 items-start">
               <input id="consent" name="consent" type="checkbox" defaultChecked className="mt-1 h-4 w-4 accent-primary" />
@@ -31,7 +29,7 @@ export default async function NewPatientPage({ searchParams }: { searchParams: P
               </label>
             </div>
             <Button type="submit">Cadastrar paciente</Button>
-          </form>
+          </ActionForm>
         </CardContent>
       </Card>
     </div>

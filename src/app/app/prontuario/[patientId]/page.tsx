@@ -87,7 +87,7 @@ export default async function ProntuarioPatientPage({
                 {n.aiSummary ? (
                   <div className="rounded-md border bg-accent/20 p-3 text-sm">
                     <p className="font-semibold flex items-center gap-2 text-primary-strong">
-                      <Sparkles className="h-4 w-4" aria-hidden /> Resumo do TOBI
+                      <Sparkles className="h-4 w-4" aria-hidden /> Resumo gerado por IA (TOBI) · revise antes de usar
                     </p>
                     <pre className="mt-2 whitespace-pre-wrap font-sans text-sm">{n.aiSummary}</pre>
                     {n.aiTopics ? (

@@ -4,27 +4,25 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormError } from "@/components/forms/form-error";
+import { ActionForm } from "@/components/forms/action-form";
 import { PatientFields } from "../../_components/patient-form";
 import { updatePatientAction } from "../../_actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditPatientPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ erro?: string }>;
-}) {
+export default async function EditPatientPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireContext();
   const { id } = await params;
-  const { erro } = await searchParams;
-  const [patient, plans] = await Promise.all([
-    db.patient.findFirst({ where: { id, workspaceId: ctx.workspace.id, deletedAt: null } }),
-    db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } }),
-  ]);
+  const patient = await db.patient.findFirst({ where: { id, workspaceId: ctx.workspace.id, deletedAt: null } });
   if (!patient) notFound();
+  // O plano atual entra na lista mesmo se foi desativado, para a edição não trocá-lo por "Particular".
+  const plans = await db.insurancePlan.findMany({
+    where: {
+      workspaceId: ctx.workspace.id,
+      OR: [{ active: true }, ...(patient.insurancePlanId ? [{ id: patient.insurancePlanId }] : [])],
+    },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -33,9 +31,8 @@ export default async function EditPatientPage({
           <CardTitle>Editar · {patient.fullName}</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={updatePatientAction} className="space-y-6">
+          <ActionForm action={updatePatientAction} className="space-y-6">
             <input type="hidden" name="patientId" value={patient.id} />
-            <FormError message={erro} />
             <PatientFields patient={patient} plans={plans} />
             <div className="flex flex-wrap gap-2">
               <Button type="submit">Salvar alterações</Button>
@@ -43,7 +40,7 @@ export default async function EditPatientPage({
                 <Link href={`/app/pacientes/${patient.id}`}>Cancelar</Link>
               </Button>
             </div>
-          </form>
+          </ActionForm>
         </CardContent>
       </Card>
     </div>

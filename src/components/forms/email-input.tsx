@@ -28,8 +28,9 @@ export function EmailInput({ id, name, defaultValue, required, placeholder = "no
         onBlur={() => setSuggestion(suggestEmail(value))}
         aria-describedby={suggestion ? `${id}-sugestao` : undefined}
       />
-      {suggestion ? (
-        <p id={`${id}-sugestao`} className="mt-1 text-xs text-muted-foreground" role="status">
+      <p id={`${id}-sugestao`} className="mt-1 text-xs text-muted-foreground empty:hidden" role="status">
+        {suggestion ? (
+          <>
           Você quis dizer{" "}
           <button
             type="button"
@@ -42,8 +43,9 @@ export function EmailInput({ id, name, defaultValue, required, placeholder = "no
             {suggestion}
           </button>
           ?
-        </p>
-      ) : null}
+          </>
+        ) : null}
+      </p>
     </div>
   );
 }

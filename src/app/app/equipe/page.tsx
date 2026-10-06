@@ -18,7 +18,7 @@ import { UFS } from "@/lib/labels";
 import { ContactError, validEmail, validPhone } from "@/lib/contact-validation";
 import { EmailInput } from "@/components/forms/email-input";
 import { PhoneInput } from "@/components/forms/phone-input";
-import { FormError } from "@/components/forms/form-error";
+import { ActionForm, type FormResult } from "@/components/forms/action-form";
 
 export const dynamic = "force-dynamic";
 
@@ -33,16 +33,18 @@ const schema = z.object({
   hourlyRate: z.coerce.number().optional(),
 });
 
-async function createProfessionalAction(formData: FormData) {
+async function createProfessionalAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
   const ctx = await requireContext();
-  const data = schema.parse(Object.fromEntries(formData.entries()));
+  const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) return { erro: "Confira o nome, o tipo de profissional e o valor da hora." };
+  const data = parsed.data;
   let email: string | null, phone: string | null;
   try {
     email = await validEmail(formData.get("email"));
-    phone = validPhone(formData.get("phone"));
+    phone = validPhone(formData.get("phone"), { country: formData.get("phoneCountry") });
   } catch (e) {
-    if (e instanceof ContactError) redirect(`/app/equipe?erro=${encodeURIComponent(e.message)}`);
+    if (e instanceof ContactError) return { erro: e.message };
     throw e;
   }
   const noCouncil = data.noCouncil === "on";
@@ -71,8 +73,7 @@ async function createProfessionalAction(formData: FormData) {
   redirect("/app/equipe");
 }
 
-export default async function TeamPage({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
-  const { erro } = await searchParams;
+export default async function TeamPage() {
   const ctx = await requireContext();
   const professionals = await db.professional.findMany({
     where: { workspaceId: ctx.workspace.id },
@@ -146,8 +147,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
             <CardDescription>Para psicanalistas e terapeutas, marque “sem registro de conselho”.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={createProfessionalAction} className="space-y-3">
-              <FormError message={erro} />
+            <ActionForm action={createProfessionalAction} className="space-y-3">
               <div className="space-y-1">
                 <Label htmlFor="fullName">Nome completo</Label>
                 <Input name="fullName" id="fullName" required />
@@ -212,7 +212,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                 <Input name="hourlyRate" id="hourlyRate" type="number" step="0.01" />
               </div>
               <Button type="submit" className="w-full">Cadastrar profissional</Button>
-            </form>
+            </ActionForm>
           </CardContent>
         </Card>
       </div>

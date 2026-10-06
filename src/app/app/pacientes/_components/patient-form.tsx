@@ -28,7 +28,7 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
           <EmailInput id="email" name="email" defaultValue={p?.email} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="phone">Telefone (WhatsApp)</Label>
+          <Label htmlFor="phone">Telefone</Label>
           <PhoneInput id="phone" name="phone" defaultValue={p?.phone} />
         </div>
         <div className="space-y-1">
@@ -70,8 +70,14 @@ export function PatientFields({ patient, plans }: { patient?: Patient | null; pl
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Endereço</legend>
-        {p?.address && !p.street ? (
-          <p className="text-xs text-muted-foreground">Endereço anterior: {p.address}</p>
+        {p?.address ? (
+          <div className="rounded-md border p-3 text-xs text-muted-foreground space-y-1">
+            <p>Endereço anterior (texto livre): {p.address}</p>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" name="clearLegacyAddress" className="h-4 w-4 accent-primary" />
+              Apagar o endereço anterior ao salvar
+            </label>
+          </div>
         ) : null}
         <AddressFields defaultValue={p ?? {}} />
       </fieldset>
