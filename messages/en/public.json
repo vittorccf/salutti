@@ -48,7 +48,8 @@
         "desc": "For UBS (public health units) and clinics with unstable infrastructure (Kris Fellipe / Turvânia case)."
       }
     },
-    "footer": "Salutti · ERP for mental health professionals ·"
+    "footer": "Salutti · ERP for mental health professionals ·",
+    "contact": "Get in touch:"
   },
   "pay": {
     "title": "Payment · {workspace}",

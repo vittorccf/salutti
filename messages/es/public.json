@@ -48,7 +48,8 @@
         "desc": "Para UBS y clínicas con infraestructura inestable (caso Kris Fellipe / Turvânia)."
       }
     },
-    "footer": "Salutti · ERP para quienes cuidan la salud mental ·"
+    "footer": "Salutti · ERP para quienes cuidan la salud mental ·",
+    "contact": "Escríbenos:"
   },
   "pay": {
     "title": "Pago · {workspace}",

@@ -31,7 +31,8 @@
     "lightTheme": "Ativar tema claro",
     "darkTheme": "Ativar tema escuro",
     "security": "Segurança da conta",
-    "logout": "Terminar sessão"
+    "logout": "Terminar sessão",
+    "support": "Ajuda e suporte"
   },
   "actions": {
     "save": "Guardar",

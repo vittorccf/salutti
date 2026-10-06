@@ -1,3 +1,4 @@
+import { supportMailto } from "@/lib/contact";
 import { autonomoBlockers } from "@/lib/account";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -470,7 +471,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <p className="font-semibold">{t("plan.clinicTitle")}</p>
                 <p className="text-muted-foreground">{t("plan.clinicDescription")}</p>
                 <Button size="sm" variant="outline" className="mt-3" asChild>
-                  <a href="mailto:contato@salutti.app?subject=Plano%20Cl%C3%ADnica">{t("plan.contact")}</a>
+                  <a href={supportMailto("Plano Clínica")}>{t("plan.contact")}</a>
                 </Button>
               </div>
             </div>

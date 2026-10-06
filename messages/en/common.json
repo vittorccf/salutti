@@ -31,7 +31,8 @@
     "lightTheme": "Switch to light theme",
     "darkTheme": "Switch to dark theme",
     "security": "Account security",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "support": "Help and support"
   },
   "actions": {
     "save": "Save",
