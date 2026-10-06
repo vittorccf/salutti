@@ -74,36 +74,35 @@ export default function NewPatientPage() {
         <CardHeader>
           <CardTitle>Novo paciente</CardTitle>
           <CardDescription>
-            CPF/CRP/registro não são obrigatórios - Salutti cobre psicanalistas e terapeutas que outros sistemas
-            rejeitam.
+            Só o nome é obrigatório. CPF e os demais dados podem ser preenchidos depois.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createPatientAction} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Nome completo" name="fullName" required />
               <Field label="Pronomes" name="pronouns" placeholder="ele/dele, ela/dela, elu/delu…" />
-              <Field label="Email" name="email" type="email" />
+              <Field label="E-mail" name="email" type="email" placeholder="nome@email.com" />
               <Field label="Telefone (WhatsApp)" name="phone" placeholder="(62) 9 9999-0000" />
-              <Field label="CPF" name="cpf" placeholder="opcional" />
+              <Field label="CPF (opcional)" name="cpf" placeholder="000.000.000-00" />
               <Field label="Data de nascimento" name="birthDate" type="date" />
               <Field label="Responsável (se menor)" name="responsibleName" />
               <Field label="Contato de emergência" name="emergencyContact" />
-              <div className="col-span-2">
+              <div className="space-y-1 sm:col-span-2">
                 <Label htmlFor="address">Endereço</Label>
                 <Input id="address" name="address" />
               </div>
-              <div className="col-span-2">
+              <div className="space-y-1 sm:col-span-2">
                 <Label htmlFor="notes">Observações administrativas</Label>
-                <Textarea id="notes" name="notes" placeholder="Não usar para conteúdo clínico - registre evolução no Prontuário." />
+                <Textarea id="notes" name="notes" placeholder="Só dados administrativos. A evolução clínica vai no prontuário." />
               </div>
             </div>
             <div className="rounded-md border p-3 bg-accent/30 text-sm flex gap-3 items-start">
-              <input id="consent" name="consent" type="checkbox" defaultChecked className="mt-1" />
+              <input id="consent" name="consent" type="checkbox" defaultChecked className="mt-1 h-4 w-4 accent-primary" />
               <label htmlFor="consent" className="space-y-1">
-                <span className="font-medium">Confirmo coleta sob base legal LGPD “Tutela da Saúde”.</span>
+                <span className="font-medium">Confirmo a coleta com base na tutela da saúde (LGPD).</span>
                 <p className="text-xs text-muted-foreground">
-                  Art. 11, II, “f” da LGPD. Registro será armazenado no audit log com data, IP e usuário.
+                  Art. 11, II, “f” da LGPD. O registro fica na trilha de auditoria com data, IP e quem cadastrou.
                 </p>
               </label>
             </div>
