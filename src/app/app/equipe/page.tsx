@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/select";
 import { formatBRL, plural } from "@/lib/utils";
 import { Stethoscope } from "lucide-react";
 import { professionalTypeLabel } from "@/lib/labels";
+import { UFS } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ const schema = z.object({
   noCouncil: z.string().optional(),
   councilType: z.string().optional(),
   councilNumber: z.string().optional(),
+  councilUF: z.string().regex(/^\d{2}$/).optional().or(z.literal("")),
   specialty: z.string().optional(),
   hourlyRate: z.coerce.number().optional(),
 });
@@ -44,6 +46,7 @@ async function createProfessionalAction(formData: FormData) {
       noCouncil,
       councilType: noCouncil ? "sem_registro" : data.councilType || "CRP",
       councilNumber: noCouncil ? null : data.councilNumber || null,
+      councilUF: noCouncil ? null : data.councilUF || null,
       specialty: data.specialty || null,
       hourlyRate: data.hourlyRate || null,
     },
@@ -182,6 +185,17 @@ export default async function TeamPage() {
                   <Label htmlFor="councilNumber">Número do registro</Label>
                   <Input name="councilNumber" id="councilNumber" placeholder="06/12345" />
                 </div>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="councilUF">UF do conselho</Label>
+                <Select name="councilUF" id="councilUF" defaultValue="">
+                  <option value="">Selecione…</option>
+                  {UFS.map((u) => (
+                    <option key={u.code} value={u.code}>
+                      {u.sigla}
+                    </option>
+                  ))}
+                </Select>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="hourlyRate">Valor da hora (R$)</Label>

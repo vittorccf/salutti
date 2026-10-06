@@ -31,3 +31,8 @@ export async function assertInWorkspace(workspaceId: string, refs: Refs) {
 export const ensureAffected = (result: { count: number }) => {
   if (result.count === 0) notFound();
 };
+
+export async function assertInsurancePlan(workspaceId: string, insurancePlanId: string) {
+  const n = await db.insurancePlan.count({ where: { id: insurancePlanId, workspaceId } });
+  if (n === 0) notFound();
+}

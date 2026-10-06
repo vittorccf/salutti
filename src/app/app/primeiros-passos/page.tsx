@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { onboardingProgress } from "@/lib/onboarding";
 import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
-import { segmentLabel } from "@/lib/labels";
+import { segmentLabel, UFS } from "@/lib/labels";
 import { addLibraryTemplatesAction } from "../_actions/anamnesis";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ const professionalSchema = z.object({
   professionalType: z.enum(["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"]),
   councilType: z.enum(["CRP", "CRM", "CRO", "sem_registro"]),
   councilNumber: z.string().trim().optional(),
+  councilUF: z.string().regex(/^\d{2}$/).optional().or(z.literal("")),
 });
 
 async function createFirstProfessionalAction(formData: FormData) {
@@ -47,6 +48,7 @@ async function createFirstProfessionalAction(formData: FormData) {
       noCouncil,
       councilType: data.councilType,
       councilNumber: noCouncil ? null : data.councilNumber || null,
+      councilUF: noCouncil ? null : data.councilUF || null,
     },
   });
   await recordAudit({
@@ -153,9 +155,20 @@ export default async function OnboardingPage() {
                 <option value="sem_registro">Sem registro de conselho</option>
               </Select>
             </div>
-            <div className="space-y-1 sm:col-span-2">
+            <div className="space-y-1">
               <Label htmlFor="councilNumber">Número do registro (opcional)</Label>
               <Input id="councilNumber" name="councilNumber" placeholder="06/12345" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="councilUF">UF do conselho (opcional)</Label>
+              <Select id="councilUF" name="councilUF" defaultValue="">
+                <option value="">Selecione…</option>
+                {UFS.map((u) => (
+                  <option key={u.code} value={u.code}>
+                    {u.sigla}
+                  </option>
+                ))}
+              </Select>
             </div>
             <Button type="submit" className="sm:col-span-2 sm:justify-self-start">
               Cadastrar profissional

@@ -7,8 +7,6 @@ node_modules
 *.db-journal
 *.db-wal
 *.db-shm
-# Exceção: banco demo empacotado para o deploy (modo demo no Vercel)
-!prisma/seed.db
 *.log
 .DS_Store
 
@@ -17,3 +15,5 @@ node_modules
 # Playwright
 test-results
 playwright-report
+# Postgres local (npm run db:local)
+.pgdata
