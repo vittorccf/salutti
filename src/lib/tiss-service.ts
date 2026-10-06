@@ -22,12 +22,13 @@ export async function eligibleSessions(workspaceId: string, insurancePlanId: str
   });
   return appts.map((a) => {
     const profile = tissProfile(a.professional);
+    // Chaves de finance.tiss.*; o motivo vindo de lib/tiss.ts é texto e a tela o converte.
     const problems: string[] = [];
     if (!profile.ok) problems.push(profile.motivo);
-    if (!a.patient.insuranceCardNumber) problems.push("Paciente sem número da carteirinha.");
-    if (a.patient.insurancePlanId !== insurancePlanId) problems.push("Paciente não está vinculado a este convênio.");
-    if (profile.ok && !a.professional.councilNumber) problems.push("Profissional sem número do conselho.");
-    if (profile.ok && !a.professional.councilUF) problems.push("Profissional sem UF do conselho.");
+    if (!a.patient.insuranceCardNumber) problems.push("noCard");
+    if (a.patient.insurancePlanId !== insurancePlanId) problems.push("notLinked");
+    if (profile.ok && !a.professional.councilNumber) problems.push("noCouncilNumber");
+    if (profile.ok && !a.professional.councilUF) problems.push("noCouncilUF");
     return {
       id: a.id,
       startsAt: a.startsAt,
@@ -46,6 +47,7 @@ const prestadorOf = (plan: { providerCode: string | null }, workspace: { cnpj: s
   return cnpj && cnpj.length === 14 ? { kind: "cnpj", value: cnpj } : null;
 };
 
+// A mensagem é a chave de finance.tiss.* (a tela traduz no idioma da pessoa).
 export class TissError extends Error {}
 
 // Gera um lote por tipo de guia (máx. 100 guias cada) e grava lote e guias numa transação.
@@ -54,13 +56,13 @@ export async function generateBatches(workspaceId: string, insurancePlanId: stri
     db.insurancePlan.findFirst({ where: { id: insurancePlanId, workspaceId } }),
     db.workspace.findUniqueOrThrow({ where: { id: workspaceId } }),
   ]);
-  if (!plan) throw new TissError("Convênio não encontrado.");
+  if (!plan) throw new TissError("planNotFound");
   const prestador = prestadorOf(plan, workspace);
-  if (!prestador) throw new TissError("Informe o código do prestador na operadora ou o CNPJ do consultório.");
+  if (!prestador) throw new TissError("providerMissing");
 
   const eligible = (await eligibleSessions(workspaceId, insurancePlanId)).filter((s) => appointmentIds.includes(s.id));
   const ready = eligible.filter((s) => s.problems.length === 0);
-  if (ready.length === 0) throw new TissError("Nenhuma sessão selecionada está pronta para faturar.");
+  if (ready.length === 0) throw new TissError("noneReady");
 
   const appts = await db.appointment.findMany({
     where: { id: { in: ready.map((s) => s.id) }, workspaceId },

@@ -14,15 +14,15 @@
     "contact": "Contacto",
     "birthDate": "Nacimiento",
     "sessions": "Sesiones",
-    "consent": "Consentimiento",
-    "consented": "Otorgado",
+    "consent": "Base legal",
+    "consented": "Registrada",
     "pending": "Pendiente",
     "open": "Abrir"
   },
   "new": {
     "title": "Nuevo paciente",
     "description": "Solo el nombre es obligatorio. El CPF y los demás datos se pueden completar después.",
-    "consentTitle": "Confirmo la recolección con base en la tutela de la salud (LGPD).",
+    "consentTitle": "Confirmo la recogida de datos con base en la tutela de la salud (LGPD, ley brasileña de protección de datos).",
     "consentDetail": "Art. 11, II, “f” de la LGPD. El registro queda en la auditoría con fecha, IP y quién lo registró.",
     "submit": "Registrar paciente"
   },
@@ -62,7 +62,7 @@
     "legacyAddress": "Dirección anterior: {address}",
     "schedule": "Agendar sesión",
     "newCharge": "Nuevo cobro",
-    "newNote": "Nueva evolución",
+    "newNote": "Nueva nota de evolución",
     "totalPaid": "Total recibido",
     "totalOpen": "Por cobrar pendiente",
     "sessionsCount": "Sesiones registradas",
@@ -107,8 +107,8 @@
   },
   "records": {
     "title": "Historia clínica",
-    "description": "Evoluciones y anamnesis de tus pacientes. TOBI resume cada evolución al guardar.",
-    "emptyTitle": "No hay evoluciones registradas",
+    "description": "Notas de evolución y anamnesis de tus pacientes. TOBI resume cada nota al guardar; revísala antes de usarla.",
+    "emptyTitle": "No hay notas de evolución registradas",
     "emptyDescription": "Abre la ficha de un paciente para registrar la primera evolución.",
     "selectPatient": "Seleccionar paciente",
     "patient": "Paciente",
@@ -124,7 +124,7 @@
     "title": "Historia clínica · {name}",
     "subtitle": "{count, plural, one {# registro} other {# registros}} · TOBI resume cada evolución al guardar.",
     "applyAnamnesis": "Aplicar anamnesis",
-    "newNote": "Nueva evolución",
+    "newNote": "Nueva nota de evolución",
     "emptyTitle": "No hay evoluciones registradas",
     "emptyDescription": "Registra la primera evolución y TOBI genera el resumen de la sesión.",
     "signed": "Firmado",
@@ -142,15 +142,15 @@
     "unanswered": "_(sin respuesta)_"
   },
   "note": {
-    "title": "Nueva evolución · {name}",
+    "title": "Nueva nota de evolución · {name}",
     "description": "TOBI resume la evolución al guardar. La firma digital se simula con un hash SHA-256 del contenido y la hora.",
     "professional": "Profesional",
     "type": "Tipo de registro",
     "content": "Contenido",
     "placeholder": "Sesión #__\nMotivo de consulta: …\nObservación clínica: …\nIntervención: …\nPlan: …",
-    "hint": "Acepta Markdown. TOBI identifica temas (ansiedad, duelo, sueño, pánico, vínculo de pareja) y sugiere próximos pasos.",
+    "hint": "Acepta Markdown. TOBI identifica temas (ansiedad, duelo, sueño, pánico, vínculo de pareja) y sugiere puntos para tu reflexión.",
     "sign": "Firmar digitalmente (simulación ICP-Brasil)",
-    "submit": "Guardar evolución",
+    "submit": "Guardar nota de evolución",
     "errors": {
       "tooShort": "Escribe al menos 20 caracteres en la evolución.",
       "invalid": "Revisa los campos e inténtalo de nuevo."

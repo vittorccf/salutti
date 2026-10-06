@@ -15,7 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
-  const messages = await getMessages();
+  // Só o que os componentes do cliente usam vai para o navegador (o resto é renderizado no servidor).
+  const all = await getMessages();
+  const messages = { common: all.common, auth: all.auth, finance: all.finance };
   return (
     <html lang={locale} suppressHydrationWarning className={`${sora.variable} ${figtree.variable}`}>
       <body>

@@ -9,7 +9,7 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { parseDateOnly } from "@/lib/dates";
-import { isAccountType, segmentAfterMigration } from "@/lib/account";
+import { autonomoBlockers, isAccountType, segmentAfterMigration } from "@/lib/account";
 import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
 import { ContactError, readAddress } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
@@ -135,11 +135,9 @@ export async function changeAccountTypeAction(_prev: FormResult, formData: FormD
       db.professional.count({ where: { workspaceId: ctx.workspace.id, active: true } }),
       db.membership.count({ where: { workspaceId: ctx.workspace.id, role: { notIn: ["receptionist", "financial"] } } }),
     ]);
-    // Mesma regra de autonomoBlockers (src/lib/account.ts), com o texto no idioma da pessoa.
-    const blockers = [
-      ...(activeProfessionals > 1 ? [t("page.accountType.blockerProfessionals", { count: activeProfessionals })] : []),
-      ...(members > 1 ? [t("page.accountType.blockerMembers", { count: members })] : []),
-    ];
+    const blockers = autonomoBlockers({ activeProfessionals, members }).map((b) =>
+      t(b.code === "professionals" ? "page.accountType.blockerProfessionals" : "page.accountType.blockerMembers", { count: b.count }),
+    );
     if (blockers.length) return { erro: t("errors.autonomoBlocked", { blockers: blockers.join("; ") }) };
   }
 

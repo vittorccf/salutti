@@ -40,7 +40,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
   if (!segmentAllowed(accountType, d.segment)) return { erro: t("errors.segment") };
 
   // Clínica precisa de nome próprio; autônomo pode deixar em branco (vira "Consultório de <nome>").
-  const workspaceName = d.workspaceName || (accountType === "autonomo" ? t("defaultWorkspaceName", { name: d.name.split(" ")[0] }) : "");
+  const workspaceName = d.workspaceName || (accountType === "autonomo" ? `Consultório de ${d.name.split(" ")[0]}` : "");
   if (workspaceName.length < 2) return { erro: t("errors.clinicName") };
   if (accountType === "clinica" && d.cnpj && !isValidCnpj(d.cnpj)) return { erro: t("errors.cnpj") };
 
