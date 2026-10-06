@@ -56,7 +56,8 @@ test("foto de perfil e banner no menu; foto do paciente com acesso restrito", as
   await g.getByRole("checkbox", { name: /autorizou o uso da foto/ }).check();
   await g.getByRole("button", { name: "Cadastrar paciente" }).click();
   await expect(g.getByRole("heading", { name: "Paciente · Paciente Foto E2E" })).toBeVisible();
-  const photo = g.locator("header img").first();
+  // A foto da ficha (h-16); o avatar do usuário também está no cabeçalho do app.
+  const photo = g.locator("main img.h-16").first();
   const src = (await photo.getAttribute("src"))!;
   expect(src).toMatch(/^\/api\/media\//);
   const own = await g.request.get(src);
