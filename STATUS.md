@@ -6,7 +6,7 @@
 
 Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a partir deste código; tokens idênticos, conferidos nos dois temas).
 
-**Feito (tsc + lint ok em cada etapa; build completo validado até a Fase 1):**
+**Feito (tsc + lint ok em cada etapa; build completo ok no fim):**
 - Tokens do DS aplicados; todas as 26 telas seguindo as regras de uso (status pt-BR via `StatusBadge`, `plural`, formato BR, rótulos em `src/lib/labels.ts` e `src/lib/lgpd.ts`, humor sem emoji em `src/lib/mood.ts`, valores tabulares à direita, voz da LUMA em `insights.ts`).
 - Menu do perfil com tema claro/escuro (`next-themes`, chave `salutti-theme`); nav com item ativo; sidebar vira gaveta abaixo de `md`.
 - Contraste AA em todos os pares de texto nos dois temas: `muted-foreground` claro 47% → 44% e novo token `destructive-strong`.
@@ -14,7 +14,7 @@ Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a parti
 - ESLint configurado (`.eslintrc.json`). `NEXT_DIST_DIR` permite builds de verificação em `.next-check` sem derrubar o dev server (o Next reescreve o `tsconfig.json` nesses builds — descartar com `git checkout -- tsconfig.json`).
 
 **Pendente:**
-1. **Rodar `npx next build`** na branch antes do merge (último build completo foi antes da Fase 2).
+1. ~~Rodar `npx next build`~~: build completo passou em 2026-10-06.
 2. ~~Espelhar no artifact do DS as mudanças de token~~: publicado em 2026-10-06 (versão 6 do artifact).
 3. **Fuso horário (bug pré-existente, fora do escopo do DS):** campos só-data são gravados como meia-noite UTC e as datas/horas são formatadas no fuso do servidor (UTC na Vercel). Resultado: horários 3h adiantados em produção, cobrança "atrasada" às 21h do dia do vencimento, agenda agrupando dia errado. Corrigir gravação e exibição juntas (ex.: `@date-fns/tz` com `America/Sao_Paulo`); só a exibição desloca os campos só-data em -1 dia.
 4. **Insights da LUMA já salvos no banco** mantêm o texto antigo até "Recalcular insights" (ou novo seed).
