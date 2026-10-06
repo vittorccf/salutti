@@ -21,7 +21,7 @@ export default async function ComunicacaoPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquareText className="h-6 w-6 text-primary-strong" /> Comunicação
+          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> Comunicação
         </h1>
         <p className="text-sm text-muted-foreground">
           Mensagens enviadas pelo WhatsApp com modelos aprovados: lembretes, cobranças e recibos.

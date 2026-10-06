@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ShieldCheck, FileDown, Trash2, EyeOff } from "lucide-react";
 import { formatDateTimeBR } from "@/lib/utils";
-import { consentPurposeLabel } from "@/lib/lgpd";
+import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
 
 export const dynamic = "force-dynamic";
 
@@ -193,7 +193,7 @@ export default async function LgpdPage() {
                     <TR key={c.id}>
                       <TD>{c.patient.fullName}</TD>
                       <TD>{consentPurposeLabel(c.purpose)}</TD>
-                      <TD>{consentPurposeLabel(c.legalBasis)}</TD>
+                      <TD>{legalBasisLabel(c.legalBasis)}</TD>
                       <TD>
                         <Badge variant={c.granted && !c.revokedAt ? "success" : "muted"}>
                           {c.granted && !c.revokedAt ? "Concedido" : "Revogado"}

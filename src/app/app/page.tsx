@@ -18,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import { insightsEngine } from "@/lib/providers/insights";
+import { modalityLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -228,7 +229,7 @@ export default async function DashboardPage() {
                     <TD className="font-medium">{a.patient.fullName}</TD>
                     <TD>{a.professional.fullName}</TD>
                     <TD className="whitespace-nowrap">{formatDateTimeBR(a.startsAt)}</TD>
-                    <TD className="capitalize">{a.modality}</TD>
+                    <TD>{modalityLabel(a.modality)}</TD>
                     <TD>
                       <StatusBadge kind="appointment" status={a.status} />
                     </TD>

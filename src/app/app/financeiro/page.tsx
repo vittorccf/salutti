@@ -124,7 +124,7 @@ export default async function FinancialPage() {
                 <TH>Paciente</TH>
                 <TH>Vencimento</TH>
                 <TH className="text-right">Valor</TH>
-                <TH>Método</TH>
+                <TH>Forma de pagamento</TH>
                 <TH>Status</TH>
                 <TH></TH>
               </TR>

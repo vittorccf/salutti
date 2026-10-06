@@ -10,7 +10,8 @@ import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { CalendarPlus, FilePlus2, Receipt as ReceiptIcon, ShieldCheck, Smartphone } from "lucide-react";
 import { differenceInYears } from "date-fns";
 import { moodLabel } from "@/lib/mood";
-import { consentPurposeLabel } from "@/lib/lgpd";
+import { consentPurposeLabel, legalBasisLabel } from "@/lib/lgpd";
+import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -187,7 +188,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                   <TH>Vencimento</TH>
                   <TH className="text-right">Valor</TH>
                   <TH>Status</TH>
-                  <TH>Método</TH>
+                  <TH>Forma de pagamento</TH>
                 </TR>
               </THead>
               <TBody>
@@ -203,9 +204,9 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                       <TD>{formatDateBR(c.dueDate)}</TD>
                       <TD className="text-right">{formatBRL(c.amount)}</TD>
                       <TD>
-                        <StatusBadge kind="charge" status={c.status} />
+                        <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate)} />
                       </TD>
-                      <TD className="capitalize">{c.method ?? "-"}</TD>
+                      <TD>{paymentMethodLabel(c.method)}</TD>
                     </TR>
                   ))
                 )}
@@ -230,7 +231,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
                 <div key={r.id} className="rounded-md border p-3 text-sm">
                   <p className="font-medium">{consentPurposeLabel(r.purpose)}</p>
                   <p className="text-xs text-muted-foreground">
-                    Base legal: {consentPurposeLabel(r.legalBasis)} · {r.granted ? "concedido" : "revogado"} ·{" "}
+                    Base legal: {legalBasisLabel(r.legalBasis)} · {r.granted ? "concedido" : "revogado"} ·{" "}
                     {formatDateTimeBR(r.grantedAt)}
                   </p>
                 </div>

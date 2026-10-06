@@ -8,3 +8,14 @@ const consentPurposeLabels: Record<string, string> = {
 
 export const consentPurposeLabel = (value: string) =>
   Object.hasOwn(consentPurposeLabels, value) ? consentPurposeLabels[value] : value.replaceAll("_", " ");
+
+// Bases legais (ConsentRecord.legalBasis).
+const legalBasisLabels: Record<string, string> = {
+  consentimento: "Consentimento",
+  tutela_saude: "Tutela da saúde",
+  obrigacao_legal: "Obrigação legal",
+  execucao_contrato: "Execução de contrato",
+};
+
+export const legalBasisLabel = (value: string) =>
+  Object.hasOwn(legalBasisLabels, value) ? legalBasisLabels[value] : value.replaceAll("_", " ");

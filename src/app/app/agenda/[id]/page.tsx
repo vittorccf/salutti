@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBRL, formatDateTimeBR, formatTimeBR } from "@/lib/utils";
 import { Calendar, MessageSquareText, Video, CheckCircle2, XCircle, FileSignature, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
+import { modalityLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ export default async function AppointmentDetailPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm">Profissional: {appt.professional.fullName}</p>
-            <p className="text-sm">Modalidade: <span className="capitalize">{appt.modality}</span></p>
+            <p className="text-sm">Modalidade: {modalityLabel(appt.modality)}</p>
             <p className="text-sm">Valor: <span className="tabular-nums">{formatBRL(appt.price)}</span></p>
             {appt.notes ? <p className="mt-2 text-sm text-muted-foreground">{appt.notes}</p> : null}
             {appt.reminderSentAt ? (

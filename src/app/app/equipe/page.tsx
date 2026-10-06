@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { formatBRL, plural } from "@/lib/utils";
 import { Stethoscope } from "lucide-react";
+import { professionalTypeLabel } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +105,7 @@ export default async function TeamPage() {
                   professionals.map((p) => (
                     <TR key={p.id}>
                       <TD className="font-medium">{p.fullName}</TD>
-                      <TD>{p.specialty ?? p.professionalType}</TD>
+                      <TD>{p.specialty ?? professionalTypeLabel(p.professionalType)}</TD>
                       <TD>
                         {p.noCouncil ? (
                           <Badge variant="muted">Sem registro</Badge>
