@@ -23,6 +23,8 @@ const config: Config = {
           apricot: "hsl(var(--brand-apricot))",
           ink: "hsl(var(--brand-ink))",
           mist: "hsl(var(--brand-mist))",
+          // Pêssego do Salutti 2.0 (pingo do "i" do logo Diálogo; telas de entrada).
+          peach: "hsl(var(--brand-peach, 15 74% 74%))",
         },
         highlight: {
           DEFAULT: "hsl(var(--highlight))",

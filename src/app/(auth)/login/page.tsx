@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/brand/logo";
+import { LogoDialogo } from "@/components/brand/logo-dialogo";
 import { getTranslations } from "@/i18n/server";
 
 // Erros vindos por ?error= (código curto; o texto fica nas mensagens auth.login.errors).
@@ -58,13 +58,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const error = ERRORS.find((e) => e === params.error);
 
   return (
-    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
+    <main className="ds2 ds2-glow min-h-screen grid place-items-center p-4">
       <div className="fixed right-4 top-4">
         <LanguageSwitcher />
       </div>
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
-          <Logo variant="icon" size={48} className="mx-auto" />
+          <LogoDialogo variant="icon" size={48} className="mx-auto" />
           <CardTitle>{t("title")}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
