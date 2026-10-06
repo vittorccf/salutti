@@ -77,7 +77,7 @@ export const pix = {
 | `llm.ts`          | Heurística determinística + fallback OpenAI | OpenAI/Anthropic/Bedrock |
 | `insights.ts`     | Queries SQL + regras        | Mesma engine + ML (sklearn) opcional |
 
-## 5. IA LUMA - duas camadas
+## 5. IA TOBI - duas camadas
 
 ### 5.1 Sumarização clínica (`lib/providers/llm.ts`)
 - Entrada: texto da evolução + nome do paciente
@@ -93,7 +93,7 @@ Engine determinística que computa 4 classes de insight em queries Prisma:
 3. **`scheduling_gap`** - ocupação de agenda vs capacidade estimada
 4. **`churn_risk`** - pacientes ≥60 dias sem sessão
 
-Roda no `/app/luma` (botão "Recalcular") e no startup quando não há insights ainda. **Não usa LLM** - é honestamente uma régua de heurísticas, mas a UI esconde isso e o resultado é indistinguível para o usuário em fase early. Trocar por ML real é incremental.
+Roda no `/app/tobi` (botão "Recalcular") e no startup quando não há insights ainda. **Não usa LLM** - é honestamente uma régua de heurísticas, mas a UI esconde isso e o resultado é indistinguível para o usuário em fase early. Trocar por ML real é incremental.
 
 ## 6. LGPD - instrumentação técnica
 

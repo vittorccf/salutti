@@ -14,10 +14,10 @@ async function regenerateAction() {
   "use server";
   const ctx = await requireContext();
   await insightsEngine.regenerate({ workspaceId: ctx.workspace.id });
-  redirect("/app/luma");
+  redirect("/app/tobi");
 }
 
-export default async function LumaPage() {
+export default async function TobiPage() {
   const ctx = await requireContext();
   let insights = await db.aiInsight.findMany({
     where: { workspaceId: ctx.workspace.id },
@@ -38,10 +38,10 @@ export default async function LumaPage() {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary-strong" aria-hidden /> LUMA · IA preditiva e clínica
+            <Sparkles className="h-6 w-6 text-primary-strong" aria-hidden /> TOBI · IA preditiva e clínica
           </h1>
           <p className="text-sm text-muted-foreground">
-            A LUMA lê seus dados financeiros e clínicos e aponta o que pede atenção, com número e prazo.
+            O TOBI lê seus dados financeiros e clínicos e aponta o que pede atenção, com número e prazo.
           </p>
         </div>
         <form action={regenerateAction}>
@@ -55,7 +55,7 @@ export default async function LumaPage() {
         <CardContent className="p-4 text-sm flex items-start gap-3">
           <Brain className="h-5 w-5 shrink-0 text-primary-strong mt-0.5" aria-hidden />
           <div>
-            <p className="font-semibold">O que a LUMA acompanha por você</p>
+            <p className="font-semibold">O que o TOBI acompanha por você</p>
             <ul className="mt-1 list-disc pl-4 text-muted-foreground">
               <li><strong>Receita:</strong> compara o faturamento com o mês anterior e avisa quando cai.</li>
               <li><strong>Atrasos:</strong> soma as cobranças vencidas e sugere a régua de cobrança.</li>
