@@ -6,8 +6,9 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBRL, formatDateBR } from "@/lib/utils";
+import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 import { Banknote, MessageSquareText, Receipt as ReceiptIcon, PlusCircle } from "lucide-react";
 import { CashflowChart } from "./_components/cashflow-chart";
 
@@ -61,13 +62,13 @@ export default async function FinancialPage() {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Banknote className="h-6 w-6 text-primary" /> Financeiro
+            <Banknote className="h-6 w-6 text-primary-strong" aria-hidden /> Financeiro
           </h1>
           <p className="text-sm text-muted-foreground">
-            Pix Automático, links de pagamento, recorrência e régua de cobrança WhatsApp.
+            Pix automático, links de pagamento, recorrência e régua de cobrança no WhatsApp.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <Link href="/app/financeiro/regua">
               <MessageSquareText className="h-4 w-4" /> Régua de cobrança
@@ -84,20 +85,20 @@ export default async function FinancialPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Recebido (últimas 50)</p>
-            <p className="mt-1 text-2xl font-semibold text-success">{formatBRL(totals.paid)}</p>
+            <p className="text-sm text-muted-foreground">Recebido (últimas 50 cobranças)</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-success-strong">{formatBRL(totals.paid)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Em aberto</p>
-            <p className="mt-1 text-2xl font-semibold">{formatBRL(totals.pending)}</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums">{formatBRL(totals.pending)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Atrasado</p>
-            <p className="mt-1 text-2xl font-semibold text-warning">{formatBRL(totals.overdue)}</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-warning-strong">{formatBRL(totals.overdue)}</p>
           </CardContent>
         </Card>
       </div>
@@ -105,7 +106,7 @@ export default async function FinancialPage() {
       <Card>
         <CardHeader>
           <CardTitle>Fluxo de caixa · últimos 6 meses</CardTitle>
-          <CardDescription>Realizado (pago) vs Esperado (vencimentos).</CardDescription>
+          <CardDescription>Recebido em cada mês e previsto pelos vencimentos.</CardDescription>
         </CardHeader>
         <CardContent>
           <CashflowChart data={monthBuckets} />
@@ -122,7 +123,7 @@ export default async function FinancialPage() {
               <TR>
                 <TH>Paciente</TH>
                 <TH>Vencimento</TH>
-                <TH>Valor</TH>
+                <TH className="text-right">Valor</TH>
                 <TH>Método</TH>
                 <TH>Status</TH>
                 <TH></TH>
@@ -132,7 +133,7 @@ export default async function FinancialPage() {
               {charges.length === 0 ? (
                 <TR>
                   <TD colSpan={6} className="text-center text-muted-foreground">
-                    Sem cobranças.
+                    Nenhuma cobrança ainda. Crie a primeira em Nova cobrança.
                   </TD>
                 </TR>
               ) : (
@@ -140,34 +141,24 @@ export default async function FinancialPage() {
                   <TR key={c.id}>
                     <TD className="font-medium">{c.patient.fullName}</TD>
                     <TD>{formatDateBR(c.dueDate)}</TD>
-                    <TD>{formatBRL(c.amount)}</TD>
-                    <TD className="capitalize">{c.method ?? "-"}</TD>
+                    <TD className="text-right">{formatBRL(c.amount)}</TD>
+                    <TD>{paymentMethodLabel(c.method)}</TD>
                     <TD>
-                      <Badge
-                        variant={
-                          c.status === "paid"
-                            ? "success"
-                            : c.status === "overdue"
-                              ? "destructive"
-                              : c.dueDate < now
-                                ? "warning"
-                                : "muted"
-                        }
-                      >
-                        {c.status === "pending" && c.dueDate < now ? "overdue" : c.status}
-                      </Badge>
+                      <StatusBadge kind="charge" status={chargeDisplayStatus(c.status, c.dueDate, now)} />
                     </TD>
-                    <TD className="flex gap-1">
+                    <TD>
+                      <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" asChild>
                         <Link href={`/app/financeiro/${c.id}`}>Abrir</Link>
                       </Button>
                       {c.paymentLink ? (
                         <Button size="sm" variant="ghost" asChild>
-                          <Link href={`/pay/${c.paymentLink.token}`} target="_blank">
+                          <Link href={`/pay/${c.paymentLink.token}`} target="_blank" aria-label="Abrir link de pagamento">
                             <ReceiptIcon className="h-4 w-4" />
                           </Link>
                         </Button>
                       ) : null}
+                      </div>
                     </TD>
                   </TR>
                 ))
