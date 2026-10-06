@@ -21,3 +21,7 @@ export const modalityLabel = lookup({
   presencial: "Presencial",
   online: "Online",
 });
+
+// Cobrança pendente com vencimento passado aparece como atrasada, mesmo antes do job marcar "overdue".
+export const chargeDisplayStatus = (status: string, dueDate: Date, now = new Date()) =>
+  status === "pending" && dueDate < now ? "overdue" : status;

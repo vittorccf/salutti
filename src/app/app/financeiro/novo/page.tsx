@@ -88,14 +88,14 @@ export default async function NewChargePage({
         <CardHeader>
           <CardTitle>Nova cobrança</CardTitle>
           <CardDescription>
-            PIX gera copia-e-cola + link de pagamento público. Recorrência cria assinatura interna.
+            O Pix gera o código copia e cola e um link de pagamento. Com recorrência, a cobrança se repete sozinha.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createChargeAction} className="space-y-4">
             <div className="space-y-1">
-              <Label>Paciente</Label>
-              <Select name="patientId" defaultValue={params.patientId ?? ""} required>
+              <Label htmlFor="patientId">Paciente</Label>
+              <Select name="patientId" id="patientId" defaultValue={params.patientId ?? ""} required>
                 <option value="">Selecione…</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -104,27 +104,27 @@ export default async function NewChargePage({
                 ))}
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label>Valor (R$)</Label>
-                <Input type="number" step="0.01" name="amount" defaultValue={200} required />
+                <Label htmlFor="amount">Valor (R$)</Label>
+                <Input type="number" step="0.01" name="amount" id="amount" defaultValue={200} required />
               </div>
               <div className="space-y-1">
-                <Label>Vencimento</Label>
-                <Input type="date" name="dueDate" defaultValue={defaultDue.toISOString().slice(0, 10)} required />
+                <Label htmlFor="dueDate">Vencimento</Label>
+                <Input type="date" name="dueDate" id="dueDate" defaultValue={defaultDue.toISOString().slice(0, 10)} required />
               </div>
               <div className="space-y-1">
-                <Label>Método</Label>
-                <Select name="method" defaultValue="pix">
-                  <option value="pix">Pix Automático</option>
+                <Label htmlFor="method">Forma de pagamento</Label>
+                <Select name="method" id="method" defaultValue="pix">
+                  <option value="pix">Pix automático</option>
                   <option value="card">Cartão (Stripe)</option>
                   <option value="boleto">Boleto</option>
                   <option value="dinheiro">Dinheiro</option>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Recorrência (dias)</Label>
-                <Input type="number" name="recurringDays" placeholder="ex: 30 (mensal)" />
+                <Label htmlFor="recurringDays">Recorrência (dias)</Label>
+                <Input type="number" name="recurringDays" id="recurringDays" placeholder="30 para mensal" />
               </div>
             </div>
             <Button type="submit">Criar cobrança</Button>

@@ -8,8 +8,9 @@ import { nfse } from "@/lib/providers/nfse";
 import { receitaSaude } from "@/lib/providers/receita-saude";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBRL, formatDateBR, formatDateTimeBR } from "@/lib/utils";
+import { chargeDisplayStatus, paymentMethodLabel } from "@/lib/labels";
 import { CheckCircle2, FileSignature, MessageSquareText, Receipt as ReceiptIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -150,7 +151,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
           <h1 className="text-2xl font-bold">Cobrança · {formatBRL(charge.amount)}</h1>
           <p className="text-sm text-muted-foreground">
             {charge.patient.fullName} · Vencimento {formatDateBR(charge.dueDate)} ·{" "}
-            <Badge variant={charge.status === "paid" ? "success" : "muted"}>{charge.status}</Badge>
+            <StatusBadge kind="charge" status={chargeDisplayStatus(charge.status, charge.dueDate)} />
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -158,48 +159,47 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             <form action={markPaidAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit" variant="success">
-                <CheckCircle2 className="h-4 w-4" /> Marcar paga
+                <CheckCircle2 className="h-4 w-4" /> Confirmar pagamento
               </Button>
             </form>
           ) : null}
           <form action={sendChargeReminder}>
             <input type="hidden" name="id" value={charge.id} />
             <Button type="submit" variant="outline" disabled={!charge.patient.phone}>
-              <MessageSquareText className="h-4 w-4" /> Enviar cobrança WhatsApp
+              <MessageSquareText className="h-4 w-4" /> Enviar lembrete
             </Button>
           </form>
           {charge.status === "paid" && (!charge.receipt || !charge.invoice) ? (
             <form action={issueReceiptAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit">
-                <FileSignature className="h-4 w-4" /> Emitir recibo + NFS-e
+                <FileSignature className="h-4 w-4" /> Emitir recibo e nota
               </Button>
             </form>
           ) : null}
         </div>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>Detalhes</CardTitle>
             <CardDescription>
-              Método: <strong className="capitalize">{charge.method}</strong>
+              Forma de pagamento: <strong className="text-foreground">{paymentMethodLabel(charge.method)}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {charge.appointment ? (
               <p className="text-sm">
-                Vinculada à sessão de {formatDateTimeBR(charge.appointment.startsAt)} (
-                <Link className="underline" href={`/app/agenda/${charge.appointment.id}`}>
-                  abrir
+                Referente à{" "}
+                <Link className="text-primary-strong underline-offset-4 hover:underline" href={`/app/agenda/${charge.appointment.id}`}>
+                  sessão de {formatDateTimeBR(charge.appointment.startsAt)}
                 </Link>
-                )
               </p>
             ) : null}
             {charge.pixCopyPaste ? (
               <div>
-                <p className="text-sm font-semibold">Pix copia-e-cola</p>
+                <p className="text-sm font-semibold">Pix copia e cola</p>
                 <code className="block break-all rounded-md bg-muted/30 p-2 text-xs">
                   {charge.pixCopyPaste}
                 </code>
@@ -208,7 +208,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             {charge.paymentLink ? (
               <div>
                 <p className="text-sm font-semibold">Link de pagamento</p>
-                <Link className="text-primary underline text-sm" href={`/pay/${charge.paymentLink.token}`} target="_blank">
+                <Link className="break-all text-sm text-primary-strong underline-offset-4 hover:underline" href={`/pay/${charge.paymentLink.token}`} target="_blank">
                   {`/pay/${charge.paymentLink.token}`}
                 </Link>
               </div>
@@ -222,32 +222,32 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
         <Card>
           <CardHeader>
             <CardTitle>Fiscal</CardTitle>
-            <CardDescription>Recibo digital + NFS-e + protocolo Receita Saúde.</CardDescription>
+            <CardDescription>Recibo digital, nota fiscal (NFS-e) e protocolo do Receita Saúde.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {charge.receipt ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <ReceiptIcon className="h-4 w-4 text-primary" /> Recibo {charge.receipt.receiptNumber}
+                  <ReceiptIcon className="h-4 w-4 text-primary-strong" /> Recibo {charge.receipt.receiptNumber}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Receita Saúde: {charge.receipt.receitaSaudeStatus} · {charge.receipt.receitaSaudeId}
+                  Receita Saúde: <StatusBadge kind="receitaSaude" status={charge.receipt.receitaSaudeStatus} /> · {charge.receipt.receitaSaudeId}
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground">Sem recibo emitido.</p>
+              <p className="text-muted-foreground">Nenhum recibo emitido. Ele é gerado depois do pagamento.</p>
             )}
             {charge.invoice ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <FileSignature className="h-4 w-4 text-primary" /> NFS-e {charge.invoice.invoiceNumber}
+                  <FileSignature className="h-4 w-4 text-primary-strong" /> NFS-e {charge.invoice.invoiceNumber}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Status: {charge.invoice.issStatus} · ISS {charge.invoice.serviceCode}
+                  <StatusBadge kind="invoice" status={charge.invoice.issStatus} /> · ISS {charge.invoice.serviceCode}
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground">Sem NFS-e emitida.</p>
+              <p className="text-muted-foreground">Nenhuma nota fiscal emitida.</p>
             )}
           </CardContent>
         </Card>
