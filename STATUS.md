@@ -15,7 +15,7 @@ Design System: https://claude.ai/artifact/Ud2EXsJocT4Q6nNw7nCWy1 (gerado a parti
 
 **Pendente:**
 1. **Rodar `npx next build`** na branch antes do merge (último build completo foi antes da Fase 2).
-2. **Espelhar no artifact do DS** as mudanças de token (`muted-foreground` 44% e `destructive-strong`). Não publicado: falta autorização.
+2. ~~Espelhar no artifact do DS as mudanças de token~~: publicado em 2026-10-06 (versão 6 do artifact).
 3. **Fuso horário (bug pré-existente, fora do escopo do DS):** campos só-data são gravados como meia-noite UTC e as datas/horas são formatadas no fuso do servidor (UTC na Vercel). Resultado: horários 3h adiantados em produção, cobrança "atrasada" às 21h do dia do vencimento, agenda agrupando dia errado. Corrigir gravação e exibição juntas (ex.: `@date-fns/tz` com `America/Sao_Paulo`); só a exibição desloca os campos só-data em -1 dia.
 4. **Insights da LUMA já salvos no banco** mantêm o texto antigo até "Recalcular insights" (ou novo seed).
 5. Botões em `primary-strong` nas páginas públicas estão sobrescritos via `className`; considerar uma variante do `Button`.
