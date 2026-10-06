@@ -9,11 +9,11 @@ import {
   Brain,
   CalendarCheck,
   FileSignature,
-  HeartHandshake,
   MessageSquareText,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 const features = [
   {
@@ -68,11 +68,8 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-b from-background to-accent/30">
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="container flex items-center justify-between py-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <span className="grid h-8 w-8 place-content-center rounded-lg bg-primary text-primary-foreground">
-              <HeartHandshake className="h-5 w-5" />
-            </span>
-            Salutti
+          <Link href="/" className="flex items-center">
+            <Logo size={24} />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>

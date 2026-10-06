@@ -28,7 +28,52 @@
     --input: 214 32% 91%;
     --ring: 174 72% 32%;
     --radius: 0.75rem;
+
+    /* Design system Salutti: cores do logo (fixas nos dois temas) */
+    --brand-teal: 174 72% 32%;
+    --brand-teal-light: 174 51% 50%;
+    --brand-apricot: 27 87% 67%;
+    --brand-ink: 174 45% 13%;
+    --brand-mist: 165 33% 98%;
+
+    /* Variantes para texto com contraste AA */
+    --primary-strong: 175 77% 26%;
+    --success-strong: 142 72% 29%;
+    --warning-strong: 35 92% 33%;
+    --highlight: var(--brand-apricot);
+    --highlight-foreground: var(--brand-ink);
   }
+
+  .dark {
+    --background: 176 35% 9%;
+    --foreground: 169 35% 94%;
+    --card: 174 32% 12%;
+    --card-foreground: 169 35% 94%;
+    --popover: 174 32% 12%;
+    --popover-foreground: 169 35% 94%;
+    --primary: 174 51% 50%;
+    --primary-foreground: 176 35% 9%;
+    --secondary: 175 29% 15%;
+    --secondary-foreground: 169 35% 94%;
+    --muted: 175 29% 15%;
+    --muted-foreground: 170 14% 66%;
+    --accent: 173 44% 16%;
+    --accent-foreground: 170 47% 66%;
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 176 35% 9%;
+    --success: 142 69% 58%;
+    --success-foreground: 176 35% 9%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 176 35% 9%;
+    --border: 174 28% 20%;
+    --input: 171 19% 44%;
+    --ring: 174 51% 50%;
+    --primary-strong: 173 57% 60%;
+    --success-strong: 142 69% 58%;
+    --warning-strong: 46 97% 65%;
+  }
+
   * { @apply border-border; }
-  body { @apply bg-background text-foreground antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
+  body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
+  h1, h2, h3 { @apply font-display; }
 }
