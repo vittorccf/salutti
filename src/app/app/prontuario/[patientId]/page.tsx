@@ -5,8 +5,8 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTimeBR, plural } from "@/lib/utils";
-import { noteTypeLabel } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { FilePlus2, FileSignature, Sparkles, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -28,25 +28,25 @@ export default async function ProntuarioPatientPage({
     },
   });
   if (!patient) notFound();
+  const [t, tLabels, f] = await Promise.all([getTranslations("patients.chart"), getTranslations("common.labels"), getFormat()]);
+  const label = labeler(tLabels);
 
   return (
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Prontuário · {patient.fullName}</h1>
-          <p className="text-sm text-muted-foreground">
-            {plural(patient.clinicalNotes.length, "registro", "registros")} · o TOBI resume cada evolução ao salvar.
-          </p>
+          <h1 className="text-2xl font-bold">{t("title", { name: patient.fullName })}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle", { count: patient.clinicalNotes.length })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <Link href={`/app/prontuario/${patient.id}/anamnese`}>
-              <FileSignature className="h-4 w-4" /> Aplicar anamnese
+              <FileSignature className="h-4 w-4" /> {t("applyAnamnesis")}
             </Link>
           </Button>
           <Button asChild>
             <Link href={`/app/prontuario/${patient.id}/nova-evolucao`}>
-              <FilePlus2 className="h-4 w-4" /> Nova evolução
+              <FilePlus2 className="h-4 w-4" /> {t("newNote")}
             </Link>
           </Button>
         </div>
@@ -57,10 +57,8 @@ export default async function ProntuarioPatientPage({
           <Card>
             <CardContent className="p-6 text-center">
               <Sparkles className="mx-auto h-6 w-6 text-primary-strong" aria-hidden />
-              <p className="mt-3 font-semibold">Nenhuma evolução registrada</p>
-              <p className="text-sm text-muted-foreground">
-                Registre a primeira evolução e o TOBI gera o resumo da sessão.
-              </p>
+              <p className="mt-3 font-semibold">{t("emptyTitle")}</p>
+              <p className="text-sm text-muted-foreground">{t("emptyDescription")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -69,15 +67,15 @@ export default async function ProntuarioPatientPage({
               <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-base">
-                    {noteTypeLabel(n.noteType)}{" "}
-                    {n.signedAt ? <Badge variant="success" className="ml-2">Assinado</Badge> : null}
+                    {label("noteType", n.noteType)}{" "}
+                    {n.signedAt ? <Badge variant="success" className="ml-2">{t("signed")}</Badge> : null}
                   </CardTitle>
                   <CardDescription>
-                    {n.professional.fullName} · {formatDateTimeBR(n.createdAt)}
+                    {n.professional.fullName} · {f.dateTime(n.createdAt)}
                   </CardDescription>
                 </div>
                 {n.appointment ? (
-                  <Badge variant="muted">Sessão {formatDateTimeBR(n.appointment.startsAt)}</Badge>
+                  <Badge variant="muted">{t("session", { date: f.dateTime(n.appointment.startsAt) })}</Badge>
                 ) : null}
               </CardHeader>
               <CardContent className="space-y-4">
@@ -87,7 +85,7 @@ export default async function ProntuarioPatientPage({
                 {n.aiSummary ? (
                   <div className="rounded-md border bg-accent/20 p-3 text-sm">
                     <p className="font-semibold flex items-center gap-2 text-primary-strong">
-                      <Sparkles className="h-4 w-4" aria-hidden /> Resumo gerado por IA (TOBI) · revise antes de usar
+                      <Sparkles className="h-4 w-4" aria-hidden /> {t("aiSummary")}
                     </p>
                     <pre className="mt-2 whitespace-pre-wrap font-sans text-sm">{n.aiSummary}</pre>
                     {n.aiTopics ? (
@@ -102,8 +100,7 @@ export default async function ProntuarioPatientPage({
                 <div className="rounded-md border-dashed border bg-muted/30 p-3 text-xs flex items-start gap-2">
                   <ShieldCheck className="h-4 w-4 text-primary-strong shrink-0 mt-0.5" />
                   <p className="text-muted-foreground">
-                    Em produção: conteúdo cifrado em repouso + assinatura ICP-Brasil (A1 em nuvem · Memed/SafeID).
-                    Hash atual: <code>{n.signedHash ?? "-"}</code>
+                    {t.rich("security", { hash: n.signedHash ?? "-", code: (chunks) => <code>{chunks}</code> })}
                   </p>
                 </div>
               </CardContent>

@@ -7,13 +7,14 @@ import { whatsapp } from "@/lib/providers/whatsapp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { formatBRL, formatDateTimeBR, formatTimeBR } from "@/lib/utils";
 import { Calendar, MessageSquareText, Video, CheckCircle2, XCircle, FileSignature, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
-import { modalityLabel } from "@/lib/labels";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { formatters } from "@/i18n/format";
+import { labeler } from "@/i18n/labels";
 import { ensureAffected } from "@/lib/tenant";
 import { isSimulatedMeeting, meetingPlatform, video } from "@/lib/providers/video";
-import { cancelSessionMeeting, createSessionMeeting, MEET_ISSUE_TEXT, MeetAccountError, type MeetIssue } from "@/lib/video-connections";
+import { cancelSessionMeeting, createSessionMeeting, isMeetIssue, MEET_ISSUE_KEY, MeetAccountError } from "@/lib/video-connections";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
@@ -63,7 +64,7 @@ async function createMeetingAction(formData: FormData) {
       professionalId: appt.professionalId,
       userId: ctx.user.id,
       provider,
-      topic: "Sessão · Salutti",
+      topic: (await getTranslations("schedule.form"))("meetingTopic"),
       startsAt: appt.startsAt,
       durationMinutes: Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000),
     });
@@ -103,7 +104,8 @@ async function sendReminderAction(formData: FormData) {
     vars: {
       patient: appt.patient.fullName.split(" ")[0],
       professional: appt.professional.fullName,
-      when: formatDateTimeBR(appt.startsAt),
+      // O modelo da mensagem ao paciente é em pt-BR (lib/providers/whatsapp), então a data vai no mesmo idioma.
+      when: formatters("pt-BR").dateTime(appt.startsAt),
       meeting: appt.meetingUrl ?? "(presencial)",
     },
   });
@@ -126,6 +128,10 @@ export default async function AppointmentDetailPage({
   searchParams: Promise<{ aviso?: string }>;
 }) {
   const ctx = await requireContext();
+  const t = await getTranslations("schedule.session");
+  const tm = await getTranslations("schedule.meetIssues");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
   const { id } = await params;
   const { aviso } = await searchParams;
   const appt = await db.appointment.findFirst({
@@ -140,10 +146,10 @@ export default async function AppointmentDetailPage({
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary-strong" aria-hidden /> Sessão · {appt.patient.fullName}
+            <Calendar className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title", { patient: appt.patient.fullName })}
           </h1>
           <p className="text-sm text-muted-foreground tabular-nums">
-            {formatDateTimeBR(appt.startsAt)} até {formatTimeBR(appt.endsAt)} ·{" "}
+            {t("when", { start: f.dateTime(appt.startsAt), end: f.time(appt.endsAt) })} ·{" "}
             <StatusBadge kind="appointment" status={appt.status} />
           </p>
         </div>
@@ -151,21 +157,21 @@ export default async function AppointmentDetailPage({
           {appt.meetingUrl ? (
             <Button variant="outline" asChild>
               <a href={appt.meetingUrl} target="_blank" rel="noreferrer">
-                <Video className="h-4 w-4" /> Entrar no {platform}
+                <Video className="h-4 w-4" /> {t("join", { platform: !platform || platform === "Videochamada" ? t("videoCall") : platform })}
                 {isSimulatedMeeting(appt.meetingUrl) ? (
-                  <Badge variant="muted" className="ml-1">Simulado</Badge>
+                  <Badge variant="muted" className="ml-1">{t("simulated")}</Badge>
                 ) : null}
               </a>
             </Button>
           ) : appt.modality === "online" ? (
             <form action={createMeetingAction} className="flex gap-2">
               <input type="hidden" name="id" value={appt.id} />
-              <Select name="videoProvider" defaultValue="google_meet" aria-label="Plataforma da videochamada" className="w-auto">
+              <Select name="videoProvider" defaultValue="google_meet" aria-label={t("platform")} className="w-auto">
                 <option value="google_meet">Google Meet</option>
                 <option value="zoom">Zoom</option>
               </Select>
               <Button type="submit" variant="outline">
-                <Video className="h-4 w-4" /> Gerar link
+                <Video className="h-4 w-4" /> {t("generateLink")}
               </Button>
             </form>
           ) : null}
@@ -173,37 +179,37 @@ export default async function AppointmentDetailPage({
             <input type="hidden" name="id" value={appt.id} />
             <Button type="submit" variant="outline" disabled={!appt.patient.phone}>
               <MessageSquareText className="h-4 w-4" />
-              {appt.reminderSentAt ? "Reenviar lembrete" : "Enviar lembrete"}
+              {appt.reminderSentAt ? t("resendReminder") : t("sendReminder")}
             </Button>
           </form>
         </div>
       </header>
 
-      {aviso && Object.hasOwn(MEET_ISSUE_TEXT, aviso) ? (
+      {isMeetIssue(aviso) ? (
         <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive-strong">
-          {MEET_ISSUE_TEXT[aviso as MeetIssue]}
+          {tm(MEET_ISSUE_KEY[aviso])}
         </p>
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Paciente</CardTitle>
+            <CardTitle>{t("patient")}</CardTitle>
             <CardDescription>
               <Link href={`/app/pacientes/${appt.patient.id}`} className="text-primary-strong underline-offset-4 hover:underline">
                 {appt.patient.fullName}
               </Link>{" "}
-              · <PhoneText value={appt.patient.phone} fallback="sem telefone" />
+              · <PhoneText value={appt.patient.phone} fallback={t("noPhone")} />
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">Profissional: {appt.professional.fullName}</p>
-            <p className="text-sm">Modalidade: {modalityLabel(appt.modality)}</p>
-            <p className="text-sm">Valor: <span className="tabular-nums">{formatBRL(appt.price)}</span></p>
+            <p className="text-sm">{t("professional", { name: appt.professional.fullName })}</p>
+            <p className="text-sm">{t("modality", { modality: label("modality", appt.modality) })}</p>
+            <p className="text-sm">{t("price")} <span className="tabular-nums">{f.money(appt.price)}</span></p>
             {appt.notes ? <p className="mt-2 text-sm text-muted-foreground">{appt.notes}</p> : null}
             {appt.reminderSentAt ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                Lembrete enviado em {formatDateTimeBR(appt.reminderSentAt)}.
+                {t("reminderSent", { date: f.dateTime(appt.reminderSentAt) })}
               </p>
             ) : null}
           </CardContent>
@@ -211,8 +217,8 @@ export default async function AppointmentDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Ações</CardTitle>
-            <CardDescription>Atualize o status, registre a evolução ou veja a cobrança.</CardDescription>
+            <CardTitle>{t("actions")}</CardTitle>
+            <CardDescription>{t("actionsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2 flex-wrap">
@@ -222,7 +228,7 @@ export default async function AppointmentDetailPage({
                   <input type="hidden" name="status" value={s} />
                   <Button type="submit" size="sm" variant={s === "done" ? "success" : s === "no_show" ? "destructive" : "outline"}>
                     {s === "done" ? <CheckCircle2 className="h-4 w-4" /> : s === "no_show" ? <XCircle className="h-4 w-4" /> : null}
-                    {{ confirmed: "Confirmar sessão", done: "Marcar realizada", no_show: "Registrar falta", cancelled: "Cancelar sessão" }[s]}
+                    {t(({ confirmed: "confirm", done: "done", no_show: "noShow", cancelled: "cancel" } as const)[s])}
                   </Button>
                 </form>
               ))}
@@ -231,19 +237,19 @@ export default async function AppointmentDetailPage({
               {appt.clinicalNote ? (
                 <Button variant="outline" asChild>
                   <Link href={`/app/prontuario/${appt.patient.id}`}>
-                    <FileSignature className="h-4 w-4" /> Ver evolução
+                    <FileSignature className="h-4 w-4" /> {t("viewNote")}
                   </Link>
                 </Button>
               ) : (
                 <Button asChild>
                   <Link href={`/app/prontuario/${appt.patient.id}/nova-evolucao?appointmentId=${appt.id}`}>
-                    <Sparkles className="h-4 w-4" /> Registrar evolução com o TOBI
+                    <Sparkles className="h-4 w-4" /> {t("newNote")}
                   </Link>
                 </Button>
               )}
               {appt.charge ? (
                 <Button variant="outline" asChild>
-                  <Link href={`/app/financeiro/${appt.charge.id}`}>Ver cobrança</Link>
+                  <Link href={`/app/financeiro/${appt.charge.id}`}>{t("viewCharge")}</Link>
                 </Button>
               ) : null}
             </div>

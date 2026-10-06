@@ -26,6 +26,3 @@ export function upcomingBirthdays(people: BirthdayPerson[], now = new Date(), da
   const order: Record<BirthdayKind, number> = { self: 0, professional: 1, patient: 2 };
   return out.sort((a, b) => a.daysUntil - b.daysUntil || order[a.kind] - order[b.kind] || a.name.localeCompare(b.name, "pt-BR"));
 }
-
-export const whenLabel = (daysUntil: number) =>
-  daysUntil === 0 ? "Hoje" : daysUntil === 1 ? "Amanhã" : `Em ${daysUntil} dias`;

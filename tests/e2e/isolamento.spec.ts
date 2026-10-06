@@ -17,6 +17,8 @@ test("paciente de outro consultório: 404 na ficha e LGPD não altera", async ({
 
   // Kris troca o id escondido do próprio formulário de edição pelo do paciente do Guilherme.
   const own = await createPatient(k, "Paciente da Kris E2E");
+  // Deixa a navegação do cadastro terminar antes da próxima (no dev server, a compilação pode abortar o goto).
+  await k.waitForLoadState("networkidle");
   await k.goto(`${own}/editar`);
   await k.locator('input[name="patientId"]').evaluate((el, id) => ((el as HTMLInputElement).value = id), patientId);
   await k.locator("#fullName").fill("Nome Adulterado");

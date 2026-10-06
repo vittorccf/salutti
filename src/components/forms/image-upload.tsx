@@ -55,6 +55,8 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
   const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null);
   const id = `${name}-arquivo`;
   const t = useTranslations("common.image");
+  // Rótulo sem o "(opcional)" do fim, em qualquer idioma, para completar o nome acessível dos botões.
+  const shortLabel = label.replace(/ \([^)]*\)$/, "").toLowerCase();
 
   // Libera a URL temporária da prévia ao trocar de imagem ou sair da tela.
   useEffect(() => () => {
@@ -121,7 +123,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
               aria-describedby={`${id}-dica`}
             >
               <ImagePlus className="h-4 w-4" aria-hidden /> {preview ? t("replace") : t("upload")}
-              <span className="sr-only"> ({label.replace(/ \(opcional\)$/, "").toLowerCase()})</span>
+              <span className="sr-only"> ({shortLabel})</span>
             </Button>
             {currentUrl ? (
               <label className="flex items-center gap-2 text-sm">
@@ -133,7 +135,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
                   className="h-4 w-4 accent-primary"
                 />
                 <span>
-                  {t("remove")}<span className="sr-only"> {label.replace(/ \(opcional\)$/, "").toLowerCase()}</span>
+                  {t("remove")}<span className="sr-only"> {shortLabel}</span>
                 </span>
               </label>
             ) : null}

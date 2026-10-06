@@ -12,9 +12,9 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { formatBRL, plural } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { Stethoscope } from "lucide-react";
-import { professionalTypeLabel } from "@/lib/labels";
 import { UFS } from "@/lib/labels";
 import { ContactError, validEmail, validPhone } from "@/lib/contact-validation";
 import { EmailInput } from "@/components/forms/email-input";
@@ -39,28 +39,26 @@ const schema = z.object({
   userId: z.string().optional(),
 });
 
-const AUTONOMO_LIMIT =
-  "Conta de profissional autônomo tem um profissional ativo. Para montar equipe, mude para clínica em Ajustes.";
-
 const canManage = (role: string) => role === "owner" || role === "admin";
-const NO_PERMISSION = "Só o dono ou um administrador gerencia os profissionais.";
+const PROFESSIONAL_TYPES = ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"];
 
 const activeCount = (workspaceId: string) => db.professional.count({ where: { workspaceId, active: true } });
 
 async function createProfessionalAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
   const ctx = await requireContext();
-  if (!canManage(ctx.role)) return { erro: NO_PERMISSION };
+  const t = await getTranslations("settings.team");
+  if (!canManage(ctx.role)) return { erro: t("noPermission") };
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { erro: "Confira o nome, o tipo de profissional e o valor da hora." };
+  if (!parsed.success) return { erro: t("errors.invalid") };
   const data = parsed.data;
-  if (ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) return { erro: AUTONOMO_LIMIT };
+  if (ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) return { erro: t("autonomoLimit") };
   // Vínculo com um usuário da Salutti (o Meet nasce na conta Google dele): precisa ser membro e não ter outro cadastro ativo.
   let userId: string | null = null;
   if (data.userId) {
     const member = await db.membership.findFirst({ where: { workspaceId: ctx.workspace.id, userId: data.userId } });
     const taken = await db.professional.count({ where: { workspaceId: ctx.workspace.id, userId: data.userId, active: true } });
-    if (!member || taken) return { erro: "Esse usuário não pode ser vinculado (não é da equipe ou já tem cadastro ativo)." };
+    if (!member || taken) return { erro: t("errors.userLink") };
     userId = data.userId;
   }
   let email: string | null, phone: string | null;
@@ -140,22 +138,23 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   const active = professionals.filter((p) => p.active).length;
   const manage = canManage(ctx.role);
   const canAdd = manage && (!autonomo || active === 0);
+  const t = await getTranslations("settings.team");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Stethoscope className="h-6 w-6 text-primary-strong" aria-hidden /> Profissionais
+          <Stethoscope className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {autonomo
-            ? "Conta de profissional autônomo: o cadastro profissional usado nas sessões, recibos e guias."
-            : "Inclui psicanalistas, terapeutas e outras profissões sem registro de conselho."}
+          {autonomo ? t("introAutonomo") : t("introClinic")}
         </p>
       </header>
       {aviso === "limite" || aviso === "sem-permissao" ? (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
-          {aviso === "limite" ? AUTONOMO_LIMIT : NO_PERMISSION}
+          {aviso === "limite" ? t("autonomoLimit") : t("noPermission")}
         </p>
       ) : null}
 
@@ -163,52 +162,52 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
         <Card>
           <CardHeader>
             <CardTitle>
-              {autonomo ? "Cadastro profissional" : `Equipe · ${plural(professionals.length, "profissional", "profissionais")}`}
+              {autonomo ? t("listAutonomo") : t("listClinic", { count: professionals.length })}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <THead>
                 <TR>
-                  <TH>Nome</TH>
-                  <TH>Especialidade</TH>
-                  <TH>Registro</TH>
-                  <TH className="text-right">Valor da hora</TH>
-                  <TH className="text-right">Sessões</TH>
-                  <TH>Status</TH>
-                  <TH><span className="sr-only">Ações</span></TH>
+                  <TH>{t("name")}</TH>
+                  <TH>{t("specialty")}</TH>
+                  <TH>{t("council")}</TH>
+                  <TH className="text-right">{t("hourlyRate")}</TH>
+                  <TH className="text-right">{t("sessions")}</TH>
+                  <TH>{t("status")}</TH>
+                  <TH><span className="sr-only">{t("actions")}</span></TH>
                 </TR>
               </THead>
               <TBody>
                 {professionals.length === 0 ? (
                   <TR>
                     <TD colSpan={7} className="text-center text-muted-foreground">
-                      Nenhum profissional ainda. Cadastre o primeiro no formulário ao lado.
+                      {t("empty")}
                     </TD>
                   </TR>
                 ) : (
                   professionals.map((p) => (
                     <TR key={p.id}>
                       <TD className="font-medium">{p.fullName}</TD>
-                      <TD>{p.specialty ?? professionalTypeLabel(p.professionalType)}</TD>
+                      <TD>{p.specialty ?? label("professionalType", p.professionalType)}</TD>
                       <TD>
                         {p.noCouncil ? (
-                          <Badge variant="muted">Sem registro</Badge>
+                          <Badge variant="muted">{t("noCouncilBadge")}</Badge>
                         ) : (
                           `${p.councilType} ${p.councilNumber ?? ""}`
                         )}
                       </TD>
-                      <TD className="text-right">{p.hourlyRate ? formatBRL(p.hourlyRate) : "-"}</TD>
-                      <TD className="text-right">{p._count.appointments}</TD>
+                      <TD className="text-right">{p.hourlyRate ? f.money(p.hourlyRate) : "-"}</TD>
+                      <TD className="text-right">{f.number(p._count.appointments)}</TD>
                       <TD>
-                        <Badge variant={p.active ? "success" : "muted"}>{p.active ? "Ativo" : "Inativo"}</Badge>
+                        <Badge variant={p.active ? "success" : "muted"}>{p.active ? t("active") : t("inactive")}</Badge>
                       </TD>
                       <TD className="text-right">
                         {manage ? (
                         <form action={toggleProfessionalAction}>
                           <input type="hidden" name="professionalId" value={p.id} />
-                          <Button type="submit" size="sm" variant="ghost" aria-label={`${p.active ? "Desativar" : "Reativar"} ${p.fullName}`}>
-                            {p.active ? "Desativar" : "Reativar"}
+                          <Button type="submit" size="sm" variant="ghost" aria-label={p.active ? t("deactivateLabel", { name: p.fullName }) : t("reactivateLabel", { name: p.fullName })}>
+                            {p.active ? t("deactivate") : t("reactivate")}
                           </Button>
                         </form>
                         ) : null}
@@ -224,90 +223,88 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
         {!manage ? null : !canAdd ? (
           <Card>
             <CardHeader>
-              <CardTitle>Conta de profissional autônomo</CardTitle>
+              <CardTitle>{t("autonomoTitle")}</CardTitle>
               <CardDescription>
-                Esta conta tem um profissional ativo. Para cadastrar outras pessoas e trabalhar em equipe, mude o tipo da
-                conta para clínica. Os pacientes, a agenda e o financeiro continuam como estão.
+                {t("autonomoDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" asChild>
-                <Link href="/app/ajustes#tipo-de-conta">Mudar para clínica</Link>
+                <Link href="/app/ajustes#tipo-de-conta">{t("changeToClinic")}</Link>
               </Button>
             </CardContent>
           </Card>
         ) : (
         <Card>
           <CardHeader>
-            <CardTitle>{autonomo ? "Seu cadastro profissional" : "Adicionar profissional"}</CardTitle>
-            <CardDescription>Para psicanalistas e terapeutas, marque “sem registro de conselho”.</CardDescription>
+            <CardTitle>{autonomo ? t("formTitleAutonomo") : t("formTitleClinic")}</CardTitle>
+            <CardDescription>{t("formDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ActionForm action={createProfessionalAction} className="space-y-3">
               <div className="space-y-1">
-                <Label htmlFor="fullName">Nome completo</Label>
+                <Label htmlFor="fullName">{t("fullName")}</Label>
                 <Input name="fullName" id="fullName" required />
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="professionalType">Tipo</Label>
+                  <Label htmlFor="professionalType">{t("type")}</Label>
                   <Select name="professionalType" id="professionalType" defaultValue="psicologo">
-                    <option value="psicologo">Psicólogo</option>
-                    <option value="psicanalista">Psicanalista</option>
-                    <option value="terapeuta">Terapeuta</option>
-                    <option value="psiquiatra">Psiquiatra</option>
-                    <option value="dentista">Dentista</option>
-                    <option value="medico">Médico</option>
+                    {PROFESSIONAL_TYPES.map((p) => (
+                      <option key={p} value={p}>
+                        {label("professionalType", p)}
+                      </option>
+                    ))}
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="specialty">Especialidade</Label>
-                  <Input name="specialty" id="specialty" placeholder="TCC, psicanálise, …" />
+                  <Label htmlFor="specialty">{t("specialty")}</Label>
+                  <Input name="specialty" id="specialty" placeholder={t("specialtyPlaceholder")} />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="userId">Acessa a Salutti como</Label>
+                <Label htmlFor="userId">{t("userAccess")}</Label>
                 <Select name="userId" id="userId" defaultValue={autonomo ? ctx.user.id : ""}>
-                  <option value="">Não acessa o sistema</option>
+                  <option value="">{t("noAccess")}</option>
                   {members.map((m) => (
                     <option key={m.user.id} value={m.user.id}>
                       {m.user.name} · {m.user.email}
                     </option>
                   ))}
                 </Select>
-                <p className="text-xs text-muted-foreground">O link do Google Meet das sessões é criado na conta Google dessa pessoa.</p>
+                <p className="text-xs text-muted-foreground">{t("userAccessHint")}</p>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <EmailInput name="email" id="email" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="phone">Telefone</Label>
+                <Label htmlFor="phone">{t("phone")}</Label>
                 <PhoneInput name="phone" id="phone" />
               </div>
               <div className="rounded-md border p-2 text-sm flex items-center gap-2">
                 <input id="noCouncil" name="noCouncil" type="checkbox" className="h-4 w-4 accent-primary" />
-                <Label htmlFor="noCouncil">Sem registro de conselho (CRP/CRM)</Label>
+                <Label htmlFor="noCouncil">{t("noCouncil")}</Label>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="councilType">Conselho</Label>
+                  <Label htmlFor="councilType">{t("councilType")}</Label>
                   <Select name="councilType" id="councilType" defaultValue="CRP">
                     <option value="CRP">CRP</option>
                     <option value="CRM">CRM</option>
                     <option value="CRO">CRO</option>
-                    <option value="sem_registro">Sem registro</option>
+                    <option value="sem_registro">{t("noCouncilBadge")}</option>
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="councilNumber">Número do registro</Label>
+                  <Label htmlFor="councilNumber">{t("councilNumber")}</Label>
                   <Input name="councilNumber" id="councilNumber" placeholder="06/12345" />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="councilUF">UF do conselho</Label>
+                <Label htmlFor="councilUF">{t("councilUF")}</Label>
                 <Select name="councilUF" id="councilUF" defaultValue="">
-                  <option value="">Selecione…</option>
+                  <option value="">{t("select")}</option>
                   {UFS.map((u) => (
                     <option key={u.code} value={u.code}>
                       {u.sigla}
@@ -317,15 +314,15 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="hourlyRate">Valor da hora (R$)</Label>
+                  <Label htmlFor="hourlyRate">{t("hourlyRateField")}</Label>
                   <Input name="hourlyRate" id="hourlyRate" type="number" step="0.01" />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="birthDate">Aniversário (lembrete no painel)</Label>
+                  <Label htmlFor="birthDate">{t("birthday")}</Label>
                   <Input name="birthDate" id="birthDate" type="date" />
                 </div>
               </div>
-              <Button type="submit" className="w-full">Cadastrar profissional</Button>
+              <Button type="submit" className="w-full">{t("submit")}</Button>
             </ActionForm>
           </CardContent>
         </Card>

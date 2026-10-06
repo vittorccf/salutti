@@ -7,7 +7,9 @@ import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { onboardingProgress } from "@/lib/onboarding";
 import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
-import { segmentLabel, UFS } from "@/lib/labels";
+import { UFS } from "@/lib/labels";
+import { getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 import { addLibraryTemplatesAction } from "../_actions/anamnesis";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,13 +79,24 @@ export default async function OnboardingPage() {
   const done = Object.fromEntries(progress.steps.map((s) => [s.key, s.done]));
   const defaults = professionalDefaults(ctx.workspace.segment);
   const added = new Set(templates.map((t) => t.name));
+  const t = await getTranslations("dashboard.onboarding");
+  const label = labeler(await getTranslations("common.labels"));
+  const link = (href: string) => {
+    const LinkChunk = (chunks: React.ReactNode) => (
+      <Link href={href} className="text-primary-strong underline-offset-4 hover:underline">
+        {chunks}
+      </Link>
+    );
+    return LinkChunk;
+  };
+  const stepLabels = { completed: t("completed"), optional: t("optional"), pending: t("pending") };
 
   return (
     <div className="max-w-3xl space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl font-bold">Primeiros passos</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground">
-          Deixe {ctx.workspace.name} pronto para atender. Leva poucos minutos e dá para voltar depois.
+          {t("intro", { workspace: ctx.workspace.name })}
         </p>
         <div className="flex items-center gap-3">
           <div
@@ -92,12 +105,12 @@ export default async function OnboardingPage() {
             aria-valuemin={0}
             aria-valuemax={progress.total}
             aria-valuenow={progress.done}
-            aria-label="Progresso dos primeiros passos"
+            aria-label={t("progressLabel")}
           >
             <div className="h-full bg-primary transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
           </div>
           <span className="text-sm font-medium tabular-nums">
-            {progress.done} de {progress.total}
+            {t("progress", { done: progress.done, total: progress.total })}
           </span>
         </div>
       </header>
@@ -106,69 +119,64 @@ export default async function OnboardingPage() {
         <Card className="border-success/40">
           <CardContent className="flex flex-col items-start gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold text-success-strong">Tudo pronto</p>
-              <p className="text-sm text-muted-foreground">Seu consultório está configurado. Bom trabalho!</p>
+              <p className="font-semibold text-success-strong">{t("allSet")}</p>
+              <p className="text-sm text-muted-foreground">{t("allSetHint")}</p>
             </div>
             <Button asChild>
-              <Link href="/app">Ir para o painel</Link>
+              <Link href="/app">{t("goToDashboard")}</Link>
             </Button>
           </CardContent>
         </Card>
       ) : null}
 
-      <Step n={1} done title="Consultório criado" icon={<Check className="h-5 w-5" />}>
+      <Step n={1} done title={t("step1")} labels={stepLabels} icon={<Check className="h-5 w-5" />}>
         <p className="text-sm text-muted-foreground">
-          {ctx.workspace.name} · {segmentLabel(ctx.workspace.segment)}. CNPJ e outros dados ficam em{" "}
-          <Link href="/app/ajustes" className="text-primary-strong underline-offset-4 hover:underline">
-            Ajustes
-          </Link>
-          .
+          {t.rich("step1Body", {
+            workspace: ctx.workspace.name,
+            segment: label("segment", ctx.workspace.segment),
+            link: link("/app/ajustes"),
+          })}
         </p>
       </Step>
 
-      <Step n={2} done={done.profissional} title="Cadastre quem atende" icon={<Stethoscope className="h-5 w-5" />}>
+      <Step n={2} done={done.profissional} title={t("step2")} labels={stepLabels} icon={<Stethoscope className="h-5 w-5" />}>
         {done.profissional ? (
           <p className="text-sm text-muted-foreground">
-            Profissional cadastrado. Para incluir mais pessoas, use{" "}
-            <Link href="/app/equipe" className="text-primary-strong underline-offset-4 hover:underline">
-              Profissionais
-            </Link>
-            .
+            {t.rich("step2Done", { link: link("/app/equipe") })}
           </p>
         ) : (
           <form action={createFirstProfessionalAction} className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor="fullName">Nome de quem atende</Label>
+              <Label htmlFor="fullName">{t("fullName")}</Label>
               <Input id="fullName" name="fullName" defaultValue={ctx.user.name} required />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="professionalType">Profissão</Label>
+              <Label htmlFor="professionalType">{t("profession")}</Label>
               <Select id="professionalType" name="professionalType" defaultValue={defaults.type}>
-                <option value="psicologo">Psicólogo</option>
-                <option value="psicanalista">Psicanalista</option>
-                <option value="terapeuta">Terapeuta</option>
-                <option value="psiquiatra">Psiquiatra</option>
-                <option value="dentista">Dentista</option>
-                <option value="medico">Médico</option>
+                {["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"].map((p) => (
+                  <option key={p} value={p}>
+                    {label("professionalType", p)}
+                  </option>
+                ))}
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="councilType">Conselho</Label>
+              <Label htmlFor="councilType">{t("council")}</Label>
               <Select id="councilType" name="councilType" defaultValue={defaults.council}>
                 <option value="CRP">CRP</option>
                 <option value="CRM">CRM</option>
                 <option value="CRO">CRO</option>
-                <option value="sem_registro">Sem registro de conselho</option>
+                <option value="sem_registro">{t("noCouncil")}</option>
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="councilNumber">Número do registro (opcional)</Label>
+              <Label htmlFor="councilNumber">{t("councilNumber")}</Label>
               <Input id="councilNumber" name="councilNumber" placeholder="06/12345" />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="councilUF">UF do conselho (opcional)</Label>
+              <Label htmlFor="councilUF">{t("councilUF")}</Label>
               <Select id="councilUF" name="councilUF" defaultValue="">
-                <option value="">Selecione…</option>
+                <option value="">{t("select")}</option>
                 {UFS.map((u) => (
                   <option key={u.code} value={u.code}>
                     {u.sigla}
@@ -177,20 +185,20 @@ export default async function OnboardingPage() {
               </Select>
             </div>
             <Button type="submit" className="sm:col-span-2 sm:justify-self-start">
-              Cadastrar profissional
+              {t("createProfessional")}
             </Button>
           </form>
         )}
       </Step>
 
-      <Step n={3} done={done.anamnese} title="Escolha os modelos de anamnese" icon={<ClipboardList className="h-5 w-5" />}>
+      <Step n={3} done={done.anamnese} title={t("step3")} labels={stepLabels} icon={<ClipboardList className="h-5 w-5" />}>
         <form action={addLibraryTemplatesAction} className="space-y-3">
           <div className="grid gap-2 sm:grid-cols-2">
-            {ANAMNESIS_LIBRARY.map((t) => {
-              const isAdded = added.has(t.name);
+            {ANAMNESIS_LIBRARY.map((lib) => {
+              const isAdded = added.has(lib.name);
               return (
                 <label
-                  key={t.slug}
+                  key={lib.slug}
                   className={cn(
                     "flex cursor-pointer gap-3 rounded-md border p-3 text-sm hover:bg-accent/40",
                     isAdded && "cursor-default opacity-70 hover:bg-transparent",
@@ -199,67 +207,67 @@ export default async function OnboardingPage() {
                   <input
                     type="checkbox"
                     name="slug"
-                    value={t.slug}
+                    value={lib.slug}
                     disabled={isAdded}
-                    defaultChecked={isAdded || t.defaultFor.includes(ctx.workspace.segment)}
+                    defaultChecked={isAdded || lib.defaultFor.includes(ctx.workspace.segment)}
                     className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
                   />
                   <span>
                     <span className="flex items-center gap-2 font-medium">
-                      {t.name}
-                      {isAdded ? <Badge variant="success">Adicionado</Badge> : null}
+                      {lib.name}
+                      {isAdded ? <Badge variant="success">{t("added")}</Badge> : null}
                     </span>
-                    <span className="block text-muted-foreground">{t.description}</span>
+                    <span className="block text-muted-foreground">{lib.description}</span>
                   </span>
                 </label>
               );
             })}
           </div>
           <Button type="submit" variant={done.anamnese ? "outline" : "default"}>
-            Adicionar modelos selecionados
+            {t("addTemplates")}
           </Button>
         </form>
       </Step>
 
-      <Step n={4} done={false} optional title="Revise as integrações" icon={<Plug className="h-5 w-5" />}>
+      <Step n={4} done={false} optional title={t("step4")} labels={stepLabels} icon={<Plug className="h-5 w-5" />}>
         <p className="text-sm text-muted-foreground">
-          Pix, nota fiscal, Google Meet e Zoom funcionam em modo de teste até você informar as chaves reais.
+          {t("step4Body")}
         </p>
         <Button variant="outline" size="sm" asChild className="mt-3">
-          <Link href="/app/ajustes">Abrir Ajustes</Link>
+          <Link href="/app/ajustes">{t("openSettings")}</Link>
         </Button>
       </Step>
 
-      <Step n={5} done={done.paciente} title="Cadastre o primeiro paciente" icon={<UserPlus className="h-5 w-5" />}>
+      <Step n={5} done={done.paciente} title={t("step5")} labels={stepLabels} icon={<UserPlus className="h-5 w-5" />}>
         {done.paciente ? (
-          <p className="text-sm text-muted-foreground">Paciente cadastrado.</p>
+          <p className="text-sm text-muted-foreground">{t("patientDone")}</p>
         ) : (
           <Button asChild>
             <Link href="/app/pacientes/novo">
-              <UserPlus className="h-4 w-4" /> Cadastrar paciente
+              <UserPlus className="h-4 w-4" /> {t("createPatient")}
             </Link>
           </Button>
         )}
       </Step>
 
-      <Step n={6} done={done.sessao} title="Agende a primeira sessão" icon={<CalendarPlus className="h-5 w-5" />}>
+      <Step n={6} done={done.sessao} title={t("step6")} labels={stepLabels} icon={<CalendarPlus className="h-5 w-5" />}>
         {done.sessao ? (
-          <p className="text-sm text-muted-foreground">Sessão agendada.</p>
+          <p className="text-sm text-muted-foreground">{t("sessionDone")}</p>
         ) : (
           done.profissional && done.paciente ? (
             <Button asChild>
               <Link href="/app/agenda/novo">
-                <CalendarPlus className="h-4 w-4" /> Agendar sessão
+                <CalendarPlus className="h-4 w-4" /> {t("scheduleSession")}
               </Link>
             </Button>
           ) : (
             <Button disabled variant="outline">
-              <CalendarPlus className="h-4 w-4" /> Agendar sessão
+              <CalendarPlus className="h-4 w-4" /> {t("scheduleSession")}
             </Button>
           )
         )}
         {!done.sessao && (!done.profissional || !done.paciente) ? (
-          <p className="mt-2 text-xs text-muted-foreground">Antes, cadastre quem atende e o primeiro paciente.</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t("scheduleBlocked")}</p>
         ) : null}
       </Step>
     </div>
@@ -271,6 +279,7 @@ function Step({
   done,
   optional,
   title,
+  labels,
   icon,
   children,
 }: {
@@ -278,6 +287,7 @@ function Step({
   done: boolean;
   optional?: boolean;
   title: string;
+  labels: { completed: string; optional: string; pending: string };
   icon: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -296,9 +306,9 @@ function Step({
         <div className="space-y-1">
           <CardTitle className="flex flex-wrap items-center gap-2 text-base">
             <span className="text-muted-foreground tabular-nums">{n}.</span> {title}
-            {done ? <Badge variant="success">Concluído</Badge> : optional ? <Badge variant="muted">Opcional</Badge> : null}
+            {done ? <Badge variant="success">{labels.completed}</Badge> : optional ? <Badge variant="muted">{labels.optional}</Badge> : null}
           </CardTitle>
-          <CardDescription className="sr-only">{done ? "Concluído" : "Pendente"}</CardDescription>
+          <CardDescription className="sr-only">{done ? labels.completed : labels.pending}</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="sm:pl-[5.5rem]">{children}</CardContent>
