@@ -15,7 +15,8 @@ import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { assertInsurancePlan } from "@/lib/tenant";
-import { formatBRL } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
 
 const schema = z.object({
   patientId: z.string(),
@@ -30,8 +31,6 @@ const schema = z.object({
   billing: z.string().default("particular"), // "particular" ou id do convênio
 });
 
-// Título genérico: nome do paciente não vai para Google/Zoom (dado de saúde, LGPD).
-const MEETING_TOPIC = "Sessão · Salutti";
 
 async function createAppointmentAction(formData: FormData) {
   "use server";
@@ -54,7 +53,8 @@ async function createAppointmentAction(formData: FormData) {
         professionalId: data.professionalId,
         userId: ctx.user.id,
         provider: data.videoProvider,
-        topic: MEETING_TOPIC,
+        // Título genérico: nome do paciente não vai para Google/Zoom (dado de saúde, LGPD).
+        topic: (await getTranslations("schedule.form"))("meetingTopic"),
         startsAt,
         durationMinutes: data.durationMinutes,
       });
@@ -130,6 +130,9 @@ export default async function NewAppointmentPage({
   searchParams: Promise<{ patientId?: string }>;
 }) {
   const ctx = await requireContext();
+  const t = await getTranslations("schedule.form");
+  const f = await getFormat();
+  const label = labeler(await getTranslations("common.labels"));
   const params = await searchParams;
   const [patients, professionals, plans] = await Promise.all([
     db.patient.findMany({
@@ -155,16 +158,14 @@ export default async function NewAppointmentPage({
       <div className="max-w-2xl">
         <EmptyState
           icon={<CalendarPlus className="h-6 w-6" />}
-          title={professionals.length === 0 ? "Nenhum profissional cadastrado" : "Nenhum paciente cadastrado"}
+          title={professionals.length === 0 ? t("noProfessionalTitle") : t("noPatientTitle")}
           description={
-            professionals.length === 0
-              ? "Para agendar, cadastre primeiro quem atende."
-              : "Para agendar, cadastre primeiro o paciente."
+            professionals.length === 0 ? t("noProfessionalDescription") : t("noPatientDescription")
           }
           action={
             <Button asChild>
               <Link href={professionals.length === 0 ? "/app/equipe" : "/app/pacientes/novo"}>
-                {professionals.length === 0 ? "Cadastrar profissional" : "Cadastrar paciente"}
+                {professionals.length === 0 ? t("addProfessional") : t("addPatient")}
               </Link>
             </Button>
           }
@@ -177,18 +178,16 @@ export default async function NewAppointmentPage({
     <div className="max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Nova sessão</CardTitle>
-          <CardDescription>
-            Em sessões online, escolha Google Meet ou Zoom e o link é gerado na hora. Se quiser, a cobrança Pix é criada junto.
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createAppointmentAction} className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2 space-y-1">
-                <Label htmlFor="patientId">Paciente</Label>
+                <Label htmlFor="patientId">{t("patient")}</Label>
                 <Select name="patientId" id="patientId" defaultValue={params.patientId ?? ""} required>
-                  <option value="">Selecione…</option>
+                  <option value="">{t("select")}</option>
                   {patients.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.fullName}
@@ -197,67 +196,67 @@ export default async function NewAppointmentPage({
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="professionalId">Profissional</Label>
+                <Label htmlFor="professionalId">{t("professional")}</Label>
                 <Select name="professionalId" id="professionalId" required>
-                  <option value="">Selecione…</option>
+                  <option value="">{t("select")}</option>
                   {professionals.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.fullName} ({p.councilType}
-                      {p.councilNumber ? ` ${p.councilNumber}` : " - sem registro"})
+                      {p.councilNumber ? ` ${p.councilNumber}` : ` - ${t("noCouncilNumber")}`})
                     </option>
                   ))}
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="startsAt">Data e hora</Label>
+                <Label htmlFor="startsAt">{t("startsAt")}</Label>
                 <Input type="datetime-local" name="startsAt" id="startsAt" defaultValue={defaultDate} required />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="durationMinutes">Duração (minutos)</Label>
+                <Label htmlFor="durationMinutes">{t("duration")}</Label>
                 <Input type="number" name="durationMinutes" id="durationMinutes" defaultValue={50} min={15} max={240} required />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="modality">Modalidade</Label>
+                <Label htmlFor="modality">{t("modality")}</Label>
                 <Select name="modality" id="modality" defaultValue="online">
-                  <option value="presencial">Presencial</option>
-                  <option value="online">Online</option>
+                  <option value="presencial">{label("modality", "presencial")}</option>
+                  <option value="online">{label("modality", "online")}</option>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="videoProvider">Videochamada (sessão online)</Label>
+                <Label htmlFor="videoProvider">{t("video")}</Label>
                 <Select name="videoProvider" id="videoProvider" defaultValue="google_meet">
-                  <option value="google_meet">Gerar link do Google Meet</option>
-                  <option value="zoom">Gerar link do Zoom</option>
-                  <option value="none">Sem link por enquanto</option>
+                  <option value="google_meet">{t("videoMeet")}</option>
+                  <option value="zoom">{t("videoZoom")}</option>
+                  <option value="none">{t("videoNone")}</option>
                 </Select>
               </div>
               {plans.length > 0 ? (
                 <div className="space-y-1">
-                  <Label htmlFor="billing">Forma de pagamento</Label>
+                  <Label htmlFor="billing">{t("billing")}</Label>
                   <Select name="billing" id="billing" defaultValue="particular">
-                    <option value="particular">Particular</option>
+                    <option value="particular">{t("private")}</option>
                     {plans.map((p) => (
                       <option key={p.id} value={p.id}>
-                        Convênio · {p.name} ({formatBRL(p.sessionPrice)})
+                        {t("insuranceOption", { name: p.name, price: f.money(p.sessionPrice) })}
                       </option>
                     ))}
                   </Select>
                 </div>
               ) : null}
               <div className="space-y-1">
-                <Label htmlFor="price">Valor particular (R$)</Label>
+                <Label htmlFor="price">{t("price")}</Label>
                 <Input type="number" step="0.01" name="price" id="price" defaultValue={180} required />
               </div>
               <div className="sm:col-span-2 space-y-1">
-                <Label htmlFor="notes">Observações</Label>
-                <Input name="notes" id="notes" placeholder="Opcional" />
+                <Label htmlFor="notes">{t("notes")}</Label>
+                <Input name="notes" id="notes" placeholder={t("optional")} />
               </div>
               <div className="sm:col-span-2 flex gap-2 items-center text-sm">
                 <input id="generateCharge" name="generateCharge" type="checkbox" defaultChecked className="h-4 w-4 accent-primary" />
-                <Label htmlFor="generateCharge">Criar cobrança Pix desta sessão</Label>
+                <Label htmlFor="generateCharge">{t("generateCharge")}</Label>
               </div>
             </div>
-            <Button type="submit">Agendar sessão</Button>
+            <Button type="submit">{t("submit")}</Button>
           </form>
         </CardContent>
       </Card>

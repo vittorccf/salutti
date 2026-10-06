@@ -83,12 +83,12 @@ export async function cancelSessionMeeting(appt: { meetingEventId: string | null
   }
 }
 
-export const MEET_ISSUE_TEXT: Record<MeetIssue, string> = {
-  "meet-sem-usuario":
-    "O Meet é criado na conta Google de quem atende, e este profissional não tem usuário vinculado na Salutti. A sessão foi salva sem link.",
-  "meet-sem-conexao":
-    "Quem atende ainda não conectou a conta Google (Ajustes → Google Meet). A sessão foi salva sem link; gere depois de conectar.",
-  "meet-reconectar":
-    "A conexão com o Google expirou ou foi revogada. Quem atende precisa conectar de novo em Ajustes → Google Meet.",
-  video: "Não foi possível gerar o link da videochamada. Tente gerar de novo em instantes.",
+// Texto de cada aviso: chave em schedule.meetIssues (a tela da sessão traduz pelo código do ?aviso=).
+export const MEET_ISSUE_KEY: Record<MeetIssue, "noUser" | "noConnection" | "reconnect" | "video"> = {
+  "meet-sem-usuario": "noUser",
+  "meet-sem-conexao": "noConnection",
+  "meet-reconectar": "reconnect",
+  video: "video",
 };
+
+export const isMeetIssue = (v: unknown): v is MeetIssue => typeof v === "string" && Object.hasOwn(MEET_ISSUE_KEY, v);

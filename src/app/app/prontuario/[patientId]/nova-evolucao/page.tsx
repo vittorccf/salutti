@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { ActionForm, type FormResult } from "@/components/forms/action-form";
 import crypto from "node:crypto";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
@@ -11,26 +12,37 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { assertInWorkspace } from "@/lib/tenant";
+import { getTranslations } from "@/i18n/server";
+import { labeler } from "@/i18n/labels";
+
+// Ordem das opções no formulário (a primeira é a padrão).
+const NOTE_TYPES = ["evolucao", "anamnese", "plano_terapeutico", "alta"] as const;
 
 const schema = z.object({
   professionalId: z.string(),
   appointmentId: z.string().optional(),
-  noteType: z.enum(["anamnese", "evolucao", "plano_terapeutico", "alta"]),
+  noteType: z.enum(NOTE_TYPES),
   contentMarkdown: z.string().min(20),
   sign: z.string().optional(),
 });
 
-async function saveNoteAction(formData: FormData) {
+async function saveNoteAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
   const ctx = await requireContext();
   const patientId = formData.get("patientId") as string;
-  const data = schema.parse({
+  const parsed = schema.safeParse({
     professionalId: formData.get("professionalId"),
     appointmentId: formData.get("appointmentId") || undefined,
     noteType: formData.get("noteType"),
     contentMarkdown: formData.get("contentMarkdown"),
     sign: formData.get("sign") || undefined,
   });
+  // Texto curto demais (ou campo adulterado) volta como mensagem, sem derrubar a página nem apagar o que foi escrito.
+  if (!parsed.success) {
+    const t = await getTranslations("patients.note.errors");
+    return { erro: parsed.error.issues.some((i) => i.path[0] === "contentMarkdown") ? t("tooShort") : t("invalid") };
+  }
+  const data = parsed.data;
 
   const patient = await db.patient.findFirst({
     where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null },
@@ -99,23 +111,23 @@ export default async function NewClinicalNotePage({
     }),
   ]);
   if (!patient) notFound();
+  const [t, tLabels] = await Promise.all([getTranslations("patients.note"), getTranslations("common.labels")]);
+  const label = labeler(tLabels);
 
   return (
     <div className="max-w-3xl">
       <Card>
         <CardHeader>
-          <CardTitle>Nova evolução · {patient.fullName}</CardTitle>
-          <CardDescription>
-            O TOBI resume a evolução ao salvar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e do horário.
-          </CardDescription>
+          <CardTitle>{t("title", { name: patient.fullName })}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={saveNoteAction} className="space-y-4">
+          <ActionForm action={saveNoteAction} className="space-y-4">
             <input type="hidden" name="patientId" value={patient.id} />
             {appointmentId ? <input type="hidden" name="appointmentId" value={appointmentId} /> : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label htmlFor="professionalId">Profissional</Label>
+                <Label htmlFor="professionalId">{t("professional")}</Label>
                 <Select name="professionalId" id="professionalId" required>
                   {professionals.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -125,33 +137,32 @@ export default async function NewClinicalNotePage({
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="noteType">Tipo de registro</Label>
+                <Label htmlFor="noteType">{t("type")}</Label>
                 <Select name="noteType" id="noteType" defaultValue="evolucao">
-                  <option value="evolucao">Evolução</option>
-                  <option value="anamnese">Anamnese</option>
-                  <option value="plano_terapeutico">Plano terapêutico</option>
-                  <option value="alta">Alta</option>
+                  {NOTE_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {label("noteType", type)}
+                    </option>
+                  ))}
                 </Select>
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="contentMarkdown">Conteúdo</Label>
+              <Label htmlFor="contentMarkdown">{t("content")}</Label>
               <Textarea
                 name="contentMarkdown" id="contentMarkdown"
                 rows={14}
                 required
-                placeholder={`Sessão #__\nQueixa: …\nObservação clínica: …\nIntervenção: …\nPlano: …`}
+                placeholder={t("placeholder")}
               />
-              <p className="text-xs text-muted-foreground">
-                Aceita Markdown. O TOBI identifica temas (ansiedade, luto, sono, pânico, vínculo conjugal) e sugere próximos passos.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("hint")}</p>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <input id="sign" name="sign" type="checkbox" defaultChecked className="h-4 w-4 accent-primary" />
-              <Label htmlFor="sign">Assinar digitalmente (simulação ICP-Brasil)</Label>
+              <Label htmlFor="sign">{t("sign")}</Label>
             </div>
-            <Button type="submit">Salvar evolução</Button>
-          </form>
+            <Button type="submit">{t("submit")}</Button>
+          </ActionForm>
         </CardContent>
       </Card>
     </div>

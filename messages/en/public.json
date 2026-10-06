@@ -1,0 +1,88 @@
+{
+  "home": {
+    "login": "Sign in",
+    "tryFree": "Try for free",
+    "badge": "Up to date with LGPD and Receita Saúde",
+    "headline": "The <hl>Healthcare ERP</hl> that automates what nobody wants to do.",
+    "subtitle": "For psychologists, psychoanalysts, therapists and clinics who want to get back to caring for people, not spreadsheets. Scheduling, Pix, invoicing, WhatsApp and predictive AI in one system.",
+    "ctaCreate": "Create my practice",
+    "ctaDemo": "See the demo",
+    "fineprint": "15-day free trial · No credit card · Cancel anytime",
+    "features": {
+      "schedule": {
+        "title": "Scheduling with Meet/Zoom",
+        "desc": "Automatic WhatsApp confirmations, 24h/2h reminders, encrypted telehealth link."
+      },
+      "finance": {
+        "title": "Complete financial automation",
+        "desc": "Pix Automático, payment links, recurring billing, and overdue recovery through payment reminders."
+      },
+      "tax": {
+        "title": "Frictionless tax filing",
+        "desc": "NFS-e by municipality, digital receipts and Receita Saúde 2025 issued in 1 click."
+      },
+      "tobi": {
+        "title": "TOBI - clinical + predictive AI",
+        "desc": "Session summaries in seconds, financial insights (\"your revenue dropped 12%\") and churn detection."
+      },
+      "whatsapp": {
+        "title": "WhatsApp Business API",
+        "desc": "100% of professionals use WhatsApp - Salutti turns it into an official channel with approved templates."
+      },
+      "lgpd": {
+        "title": "LGPD by design",
+        "desc": "Sensitive data mapping, consent management, audit log and support for the 9 data subject rights."
+      }
+    },
+    "differentiators": {
+      "noCrp": {
+        "title": "No CRP? No problem.",
+        "desc": "Psychoanalysts and therapists with non-regulated training are welcome - unlike the competition."
+      },
+      "erp": {
+        "title": "An ERP, not a \"pretty calendar\".",
+        "desc": "Focused on the admin work that takes 2 to 20 hours of a professional’s week."
+      },
+      "offline": {
+        "title": "Optional offline-first",
+        "desc": "For UBS (public health units) and clinics with unstable infrastructure (Kris Fellipe / Turvânia case)."
+      }
+    },
+    "footer": "Salutti · ERP for mental health professionals ·"
+  },
+  "pay": {
+    "title": "Payment · {workspace}",
+    "description": "Secure payment by Salutti",
+    "chargeFor": "Charge for <strong>{name}</strong>",
+    "dueDate": "Due: {date}",
+    "method": "Payment method: {method}",
+    "pixCopyPaste": "Pix copy and paste",
+    "confirmed": "Payment confirmed. Your receipt is on its way.",
+    "simulate": "Simulate payment (sandbox)",
+    "processedBy": "Payment processed by Salutti."
+  },
+  "portal": {
+    "header": "Patient portal",
+    "hello": "Hi, {name} 👋",
+    "intro": "Here you can see your sessions and payments, and log how you’re feeling on your daily card.",
+    "upcoming": "Upcoming sessions",
+    "noSessions": "No sessions scheduled.",
+    "joinMeeting": "Join {platform}",
+    "videoCall": "video call",
+    "pendingPayments": "Pending payments",
+    "noPending": "No pending payments. You’re all set.",
+    "dueOn": "Due {date}",
+    "receipts": "Recent receipts",
+    "noReceipts": "No receipts yet.",
+    "dailyCard": "Daily card",
+    "dailyCardDescription": "Log your mood, sleep and anxiety. Your care provider follows along in your record.",
+    "date": "Date",
+    "mood": "Mood",
+    "sleep": "Sleep (hours)",
+    "anxiety": "Anxiety (1 to 5)",
+    "notes": "How was your day? (optional)",
+    "save": "Save card",
+    "saved": "Card saved",
+    "anxietyValue": "Anxiety {value}/5"
+  }
+}

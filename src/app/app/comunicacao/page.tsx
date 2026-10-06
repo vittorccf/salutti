@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { formatDateTimeBR } from "@/lib/utils";
+import { getFormat, getTranslations } from "@/i18n/server";
 import { MessageSquareText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -16,40 +16,44 @@ export default async function ComunicacaoPage() {
     orderBy: { createdAt: "desc" },
     take: 50,
   });
+  const t = await getTranslations("settings.communication");
+  const f = await getFormat();
+  const templateLabel = (template: string) =>
+    t.has(`templates.${template}`) ? t(`templates.${template}`) : template.replaceAll("_", " ");
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> Comunicação
+          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Mensagens enviadas pelo WhatsApp com modelos aprovados: lembretes, cobranças e recibos.
+          {t("intro")}
         </p>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Mensagens recentes</CardTitle>
-          <CardDescription>Lembretes de sessão, cobranças, recibos e boas-vindas.</CardDescription>
+          <CardTitle>{t("recentTitle")}</CardTitle>
+          <CardDescription>{t("recentDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <THead>
               <TR>
-                <TH>Quando</TH>
-                <TH>Canal</TH>
-                <TH>Destinatário</TH>
-                <TH>Modelo</TH>
-                <TH>Mensagem</TH>
-                <TH>Status</TH>
+                <TH>{t("when")}</TH>
+                <TH>{t("channel")}</TH>
+                <TH>{t("recipient")}</TH>
+                <TH>{t("template")}</TH>
+                <TH>{t("message")}</TH>
+                <TH>{t("status")}</TH>
               </TR>
             </THead>
             <TBody>
               {logs.length === 0 ? (
                 <TR>
                   <TD colSpan={6} className="text-center text-muted-foreground">
-                    Nenhuma mensagem enviada ainda. Os lembretes de sessão aparecem aqui.
+                    {t("empty")}
                   </TD>
                 </TR>
               ) : (
@@ -60,7 +64,7 @@ export default async function ComunicacaoPage() {
                   } catch {}
                   return (
                     <TR key={l.id}>
-                      <TD className="whitespace-nowrap">{formatDateTimeBR(l.createdAt)}</TD>
+                      <TD className="whitespace-nowrap">{f.dateTime(l.createdAt)}</TD>
                       <TD>
                         <Badge variant="outline">{l.channel === "whatsapp" ? "WhatsApp" : l.channel}</Badge>
                       </TD>
@@ -81,10 +85,3 @@ export default async function ComunicacaoPage() {
     </div>
   );
 }
-
-const templateLabel = (template: string) =>
-  ({
-    reminder_24h: "Lembrete 24h",
-    charge_due: "Cobrança a vencer",
-    charge_overdue: "Cobrança atrasada",
-  })[template] ?? template.replaceAll("_", " ");

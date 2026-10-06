@@ -1,5 +1,6 @@
 "use server";
 import { errorMessage } from "@/i18n/errors";
+import { getTranslations } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
@@ -8,7 +9,7 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { parseDateOnly } from "@/lib/dates";
-import { autonomoBlockers, isAccountType, segmentAfterMigration } from "@/lib/account";
+import { isAccountType, segmentAfterMigration } from "@/lib/account";
 import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
 import { ContactError, readAddress } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
@@ -20,9 +21,10 @@ import { stageImage, type StagedImage } from "@/lib/media-store";
 // Perfil do próprio usuário: vale em todos os consultórios de que ele participa.
 export async function updateProfileAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   const ctx = await requireContext();
+  const t = await getTranslations("settings");
   const parsed = z
     .object({
-      name: z.string().trim().min(2, "Informe seu nome.").max(120),
+      name: z.string().trim().min(2, t("errors.nameRequired")).max(120),
       birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
     })
     .safeParse(Object.fromEntries(formData.entries()));
@@ -55,19 +57,22 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
   if (isLocale(locale)) cookies().set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   else cookies().delete(LOCALE_COOKIE);
   revalidatePath("/app", "layout");
-  return { ok: "Perfil salvo." };
+  // Mensagem já no idioma escolhido agora.
+  const tNew = isLocale(locale) ? await getTranslations({ locale, namespace: "settings" }) : t;
+  return { ok: tNew("success.profileSaved") };
 }
 
 // Dados do consultório/clínica (nome, CNPJ, endereço): dono ou administrador.
 export async function updateWorkspaceAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   const ctx = await requireContext();
-  if (ctx.role !== "owner" && ctx.role !== "admin") return { erro: "Só o dono ou um administrador altera estes dados." };
+  const t = await getTranslations("settings");
+  if (ctx.role !== "owner" && ctx.role !== "admin") return { erro: t("errors.workspaceNoPermission") };
   const name = String(formData.get("name") ?? "").trim();
-  if (name.length < 2 || name.length > 120) return { erro: "Informe o nome." };
+  if (name.length < 2 || name.length > 120) return { erro: t("errors.workspaceName") };
   const cnpjRaw = String(formData.get("cnpj") ?? "").trim();
   // CNPJ que já estava salvo e não mudou não é revalidado (cadastros antigos não travam o formulário).
   const cnpjChanged = cnpjRaw !== (ctx.workspace.cnpj ?? "");
-  if (cnpjRaw && cnpjChanged && !isValidCnpj(cnpjRaw)) return { erro: "CNPJ inválido. Confira os números." };
+  if (cnpjRaw && cnpjChanged && !isValidCnpj(cnpjRaw)) return { erro: t("errors.cnpjInvalid") };
   let address;
   try {
     address = readAddress(formData);
@@ -76,7 +81,7 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
     throw e;
   }
   const brand = z.enum(["salutti", "photo", "banner"]).safeParse(formData.get("brandDisplay") ?? "salutti");
-  if (!brand.success) return { erro: "Escolha o que aparece no menu." };
+  if (!brand.success) return { erro: t("errors.brandDisplay") };
   const brandDisplay = brand.data;
   let banner: StagedImage;
   try {
@@ -87,7 +92,7 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
   }
   if (brandDisplay === "banner" && !banner.id) {
     await banner.rollback();
-    return { erro: "Envie o banner para usá-lo no menu." };
+    return { erro: t("errors.bannerRequired") };
   }
   await db.workspace
     .update({
@@ -113,24 +118,29 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
     entityId: ctx.workspace.id,
   });
   revalidatePath("/app", "layout");
-  return { ok: "Dados salvos." };
+  return { ok: t("success.workspaceSaved") };
 }
 
 // Troca autônomo ↔ clínica. Só o dono. Para virar autônomo, a conta precisa caber em um profissional e um usuário;
 // nada é apagado na troca (pacientes, agenda, prontuário e financeiro ficam como estão).
 export async function changeAccountTypeAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   const ctx = await requireContext();
-  if (ctx.role !== "owner") return { erro: "Só quem é dono da conta pode mudar o tipo." };
+  const t = await getTranslations("settings");
+  if (ctx.role !== "owner") return { erro: t("errors.accountTypeOwnerOnly") };
   const to = formData.get("to");
-  if (!isAccountType(to) || to === ctx.workspace.accountType) return { erro: "Escolha o novo tipo de conta." };
+  if (!isAccountType(to) || to === ctx.workspace.accountType) return { erro: t("errors.accountTypeChoose") };
 
   if (to === "autonomo") {
     const [activeProfessionals, members] = await Promise.all([
       db.professional.count({ where: { workspaceId: ctx.workspace.id, active: true } }),
       db.membership.count({ where: { workspaceId: ctx.workspace.id, role: { notIn: ["receptionist", "financial"] } } }),
     ]);
-    const blockers = autonomoBlockers({ activeProfessionals, members });
-    if (blockers.length) return { erro: `Ainda não dá para virar conta de autônomo: ${blockers.join("; ")}.` };
+    // Mesma regra de autonomoBlockers (src/lib/account.ts), com o texto no idioma da pessoa.
+    const blockers = [
+      ...(activeProfessionals > 1 ? [t("page.accountType.blockerProfessionals", { count: activeProfessionals })] : []),
+      ...(members > 1 ? [t("page.accountType.blockerMembers", { count: members })] : []),
+    ];
+    if (blockers.length) return { erro: t("errors.autonomoBlocked", { blockers: blockers.join("; ") }) };
   }
 
   const segment = segmentAfterMigration(to, ctx.workspace.segment);
@@ -144,5 +154,5 @@ export async function changeAccountTypeAction(_prev: FormResult, formData: FormD
     metadata: { from: ctx.workspace.accountType, to, segment },
   });
   revalidatePath("/app", "layout");
-  return { ok: to === "clinica" ? "Pronto: a conta agora é de clínica." : "Pronto: a conta agora é de profissional autônomo." };
+  return { ok: to === "clinica" ? t("success.nowClinic") : t("success.nowAutonomo") };
 }

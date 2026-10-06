@@ -1,0 +1,88 @@
+{
+  "home": {
+    "login": "Entrar",
+    "tryFree": "Testar grátis",
+    "badge": "Em dia com a LGPD e o Receita Saúde",
+    "headline": "O <hl>ERP de Saúde</hl> que automatiza o que ninguém quer fazer.",
+    "subtitle": "Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas, não de planilhas. Agenda, Pix, nota fiscal, WhatsApp e IA preditiva em um só sistema.",
+    "ctaCreate": "Criar meu consultório",
+    "ctaDemo": "Ver demonstração",
+    "fineprint": "15 dias grátis · Sem cartão · Cancele quando quiser",
+    "features": {
+      "schedule": {
+        "title": "Agenda integrada Meet/Zoom",
+        "desc": "Confirmação automática via WhatsApp, lembretes 24h/2h, link de teleconsulta criptografado."
+      },
+      "finance": {
+        "title": "Automação financeira completa",
+        "desc": "Pix Automático, links de pagamento, recorrência, recuperação de inadimplência via régua de cobrança."
+      },
+      "tax": {
+        "title": "Fiscal sem fricção",
+        "desc": "NFS-e por município, recibos digitais e Receita Saúde 2025 emitidos com 1 clique."
+      },
+      "tobi": {
+        "title": "TOBI - IA clínica + preditiva",
+        "desc": "Sumarização de sessões em segundos, insights financeiros (\"sua receita caiu 12%\") e detecção de churn."
+      },
+      "whatsapp": {
+        "title": "WhatsApp Business API",
+        "desc": "100% dos profissionais usam WhatsApp - Salutti o transforma em canal oficial com templates aprovados."
+      },
+      "lgpd": {
+        "title": "LGPD by design",
+        "desc": "Mapeamento de dados sensíveis, consent management, audit log e exercício dos 9 direitos do titular."
+      }
+    },
+    "differentiators": {
+      "noCrp": {
+        "title": "Sem CRP? Sem problema.",
+        "desc": "Psicanalistas e terapeutas com formação não-regulamentada são bem-vindos - diferente da concorrência."
+      },
+      "erp": {
+        "title": "ERP, não \"agenda bonita\".",
+        "desc": "Foco no fluxo administrativo que consome 2h a 20h semanais do profissional."
+      },
+      "offline": {
+        "title": "Offline-first opcional",
+        "desc": "Para UBS e clínicas com infraestrutura instável (caso Kris Fellipe / Turvânia)."
+      }
+    },
+    "footer": "Salutti · ERP para quem cuida da saúde mental ·"
+  },
+  "pay": {
+    "title": "Pagamento · {workspace}",
+    "description": "Pagamento seguro pela Salutti",
+    "chargeFor": "Cobrança para <strong>{name}</strong>",
+    "dueDate": "Vencimento: {date}",
+    "method": "Forma de pagamento: {method}",
+    "pixCopyPaste": "Pix copia e cola",
+    "confirmed": "Pagamento confirmado. O recibo chega em instantes.",
+    "simulate": "Simular pagamento (sandbox)",
+    "processedBy": "Pagamento processado pela Salutti."
+  },
+  "portal": {
+    "header": "Portal do paciente",
+    "hello": "Olá, {name} 👋",
+    "intro": "Aqui você vê suas sessões, pagamentos e registra como está se sentindo no cartão diário.",
+    "upcoming": "Próximas sessões",
+    "noSessions": "Nenhuma sessão agendada.",
+    "joinMeeting": "Entrar no {platform}",
+    "videoCall": "Videochamada",
+    "pendingPayments": "Pagamentos pendentes",
+    "noPending": "Nenhum pagamento pendente. Tudo em dia.",
+    "dueOn": "Vence {date}",
+    "receipts": "Recibos recentes",
+    "noReceipts": "Nenhum recibo ainda.",
+    "dailyCard": "Cartão diário",
+    "dailyCardDescription": "Registre humor, sono e ansiedade. Quem cuida de você acompanha pela sua ficha.",
+    "date": "Data",
+    "mood": "Humor",
+    "sleep": "Sono (horas)",
+    "anxiety": "Ansiedade (1 a 5)",
+    "notes": "Como foi seu dia? (opcional)",
+    "save": "Salvar cartão",
+    "saved": "Cartão registrado",
+    "anxietyValue": "Ansiedade {value}/5"
+  }
+}
