@@ -44,6 +44,7 @@
     "libphonenumber-js": "^1.13.14",
     "lucide-react": "^0.460.0",
     "next": "14.2.18",
+    "next-intl": "^4.14.9",
     "next-themes": "^0.3.0",
     "qrcode": "^1.5.4",
     "react": "18.3.1",

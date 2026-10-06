@@ -1,4 +1,5 @@
 "use server";
+import { errorMessage } from "@/i18n/errors";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -38,7 +39,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
   try {
     email = (await validEmail(formData.get("email"), { required: true }))!;
   } catch (e) {
-    if (e instanceof ContactError) return { erro: e.message };
+    if (e instanceof ContactError) return { erro: await errorMessage(e) };
     throw e;
   }
   if (await db.user.findUnique({ where: { email } })) return { erro: "Este e-mail já tem conta. Entre ou recupere o acesso." };

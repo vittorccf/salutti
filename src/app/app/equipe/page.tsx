@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { errorMessage } from "@/i18n/errors";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
@@ -67,7 +68,7 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
     email = await validEmail(formData.get("email"));
     phone = validPhone(formData.get("phone"), { country: formData.get("phoneCountry") });
   } catch (e) {
-    if (e instanceof ContactError) return { erro: e.message };
+    if (e instanceof ContactError) return { erro: await errorMessage(e) };
     throw e;
   }
   const noCouncil = data.noCouncil === "on";

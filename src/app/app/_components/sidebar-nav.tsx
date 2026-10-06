@@ -15,25 +15,27 @@ import {
   Users,
   UserSquare2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { href: "/app", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app/pacientes", label: "Pacientes", icon: Users },
-  { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/app/prontuario", label: "Prontuário", icon: ClipboardList },
-  { href: "/app/financeiro", label: "Financeiro", icon: Banknote },
-  { href: "/app/convenios", label: "Convênios", icon: Handshake },
-  { href: "/app/fiscal", label: "Fiscal", icon: FileSignature },
-  { href: "/app/tobi", label: "TOBI · IA", icon: Sparkles },
-  { href: "/app/comunicacao", label: "Comunicação", icon: MessageSquareText },
-  { href: "/app/equipe", label: "Profissionais", icon: Stethoscope },
-  { href: "/app/lgpd", label: "LGPD", icon: ShieldCheck },
-  { href: "/app/ajustes", label: "Ajustes", icon: UserSquare2 },
-];
+  { href: "/app", label: "dashboard", icon: LayoutDashboard },
+  { href: "/app/pacientes", label: "patients", icon: Users },
+  { href: "/app/agenda", label: "schedule", icon: CalendarDays },
+  { href: "/app/prontuario", label: "records", icon: ClipboardList },
+  { href: "/app/financeiro", label: "finance", icon: Banknote },
+  { href: "/app/convenios", label: "insurance", icon: Handshake },
+  { href: "/app/fiscal", label: "tax", icon: FileSignature },
+  { href: "/app/tobi", label: "tobi", icon: Sparkles },
+  { href: "/app/comunicacao", label: "communication", icon: MessageSquareText },
+  { href: "/app/equipe", label: "team", icon: Stethoscope },
+  { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck },
+  { href: "/app/ajustes", label: "settings", icon: UserSquare2 },
+] as const;
 
 export const SidebarNav = () => {
   const pathname = usePathname();
+  const t = useTranslations("common.nav");
   return (
     <nav className="space-y-1">
       {nav.map((item) => {
@@ -50,7 +52,7 @@ export const SidebarNav = () => {
             )}
           >
             <Icon className={cn("h-4 w-4", active ? "text-accent-foreground" : "text-muted-foreground")} />
-            {item.label}
+            {t(item.label)}
           </Link>
         );
       })}

@@ -1,5 +1,8 @@
 "use server";
+import { errorMessage } from "@/i18n/errors";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -28,7 +31,7 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
   try {
     avatar = await stageImage(formData, "avatar", ctx.user.avatarId, "user_avatar", { userId: ctx.user.id });
   } catch (e) {
-    if (e instanceof UploadError) return { erro: e.message };
+    if (e instanceof UploadError) return { erro: await errorMessage(e) };
     throw e;
   }
   await db.user
@@ -39,6 +42,7 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
       name: parsed.data.name,
       birthDate: parsed.data.birthDate ? parseDateOnly(parsed.data.birthDate) : null,
         showPatientBirthdays: formData.get("showPatientBirthdays") === "on",
+        locale: isLocale(formData.get("locale")) ? String(formData.get("locale")) : null,
       },
     })
     .catch(async (e) => {
@@ -46,6 +50,10 @@ export async function updateProfileAction(_prev: FormResult, formData: FormData)
       throw e;
     });
   await avatar.commit();
+  // O idioma vale já nesta resposta e nos próximos acessos (o cookie é lido em src/i18n/request.ts).
+  const locale = formData.get("locale");
+  if (isLocale(locale)) cookies().set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  else cookies().delete(LOCALE_COOKIE);
   revalidatePath("/app", "layout");
   return { ok: "Perfil salvo." };
 }
@@ -64,7 +72,7 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
   try {
     address = readAddress(formData);
   } catch (e) {
-    if (e instanceof ContactError) return { erro: e.message };
+    if (e instanceof ContactError) return { erro: await errorMessage(e) };
     throw e;
   }
   const brand = z.enum(["salutti", "photo", "banner"]).safeParse(formData.get("brandDisplay") ?? "salutti");
@@ -74,7 +82,7 @@ export async function updateWorkspaceAction(_prev: FormResult, formData: FormDat
   try {
     banner = await stageImage(formData, "banner", ctx.workspace.bannerId, "workspace_banner", { workspaceId: ctx.workspace.id });
   } catch (e) {
-    if (e instanceof UploadError) return { erro: e.message };
+    if (e instanceof UploadError) return { erro: await errorMessage(e) };
     throw e;
   }
   if (brandDisplay === "banner" && !banner.id) {

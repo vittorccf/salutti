@@ -4,7 +4,10 @@ import { emailDomainAcceptsMail } from "./email-server";
 import { DEFAULT_COUNTRY, isCountryCode, toE164 } from "./phone";
 import { normalizeCep } from "./cep";
 
-export class ContactError extends Error {}
+import { TranslatableError } from "@/i18n/errors";
+
+// Erro de validação com a chave da mensagem (common.errors.*); a action traduz com errorMessage().
+export class ContactError extends TranslatableError {}
 
 // E-mail opcional: vazio → null; formato inválido ou domínio que não recebe e-mail → erro.
 // `previous`: na edição, e-mail que não mudou não passa de novo pelo DNS (domínio antigo não trava a ficha).
@@ -14,14 +17,14 @@ export async function validEmail(
 ): Promise<string | null> {
   const value = String(raw ?? "").trim();
   if (!value) {
-    if (required) throw new ContactError("Informe o e-mail.");
+    if (required) throw new ContactError("emailRequired");
     return null;
   }
   const parsed = emailSchema.safeParse(value);
-  if (!parsed.success) throw new ContactError("E-mail inválido. Confira o endereço.");
+  if (!parsed.success) throw new ContactError("emailInvalid");
   if (parsed.data === previous) return parsed.data;
   if (!(await emailDomainAcceptsMail(parsed.data))) {
-    throw new ContactError("O domínio do e-mail não recebe mensagens. Confira o que vem depois do @.");
+    throw new ContactError("emailDomain");
   }
   return parsed.data;
 }
@@ -30,13 +33,13 @@ export async function validEmail(
 // `previous`: telefone antigo fora do padrão que não foi tocado continua como está.
 export function validPhone(
   raw: FormDataEntryValue | null,
-  { label = "Telefone", country, previous }: { label?: string; country?: FormDataEntryValue | null; previous?: string | null } = {},
+  { label = "phoneLabel", country, previous }: { label?: string; country?: FormDataEntryValue | null; previous?: string | null } = {},
 ): string | null {
   const value = String(raw ?? "").trim();
   if (!value) return null;
   if (value === previous) return value;
   const e164 = toE164(value, isCountryCode(country) ? country : DEFAULT_COUNTRY);
-  if (!e164) throw new ContactError(`${label} inválido. Confira o país e o número.`);
+  if (!e164) throw new ContactError("phoneInvalid", { label });
   return e164;
 }
 
@@ -44,7 +47,7 @@ const clean = (v: FormDataEntryValue | null, max = 120) => String(v ?? "").trim(
 
 export function readAddress(formData: FormData) {
   const cep = normalizeCep(String(formData.get("cep") ?? ""));
-  if (cep && cep.length !== 8) throw new ContactError("CEP inválido. Use 8 dígitos.");
+  if (cep && cep.length !== 8) throw new ContactError("cepInvalid");
   const state = clean(formData.get("state"), 2)?.toUpperCase() ?? null;
   return {
     cep: cep || null,

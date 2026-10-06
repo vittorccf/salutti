@@ -1,4 +1,5 @@
 "use server";
+import { errorMessage } from "@/i18n/errors";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
@@ -61,8 +62,8 @@ async function readPatient(formData: FormData, workspaceId: string, previous: Pr
   };
 }
 
-const fail = (e: unknown): FormResult => {
-  if (e instanceof ContactError || e instanceof UploadError) return { erro: e.message };
+const fail = async (e: unknown): Promise<FormResult> => {
+  if (e instanceof ContactError || e instanceof UploadError) return { erro: await errorMessage(e) };
   throw e;
 };
 
