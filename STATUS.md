@@ -1,6 +1,34 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-06 (migração para o Design System Salutti). Seção abaixo é a mais recente; o restante é da retomada de 2026-09-21.
+> Última atualização deste arquivo: 2026-10-06. A seção "Roadmap executado" é a mais recente; as demais ficam como histórico.
+
+## Roadmap executado (2026-10-06) — PRs encadeados #1 → #11
+
+Cada item tem PR próprio, testes e CI verde (exceto onde indicado). Merge na ordem; o GitHub redireciona a base de cada PR.
+
+| PR | Entrega |
+|---|---|
+| #1 | Design System Salutti (tokens, tema escuro, regras de uso em todas as telas) |
+| #2 | Datas no fuso de São Paulo (`src/lib/dates.ts`) |
+| #3 | Base limpa, sem pacientes/profissionais fictícios |
+| #4 | Segurança: isolamento entre consultórios (IDOR), `AUTH_SECRET` obrigatório em produção |
+| #5 | Google Meet e Zoom no agendamento |
+| #6 | Testes (Vitest + Playwright) e CI no GitHub Actions |
+| #7 | Primeiros passos e biblioteca de modelos de anamnese |
+| #8 | Assinatura da Salutti com Stripe Billing |
+| #9 | Verificação em duas etapas (TOTP) |
+| #10 | Convênios e faturamento TISS 4.03.00 (XML validado contra os XSD oficiais) |
+| #11 | PostgreSQL com migrations (substitui SQLite e o modo demo) |
+
+**Depende do dono do projeto:**
+1. Merges (o agente não faz merge sem revisão).
+2. Vercel/produção: `AUTH_SECRET` (antes do #4) e um Postgres com `DATABASE_URL`, ex.: Neon (antes do #11). Depois do #11: `DATABASE_URL=<url> npm run db:seed` para os logins de demonstração.
+3. Credenciais reais para sair do modo de teste: Google (Meet), Zoom, Stripe (chaves, preços, webhook).
+4. Local: trocar `DATABASE_URL` do `.env` para o Postgres local (ver `.env.example`) e usar `npm run db:local`.
+
+**Ainda não feito (decisão do dono):** WhatsApp Cloud API, Memed/receita digital, app mobile nativo, modo offline para UBS, guia odontológica (GTO) no TISS, Auth.js/SSO.
+
+**Observado:** o build às vezes falha ao baixar as fontes do Google Fonts (`next/font`), de forma intermitente; uma reexecução resolve. Hospedar as fontes localmente (`next/font/local`) elimina o problema.
 
 ## Base limpa (2026-10-06) — branch `chore/base-limpa`
 
