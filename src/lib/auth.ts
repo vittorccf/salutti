@@ -7,9 +7,25 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
 
-const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "dev-secret-salutti-prototype",
-);
+// Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
+// obrigatório: o padrão está no repositório público e permitiria forjar sessões.
+const DEV_SECRET = "dev-secret-salutti-prototype";
+const isProduction = process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview";
+const secretKey = () => {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret && isProduction) {
+    throw new Error("AUTH_SECRET não definido. Configure a variável de ambiente (32+ caracteres aleatórios).");
+  }
+  return new TextEncoder().encode(secret ?? DEV_SECRET);
+};
+
+const cookieBase = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30,
+};
 const COOKIE_NAME = "salutti_session";
 const COOKIE_WS = "salutti_ws";
 
@@ -28,14 +44,9 @@ export const createSession = async (payload: SessionPayload) => {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
-    .sign(SECRET);
+    .sign(secretKey());
 
-  cookies().set(COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  cookies().set(COOKIE_NAME, token, cookieBase);
 };
 
 export const destroySession = () => {
@@ -47,7 +58,7 @@ export const getSession = async (): Promise<SessionPayload | null> => {
   const token = cookies().get(COOKIE_NAME)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, secretKey());
     return payload as unknown as SessionPayload;
   } catch {
     return null;
@@ -55,12 +66,7 @@ export const getSession = async (): Promise<SessionPayload | null> => {
 };
 
 export const setActiveWorkspaceCookie = (workspaceId: string) => {
-  cookies().set(COOKIE_WS, workspaceId, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  cookies().set(COOKIE_WS, workspaceId, cookieBase);
 };
 
 export const getActiveWorkspaceId = () => cookies().get(COOKIE_WS)?.value ?? null;
