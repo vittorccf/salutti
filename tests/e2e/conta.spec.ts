@@ -8,7 +8,7 @@ const todayIn = (year: number) => {
 };
 
 test("clínica no cadastro → equipe → vira autônomo só com um profissional → aniversários no painel", async ({ page }) => {
-  const email = `clinica-${Date.now()}@teste.dev`;
+  const email = `clinica-${Date.now()}@example.com`;
   await page.goto("/signup");
 
   // Sem escolher o tipo, os campos não aparecem.
@@ -78,7 +78,7 @@ test("clínica no cadastro → equipe → vira autônomo só com um profissional
 });
 
 test("perfil e dados do consultório em Ajustes (CEP preenche o endereço)", async ({ page }) => {
-  const email = `autonomo-${Date.now()}@teste.dev`;
+  const email = `autonomo-${Date.now()}@example.com`;
   await page.route("**/api/cep/01001000", (r) =>
     r.fulfill({ json: { cep: "01001000", street: "Praça da Sé", district: "Sé", city: "São Paulo", state: "SP" } }),
   );

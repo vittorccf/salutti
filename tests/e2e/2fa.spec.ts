@@ -33,7 +33,7 @@ async function code(page: Page, value: string) {
 }
 
 test("ativar 2FA, entrar com código e com código de recuperação, bloquear e desativar", async ({ page, context }) => {
-  const email = `dois-fatores-${Date.now()}@teste.dev`;
+  const email = `dois-fatores-${Date.now()}@example.com`;
   await signup(page, email);
 
   // Ativação pelo menu do perfil.
@@ -91,7 +91,7 @@ test("ativar 2FA, entrar com código e com código de recuperação, bloquear e 
 });
 
 test("desativar exige o código atual", async ({ page }) => {
-  const email = `desativar-${Date.now()}@teste.dev`;
+  const email = `desativar-${Date.now()}@example.com`;
   await signup(page, email);
   await page.goto("/app/conta/seguranca");
   await page.getByRole("button", { name: "Configurar verificação em duas etapas" }).click();
