@@ -28,8 +28,8 @@ export default async function PatientsPage({
       ...(q
         ? {
             OR: [
-              { fullName: { contains: q } },
-              { email: { contains: q } },
+              { fullName: { contains: q, mode: "insensitive" } },
+              { email: { contains: q, mode: "insensitive" } },
               { cpf: { contains: q } },
             ],
           }

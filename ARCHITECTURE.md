@@ -32,7 +32,7 @@ Este documento explica decisões técnicas, trade-offs e o caminho para produç�
 │  │ Prisma ORM   │ - tenant scope via workspaceId em todas   │
 │  └───────┬──────┘                                           │
 └──────────▼──────────────────────────────────────────────────┘
-       SQLite (dev)  /  PostgreSQL (prod)
+       PostgreSQL (dev e prod)
 ```
 
 ## 2. Multi-tenant - modelo "shared schema"
