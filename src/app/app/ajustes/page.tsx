@@ -70,7 +70,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       status: process.env.RECEITA_SAUDE_TOKEN?.includes("mock") ? "sandbox" : "real",
     },
     {
-      name: "OpenAI (LUMA)",
+      name: "OpenAI (TOBI)",
       desc: "Sumarização e insights generativos",
       status: process.env.OPENAI_API_KEY ? "real" : "heurístico",
     },

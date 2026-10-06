@@ -29,7 +29,7 @@ export default async function ProntuarioListPage() {
             <ClipboardList className="h-6 w-6 text-primary-strong" aria-hidden /> Prontuário
           </h1>
           <p className="text-sm text-muted-foreground">
-            Evoluções e anamneses dos seus pacientes. A LUMA resume cada evolução ao salvar.
+            Evoluções e anamneses dos seus pacientes. O TOBI resume cada evolução ao salvar.
           </p>
         </div>
       </header>
@@ -57,7 +57,7 @@ export default async function ProntuarioListPage() {
                   <TH>Profissional</TH>
                   <TH>Tipo</TH>
                   <TH>Atualizado</TH>
-                  <TH>LUMA</TH>
+                  <TH>TOBI</TH>
                   <TH></TH>
                 </TR>
               </THead>

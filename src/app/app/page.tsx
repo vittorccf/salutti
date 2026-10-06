@@ -175,19 +175,19 @@ export default async function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> LUMA · insights financeiros e clínicos
+              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> TOBI · insights financeiros e clínicos
               <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
             </CardTitle>
             <CardDescription>Gerados a partir dos seus dados em tempo real.</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/app/luma">Ver todos</Link>
+            <Link href="/app/tobi">Ver todos</Link>
           </Button>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           {liveInsights.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum insight ainda. Quando você registrar sessões e cobranças, a LUMA analisa os dados aqui.
+              Nenhum insight ainda. Quando você registrar sessões e cobranças, o TOBI analisa os dados aqui.
             </p>
           ) : (
             liveInsights.map((insight) => (

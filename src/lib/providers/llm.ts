@@ -1,4 +1,4 @@
-// LUMA - núcleo de IA da Salutti.
+// TOBI - núcleo de IA da Salutti.
 // Implementa interface estável; usa OPENAI_API_KEY se presente, senão fallback
 // determinístico baseado em heurísticas. Permite demonstração end-to-end
 // sem dependência de chave de API.
@@ -8,13 +8,13 @@ type SummarizeArgs = {
   patientName?: string;
 };
 
-export const luma = {
+export const tobi = {
   async summarizeSession({ text, patientName }: SummarizeArgs) {
     if (process.env.OPENAI_API_KEY) {
       try {
         return await callOpenAI({ text, patientName });
       } catch (err) {
-        console.warn("[LUMA] fallback heurístico:", err);
+        console.warn("[TOBI] fallback heurístico:", err);
       }
     }
     return heuristicSummary({ text, patientName });
@@ -56,7 +56,7 @@ const heuristicSummary = ({ text, patientName }: SummarizeArgs) => {
       ? `**Temas detectados:** ${topics.join(", ")}.`
       : "**Temas detectados:** sessão narrativa sem temas catalogados.",
     `**Síntese inicial:** ${firstSentence.trim() || "Conteúdo escasso para sumarização."}.`,
-    `**Sugestão LUMA:** considere registrar plano terapêutico, próximos passos e potenciais comorbidades observadas.`,
+    `**Sugestão do TOBI:** considere registrar plano terapêutico, próximos passos e potenciais comorbidades observadas.`,
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -77,7 +77,7 @@ const callOpenAI = async ({ text, patientName }: SummarizeArgs) => {
         {
           role: "system",
           content:
-            "Você é o LUMA, assistente clínico da Salutti. Sumarize sessões em até 5 bullets: temas, hipóteses, plano terapêutico sugerido, riscos. Cite explicitamente se houver indício de risco psiquiátrico agudo. Não invente dados ausentes.",
+            "Você é o TOBI, assistente clínico da Salutti. Sumarize sessões em até 5 bullets: temas, hipóteses, plano terapêutico sugerido, riscos. Cite explicitamente se houver indício de risco psiquiátrico agudo. Não invente dados ausentes.",
         },
         {
           role: "user",

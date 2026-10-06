@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
-import { luma } from "@/lib/providers/llm";
+import { tobi } from "@/lib/providers/llm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -42,7 +42,7 @@ async function saveNoteAction(formData: FormData) {
     appointmentId: data.appointmentId || null,
   });
 
-  const aiOutput = await luma.summarizeSession({
+  const aiOutput = await tobi.summarizeSession({
     text: data.contentMarkdown,
     patientName: patient.fullName,
   });
@@ -106,7 +106,7 @@ export default async function NewClinicalNotePage({
         <CardHeader>
           <CardTitle>Nova evolução · {patient.fullName}</CardTitle>
           <CardDescription>
-            A LUMA resume a evolução ao salvar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e do horário.
+            O TOBI resume a evolução ao salvar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e do horário.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -143,7 +143,7 @@ export default async function NewClinicalNotePage({
                 placeholder={`Sessão #__\nQueixa: …\nObservação clínica: …\nIntervenção: …\nPlano: …`}
               />
               <p className="text-xs text-muted-foreground">
-                Aceita Markdown. A LUMA identifica temas (ansiedade, luto, sono, pânico, vínculo conjugal) e sugere próximos passos.
+                Aceita Markdown. O TOBI identifica temas (ansiedade, luto, sono, pânico, vínculo conjugal) e sugere próximos passos.
               </p>
             </div>
             <div className="flex items-center gap-2 text-sm">

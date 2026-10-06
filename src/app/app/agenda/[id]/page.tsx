@@ -218,7 +218,7 @@ export default async function AppointmentDetailPage({
               ) : (
                 <Button asChild>
                   <Link href={`/app/prontuario/${appt.patient.id}/nova-evolucao?appointmentId=${appt.id}`}>
-                    <Sparkles className="h-4 w-4" /> Registrar evolução com a LUMA
+                    <Sparkles className="h-4 w-4" /> Registrar evolução com o TOBI
                   </Link>
                 </Button>
               )}
