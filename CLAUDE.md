@@ -17,7 +17,7 @@ npm run db:local      # Postgres local embutido (localhost:5433, dados em .pgdat
 npm run db:migrate    # nova migration a partir do schema.prisma
 npm run db:deploy     # aplica migrations pendentes
 npm run db:seed       # com SEED_DEMO=1: recria usuários/consultórios de desenvolvimento, sem pacientes; sem ela não cria usuários (tsx prisma/seed.ts)
-npm run db:admin      # criar/atualizar usuário admin (admin/admin) — scripts/create-admin.ts
+npm run db:admin      # criar/atualizar admin/admin de CONSULTÓRIO (não é o do backoffice, que vem da migration) — scripts/create-admin.ts
 npm run db:reset      # force-reset + seed
 npx prisma studio     # GUI dos dados
 npm test              # unitários (Vitest): datas/fuso, rótulos, formatação, videochamada, insights
@@ -40,4 +40,5 @@ Testes: unitários em `tests/unit` (Vitest) e ponta a ponta em `tests/e2e` (Play
 
 - **Banco é Postgres em todo lugar.** Local: `npm run db:local` + `SEED_DEMO=1 npm run db:seed`. Mudou o schema? `npm run db:migrate -- --name <descricao>` (nunca `db push`). Produção aplica migrations no `vercel-build`, pela conexão direta do Neon (`DATABASE_URL_UNPOOLED`).
 - Auth é implementação própria (jose + bcrypt) com 2FA TOTP (`src/lib/totp.ts`); não há SSO nem Auth.js.
+- O backoffice (`/backoffice`, `docs/BACKOFFICE.md`) tem usuários e sessão próprios (`src/lib/backoffice/auth.ts`); `requireContext()` não vale lá, e `requireBackoffice()` não vale no app.
 - No Windows, `prisma generate` falha com EPERM se um dev server estiver aberto (a DLL do motor fica travada); o cliente JS é gerado mesmo assim.

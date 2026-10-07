@@ -1,0 +1,82 @@
+{
+  "button": {
+    "open": "Hablar con soporte",
+    "close": "Cerrar soporte",
+    "unread": "Hay una respuesta nueva de soporte"
+  },
+  "title": "Soporte Salutti",
+  "tabs": {
+    "new": "Nueva solicitud",
+    "mine": "Mis solicitudes"
+  },
+  "form": {
+    "topic": "¿Sobre qué es?",
+    "topicPlaceholder": "Elige un tema",
+    "subject": "Asunto",
+    "subjectPlaceholder": "Resumen en pocas palabras",
+    "message": "Mensaje",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "privacy": "Para proteger a tus pacientes, no escribas nombres, documentos ni información clínica: describe la situación de forma general. El equipo de Salutti lee tu solicitud y ve automáticamente la página en la que estabas, tu navegador y el tamaño de la pantalla, solo para entender el problema."
+  },
+  "topics": {
+    "bug": {
+      "label": "Algo no funciona",
+      "help": "Cuenta qué intentaste hacer, qué pasó y qué esperabas. Ej.: “Al guardar la sesión en la Agenda, la pantalla se bloqueó.”"
+    },
+    "acesso": {
+      "label": "Inicio de sesión y acceso",
+      "help": "Di qué pasa al entrar (contraseña, código 2FA, invitación del equipo). Nunca envíes tu contraseña."
+    },
+    "duvida": {
+      "label": "Duda de uso",
+      "help": "Di en qué pantalla estás y qué quieres hacer."
+    },
+    "financeiro": {
+      "label": "Plan y cobro",
+      "help": "Suscripción, cobro o cambio de plan de Salutti."
+    },
+    "privacidade": {
+      "label": "Privacidad y protección de datos",
+      "help": "Solicitud del titular, exportación o eliminación de datos, consentimiento."
+    },
+    "sugestao": {
+      "label": "Sugerencia",
+      "help": "¿Qué mejora ayudaría a tu rutina? Cuenta qué problema resuelve."
+    },
+    "outro": {
+      "label": "Otro tema",
+      "help": "Escribe con tus palabras, nosotros lo derivamos."
+    }
+  },
+  "sent": {
+    "title": "Recibimos tu solicitud n.º {number}",
+    "body": "Responderemos por aquí. Cuando haya respuesta, el botón de soporte muestra un punto.",
+    "mine": "Ver mis solicitudes",
+    "another": "Abrir otra solicitud"
+  },
+  "errors": {
+    "invalid": "Elige el tema, escribe un asunto (3 letras o más) y describe qué pasó.",
+    "limit": "Demasiados mensajes en poco tiempo. Inténtalo de nuevo en una hora.",
+    "notFound": "Solicitud no encontrada.",
+    "empty": "Escribe el mensaje."
+  },
+  "mine": {
+    "empty": "Todavía no abriste solicitudes.",
+    "back": "Volver",
+    "you": "Tú",
+    "team": "Equipo Salutti",
+    "reply": "Responder",
+    "replyPlaceholder": "Escribe tu respuesta…",
+    "replied": "Mensaje enviado.",
+    "newReply": "Respuesta nueva",
+    "updated": "Actualizado el {date}"
+  },
+  "status": {
+    "aberto": "Abierta",
+    "em_andamento": "En curso",
+    "aguardando_cliente": "Esperando tu respuesta",
+    "resolvido": "Resuelta",
+    "fechado": "Cerrada"
+  }
+}

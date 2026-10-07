@@ -44,22 +44,44 @@ Semeados pela migration (códigos gravados em `Workspace.planTier`):
 assinatura no Stripe. A cobrança automática (`src/lib/providers/billing.ts`, tela Ajustes) ainda usa Starter/Pro e os preços do Stripe;
 alinhar ao catálogo novo é o próximo passo de planos.
 
-## Toggle de suporte (a implementar no app)
+## Botão de suporte no app
 
-O backoffice já recebe e responde chamados. Falta a interface no app. O contrato está pronto:
+Botão flutuante em todas as telas logadas (`src/app/app/_components/support/`), ligado no `src/app/app/layout.tsx`:
+balão com três pontos (fechado) → círculo com X (aberto), cores `--brand` / `--brand-foreground`, ponto `--brand-peach`
+quando há resposta nova (`unreadByClient`). Abre um painel ancorado (Radix Popover) com duas abas:
 
-- **Domínio:** `src/lib/support.ts` (categorias, situações, prioridades, validação, `openTicket`, `addClientMessage`,
-  `listClientTickets`, `markReadByClient`).
-- **Server actions:** `src/app/app/_actions/support.ts`, ambas no formato do `ActionForm` (`(prev, formData) => { erro } | { ok }`):
-  - `openSupportTicketAction`: campos `category` (`bug` | `duvida` | `sugestao` | `financeiro` | `acesso` | `outro`; padrão `bug`),
-    `subject` (3–140), `message` (5–5000) e, opcionais, preenchidos pelo próprio toggle: `pageUrl` (`location.href`),
-    `userAgent` (`navigator.userAgent`), `viewport` (`${innerWidth}x${innerHeight}`), `appVersion`.
-  - `replySupportTicketAction`: `ticketId`, `message`. Cliente que responde reabre chamado resolvido, fechado ou aguardando.
-- Usuário e consultório vêm da sessão (`requireContext`), nunca do formulário.
-- `pageUrl` é gravado **só com o caminho**: query string e hash podem carregar nome de paciente ou ids.
-- Bug e acesso entram com prioridade **alta**; o resto, **normal**. Limite de 10 chamados por usuário por hora.
-- `unreadByStaff` / `unreadByClient` marcam mensagem nova de cada lado: o badge do menu "Chamados" usa o primeiro e o
-  toggle pode usar o segundo para mostrar um ponto de "resposta nova". Notas internas (`internal: true`) e eventos de sistema nunca vão para o cliente.
+- **Novo chamado:** tópico obrigatório, assunto e mensagem; a ajuda do tópico vira o placeholder; aviso de privacidade fixo.
+  Página (só o caminho), navegador, tela e versão (`VERCEL_GIT_COMMIT_SHA`) vão sozinhos.
+- **Meus chamados:** lista com situação e data; abre a conversa (sem notas internas nem eventos da equipe) e permite responder.
+  Abrir um chamado apaga o ponto de resposta nova. Com resposta nova, o painel já abre nesta aba.
 
-Ficou para depois: anexos e captura de tela (reaproveitar `MediaFile`), aviso por e-mail ao cliente quando a equipe responde
-(não há serviço de e-mail), SLA e respostas prontas.
+Tópicos (definidos com o Product Owner; textos em `messages/<idioma>/support.json`):
+
+| Código | No app | Prioridade inicial |
+|---|---|---|
+| `bug` | Algo não funciona | alta |
+| `acesso` | Login e acesso | alta |
+| `duvida` | Dúvida de uso | normal |
+| `financeiro` | Plano e cobrança | normal |
+| `privacidade` | Privacidade e LGPD | alta (prazo legal) |
+| `sugestao` | Sugestão | baixa |
+| `outro` | Outro assunto | normal |
+
+Contrato: `src/lib/support.ts` (domínio) e `src/app/app/_actions/support.ts` (`openSupportTicketAction`,
+`replySupportTicketAction`, `markSupportReadAction`). Usuário e consultório vêm da sessão. `pageUrl` é gravado só com o
+caminho e com ids trocados por `[id]`. Limites: 10 chamados e 30 respostas por usuário por hora. Cliente que responde
+reabre chamado resolvido, fechado ou aguardando.
+
+## Segurança e privacidade (revisão de 2026-10-07)
+
+- Trocar ou redefinir a senha derruba as sessões abertas antes (`passwordChangedAt` × `iat`).
+- Login com mensagem única (não revela quais usuários existem) e incremento atômico de tentativas. O bloqueio é por
+  usuário: alguém pode manter o `admin` bloqueado de propósito; se acontecer, trocar o nome de usuário ou bloquear também por IP.
+- Abrir chamado ou ficha de cliente fica na auditoria (`ticket.view`, `workspace.view`).
+- **Depois do deploy, entre logo com `admin`/`admin`, troque a senha e confira na Auditoria que o primeiro login foi seu.**
+
+## Ficou para depois
+
+Anexos e captura de tela (com aviso de borrar dados de pacientes), aviso por e-mail quando a equipe responde (não há
+serviço de e-mail), 2FA no backoffice, retenção/anonimização dos chamados quando houver exclusão de conta (hoje não existe
+exclusão de consultório no app), retenção mínima da auditoria, SLA e respostas prontas, alinhar Stripe ao catálogo novo.

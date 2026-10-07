@@ -48,6 +48,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     settings: { access: settings?.access },
     // Formulário de procedimento e campo "Procedimento" da nova sessão (Salutti Estética).
     aesthetics: { form: aesthetics?.form, categories: aesthetics?.categories, schedule: aesthetics?.schedule },
+    // Botão e painel de suporte (todas as telas logadas).
+    support: all.support,
   };
   return (
     <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable} ${cormorant.variable}`}>

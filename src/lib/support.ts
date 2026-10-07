@@ -3,12 +3,14 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 
+// Rótulos do backoffice. No app, rótulo e ajuda de cada tópico vêm de messages/<idioma>/support.json.
 export const TICKET_CATEGORIES = {
   bug: "Erro / bug",
-  duvida: "Dúvida",
-  sugestao: "Sugestão",
-  financeiro: "Financeiro / plano",
   acesso: "Acesso / login",
+  duvida: "Dúvida de uso",
+  financeiro: "Plano e cobrança",
+  privacidade: "Privacidade / LGPD",
+  sugestao: "Sugestão",
   outro: "Outro",
 } as const;
 
@@ -40,10 +42,12 @@ export const prioritySchema = z.enum(keys(TICKET_PRIORITIES));
 
 // Mais que isso por hora e por usuário é abuso ou laço no cliente.
 export const MAX_TICKETS_PER_HOUR = 10;
+export const MAX_REPLIES_PER_HOUR = 30;
 
 // O que o toggle envia. Contexto técnico é opcional e truncado; nada de dados de paciente.
 export const newTicketSchema = z.object({
-  category: categorySchema.default("bug"),
+  // Obrigatório: um padrão encheria a fila de "bugs" que são dúvidas.
+  category: categorySchema,
   subject: z.string().trim().min(3).max(140),
   message: z.string().trim().min(5).max(5000),
   pageUrl: z.string().trim().max(500).optional(),
@@ -58,19 +62,29 @@ export const replySchema = z.object({
   message: z.string().trim().min(1).max(5000),
 });
 
-// Só o caminho da página: query string pode carregar ids e termos de busca (ex.: nome de paciente).
+// Só o caminho da página, com ids trocados por [id]: query string e ids podem levar a um paciente.
+const ID_SEGMENT = /^(c[a-z0-9]{20,}|[0-9a-f-]{32,36}|\d+)$/i;
 export const sanitizePageUrl = (value?: string) => {
   if (!value) return null;
   try {
-    return new URL(value, "https://salutti.local").pathname.slice(0, 300);
+    return new URL(value, "https://salutti.local").pathname
+      .split("/")
+      .map((seg) => (ID_SEGMENT.test(seg) ? "[id]" : seg))
+      .join("/")
+      .slice(0, 300);
   } catch {
     return null;
   }
 };
 
-// Bug e acesso começam com prioridade alta: travam o uso do sistema.
-export const defaultPriority = (category: TicketCategory): TicketPriority =>
-  category === "bug" || category === "acesso" ? "alta" : "normal";
+// Bug e acesso travam o uso; privacidade tem prazo legal (pedidos de titular). Sugestão não tem pressa.
+const PRIORITY_BY_CATEGORY: Partial<Record<TicketCategory, TicketPriority>> = {
+  bug: "alta",
+  acesso: "alta",
+  privacidade: "alta",
+  sugestao: "baixa",
+};
+export const defaultPriority = (category: TicketCategory): TicketPriority => PRIORITY_BY_CATEGORY[category] ?? "normal";
 
 type Requester = { userId: string; workspaceId: string; name: string; email: string; locale?: string | null };
 
@@ -102,6 +116,9 @@ export const openTicket = async (requester: Requester, input: NewTicketInput) =>
 export const addClientMessage = async (userId: string, ticketId: string, body: string) => {
   const ticket = await db.supportTicket.findFirst({ where: { id: ticketId, userId } });
   if (!ticket) throw new Error("not_found");
+  const since = new Date(Date.now() - 60 * 60 * 1000);
+  const recent = await db.supportMessage.count({ where: { userId, authorType: "cliente", createdAt: { gte: since } } });
+  if (recent >= MAX_REPLIES_PER_HOUR) throw new Error("limite");
   const reopen = ticket.status === "resolvido" || ticket.status === "fechado" || ticket.status === "aguardando_cliente";
   await db.$transaction([
     db.supportMessage.create({ data: { ticketId, authorType: "cliente", userId, body } }),

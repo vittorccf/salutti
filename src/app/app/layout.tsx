@@ -17,6 +17,10 @@ import { mediaUrl } from "@/lib/media";
 import { Avatar } from "@/components/ui/avatar";
 import type { Metadata } from "next";
 import { AREAS, areaOf, moduleEnabled, type Module } from "@/lib/areas";
+import { listClientTickets } from "@/lib/support";
+import { TZ } from "@/lib/dates";
+import { getLocale } from "@/i18n/server";
+import { SupportWidget, type SupportTicketView } from "./_components/support/support-widget";
 
 // Título da aba pela marca do consultório ativo: "Salutti" ou "Salutti Estética".
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,6 +45,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Com banner ou foto no lugar do logo, a marca da área aparece em texto logo abaixo.
   const customBrand = (brand === "banner" && bannerUrl) || (brand === "photo" && avatarUrl);
   const modules = (Object.keys(AREAS[area].modules) as Module[]).filter((m) => moduleEnabled(area, m));
+
+  // Chamados do botão de suporte (só o que o cliente pode ver: sem notas internas nem eventos da equipe).
+  const when = new Intl.DateTimeFormat(await getLocale(), { dateStyle: "short", timeStyle: "short", timeZone: TZ });
+  const supportTickets: SupportTicketView[] = (await listClientTickets(ctx.user.id)).map((tk) => ({
+    id: tk.id,
+    number: tk.number,
+    subject: tk.subject,
+    status: tk.status,
+    unread: tk.unreadByClient,
+    updatedLabel: when.format(tk.lastActivityAt),
+    messages: tk.messages
+      .filter((m) => m.authorType !== "sistema")
+      .map((m) => ({ id: m.id, fromClient: m.authorType === "cliente", body: m.body, when: when.format(m.createdAt) })),
+  }));
 
   const sidebar = (
     <>
@@ -115,6 +133,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
         <div className="p-4 md:p-6">{children}</div>
       </main>
+      <SupportWidget tickets={supportTickets} appVersion={process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)} />
     </div>
   );
 }

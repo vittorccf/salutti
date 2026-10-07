@@ -40,7 +40,10 @@ export const getBackofficeUser = async () => {
     const { payload } = await jwtVerify(token, secretKey(), { audience: AUDIENCE });
     if (!payload.sub) return null;
     const user = await db.backofficeUser.findUnique({ where: { id: payload.sub } });
-    return user?.active ? user : null;
+    if (!user?.active) return null;
+    // Trocar ou redefinir a senha derruba as sessões abertas antes disso (iat em segundos).
+    if (!payload.iat || payload.iat < Math.floor(user.passwordChangedAt.getTime() / 1000)) return null;
+    return user;
   } catch {
     return null;
   }

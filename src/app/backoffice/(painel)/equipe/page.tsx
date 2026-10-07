@@ -79,7 +79,13 @@ async function updateStaffAction(_prev: FormResult, formData: FormData): Promise
     if (!parsed.data.password || parsed.data.password.length < 10) return { erro: "Senha provisória: pelo menos 10 caracteres." };
     await db.backofficeUser.update({
       where: { id },
-      data: { passwordHash: await hashPassword(parsed.data.password), mustChangePassword: true, failedAttempts: 0, lockedUntil: null },
+      data: {
+        passwordHash: await hashPassword(parsed.data.password),
+        mustChangePassword: true,
+        passwordChangedAt: new Date(),
+        failedAttempts: 0,
+        lockedUntil: null,
+      },
     });
   }
   await recordBackofficeAudit({ userId: me.id, action: `staff.${op}`, entity: "BackofficeUser", entityId: id });

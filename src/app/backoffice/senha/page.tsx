@@ -3,7 +3,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth";
-import { recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
+import { createBackofficeSession, recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,10 @@ async function changePasswordAction(_prev: FormResult, formData: FormData): Prom
 
   await db.backofficeUser.update({
     where: { id: user.id },
-    data: { passwordHash: await hashPassword(parsed.data.password), mustChangePassword: false },
+    data: { passwordHash: await hashPassword(parsed.data.password), mustChangePassword: false, passwordChangedAt: new Date() },
   });
+  // As outras sessões caem; esta recebe um token novo.
+  await createBackofficeSession(user.id);
   await recordBackofficeAudit({ userId: user.id, action: "password.change", entity: "BackofficeUser", entityId: user.id });
   redirect("/backoffice");
 }

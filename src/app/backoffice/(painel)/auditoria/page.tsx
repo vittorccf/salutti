@@ -11,6 +11,8 @@ const ACTIONS: Record<string, string> = {
   "login.locked": "Acesso bloqueado (tentativas)",
   logout: "Saiu",
   "password.change": "Trocou a própria senha",
+  "ticket.view": "Abriu chamado",
+  "workspace.view": "Abriu ficha de cliente",
   "ticket.reply": "Respondeu chamado",
   "ticket.note": "Nota interna em chamado",
   "ticket.update": "Alterou chamado",

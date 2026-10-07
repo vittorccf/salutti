@@ -18,40 +18,42 @@ import { Label } from "@/components/ui/label";
 
 export const metadata = { title: "Backoffice · Salutti", robots: { index: false, follow: false } };
 
-const ERRORS = {
-  credenciais: "Usuário ou senha incorretos.",
-  bloqueado: `Muitas tentativas. Tente de novo em ${LOCK_MINUTES} minutos.`,
-} as const;
+// Uma só mensagem para senha errada, usuário inexistente e bloqueio: não revela quais usuários existem.
+const ERROR = `Usuário ou senha incorretos. Depois de ${MAX_ATTEMPTS} tentativas, o acesso fica bloqueado por ${LOCK_MINUTES} minutos.`;
 
 const schema = z.object({ username: z.string().trim().min(1).max(80), password: z.string().min(1).max(200) });
 
 async function loginAction(formData: FormData) {
   "use server";
   const parsed = schema.safeParse({ username: formData.get("username"), password: formData.get("password") });
-  if (!parsed.success) redirect("/backoffice/login?error=credenciais");
+  if (!parsed.success) redirect("/backoffice/login?error=1");
 
   const user = await db.backofficeUser.findUnique({ where: { username: parsed.data.username.toLowerCase() } });
   // Mesma resposta para usuário inexistente, desativado ou senha errada.
-  if (!user || !user.active) redirect("/backoffice/login?error=credenciais");
-  if (user.lockedUntil && user.lockedUntil > new Date()) redirect("/backoffice/login?error=bloqueado");
+  if (!user || !user.active) redirect("/backoffice/login?error=1");
+  if (user.lockedUntil && user.lockedUntil > new Date()) redirect("/backoffice/login?error=1");
 
   if (!(await verifyPassword(parsed.data.password, user.passwordHash))) {
-    const attempts = user.failedAttempts + 1;
-    const lock = attempts >= MAX_ATTEMPTS;
-    await db.backofficeUser.update({
+    // Incremento atômico: tentativas em paralelo não escapam do limite.
+    const { failedAttempts } = await db.backofficeUser.update({
       where: { id: user.id },
-      data: {
-        failedAttempts: lock ? 0 : attempts,
-        lockedUntil: lock ? new Date(Date.now() + LOCK_MINUTES * 60 * 1000) : null,
-      },
+      data: { failedAttempts: { increment: 1 } },
+      select: { failedAttempts: true },
     });
+    const lock = failedAttempts >= MAX_ATTEMPTS;
+    if (lock) {
+      await db.backofficeUser.update({
+        where: { id: user.id },
+        data: { failedAttempts: 0, lockedUntil: new Date(Date.now() + LOCK_MINUTES * 60 * 1000) },
+      });
+    }
     await recordBackofficeAudit({
       userId: user.id,
       action: lock ? "login.locked" : "login.failed",
       entity: "BackofficeUser",
       entityId: user.id,
     });
-    redirect(`/backoffice/login?error=${lock ? "bloqueado" : "credenciais"}`);
+    redirect("/backoffice/login?error=1");
   }
 
   await db.backofficeUser.update({
@@ -65,7 +67,7 @@ async function loginAction(formData: FormData) {
 
 export default async function BackofficeLoginPage({ searchParams }: { searchParams: { error?: string } }) {
   if (await getBackofficeUser()) redirect("/backoffice");
-  const error = ERRORS[searchParams.error as keyof typeof ERRORS];
+  const error = searchParams.error ? ERROR : null;
 
   return (
     <main className="ds2-glow grid min-h-screen place-items-center p-4">

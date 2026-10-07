@@ -48,6 +48,7 @@ async function changePlanAction(_prev: FormResult, formData: FormData): Promise<
   ]);
   if (!workspace) return { erro: "Cliente não encontrado." };
   if (!plan) return { erro: "Plano inválido." };
+  if (!plan.active && plan.code !== workspace.planTier) return { erro: "Esse plano está inativo. Reative em Planos antes." };
 
   let trialEndsAt: Date | null = null;
   if (planTier === "trial") {
@@ -82,6 +83,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
     },
   });
   if (!workspace) notFound();
+  await recordBackofficeAudit({ userId: me.id, action: "workspace.view", entity: "Workspace", entityId: workspace.id });
   const plans = await db.platformPlan.findMany({ orderBy: { sortOrder: "asc" } });
 
   const info = [
@@ -188,7 +190,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Plano</CardTitle>
-              <CardDescription>Ajuste manual (cortesia, extensão de teste). Não mexe na cobrança do Stripe.</CardDescription>
+              <CardDescription>Ajuste manual (cortesia, extensão de teste). Não mexe na cobrança do Stripe: se o cliente tiver assinatura ativa lá, o próximo evento dela sobrescreve este ajuste.</CardDescription>
             </CardHeader>
             <CardContent>
               {me.role === "admin" ? (

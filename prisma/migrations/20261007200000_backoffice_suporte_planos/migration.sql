@@ -9,6 +9,7 @@ CREATE TABLE "BackofficeUser" (
     "mustChangePassword" BOOLEAN NOT NULL DEFAULT true,
     "failedAttempts" INTEGER NOT NULL DEFAULT 0,
     "lockedUntil" TIMESTAMP(3),
+    "passwordChangedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastLoginAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

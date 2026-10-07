@@ -1,6 +1,19 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-07. A seção "Salutti Estética" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-07. A seção "Backoffice" é a mais recente; as demais ficam como histórico.
+
+## Backoffice (2026-10-07) — branch `feat/backoffice`
+
+Painel interno em `/backoffice` (guia completo em `docs/BACKOFFICE.md`): login próprio (`BackofficeUser`, cookie `salutti_bo`,
+12 h, bloqueio após 5 erros), acesso inicial `admin`/`admin` semeado pela migration com troca obrigatória no primeiro login,
+papéis admin/suporte, auditoria. Telas: visão geral, **chamados** (fila, conversa, resposta, nota interna, situação,
+prioridade, responsável, contexto técnico), clientes, usuários, planos e equipe. Planos `PlatformPlan`: Teste grátis 15 dias,
+Básico R$ 49,90/mês, Essencial R$ 89,90/mês, Anual R$ 749,90/ano.
+
+**Botão de suporte:** flutuante em todas as telas logadas, com 7 tópicos (definidos com o PO), aviso de privacidade, "Meus chamados" e resposta. Revisado por psicólogo, advogado do diabo e qualidade.
+
+**Ficou para depois:** Stripe ainda cobra Starter/Pro (alinhar ao catálogo novo); anexos/print no chamado; e-mail ao cliente
+quando a equipe responde; 2FA no backoffice; retenção dos chamados; o cadastro ainda usa 15 dias fixos em vez de `PlatformPlan.trialDays`.
 
 ## Salutti Estética (2026-10-07) — PRs #28, #29 e o pacote seguinte
 

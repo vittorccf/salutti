@@ -28,6 +28,7 @@ const replySchema = z.object({
   message: z.string().trim().min(1, "Escreva a resposta.").max(5000),
   internal: z.boolean(),
   status: statusSchema,
+  loadedAt: z.coerce.number(),
 });
 
 async function replyAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
@@ -38,11 +39,16 @@ async function replyAction(_prev: FormResult, formData: FormData): Promise<FormR
     message: formData.get("message"),
     internal: formData.get("internal") === "on",
     status: formData.get("status"),
+    loadedAt: formData.get("loadedAt"),
   });
   if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Confira os campos." };
-  const { ticketId, message, internal, status } = parsed.data;
+  const { ticketId, message, internal, status, loadedAt } = parsed.data;
   const ticket = await db.supportTicket.findUnique({ where: { id: ticketId } });
   if (!ticket) return { erro: "Chamado não encontrado." };
+  // O cliente escreveu enquanto a resposta era digitada: a mensagem dele continua marcada como nova.
+  const clientWroteMeanwhile = await db.supportMessage.count({
+    where: { ticketId, authorType: "cliente", createdAt: { gt: new Date(loadedAt) } },
+  });
 
   await db.$transaction([
     db.supportMessage.create({ data: { ticketId, authorType: "equipe", backofficeUserId: me.id, body: message, internal } }),
@@ -51,7 +57,7 @@ async function replyAction(_prev: FormResult, formData: FormData): Promise<FormR
       data: {
         status,
         lastActivityAt: new Date(),
-        unreadByStaff: false,
+        unreadByStaff: clientWroteMeanwhile > 0,
         // Nota interna não avisa o cliente.
         ...(internal ? {} : { unreadByClient: true }),
         resolvedAt: status === "resolvido" || status === "fechado" ? (ticket.resolvedAt ?? new Date()) : null,
@@ -68,6 +74,7 @@ async function replyAction(_prev: FormResult, formData: FormData): Promise<FormR
     metadata: { status },
   });
   revalidatePath(`/backoffice/chamados/${ticketId}`);
+  if (clientWroteMeanwhile > 0) return { ok: "Enviado. O cliente escreveu enquanto você respondia: veja a mensagem acima." };
   return { ok: internal ? "Nota interna salva." : "Resposta enviada ao cliente." };
 }
 
@@ -122,7 +129,7 @@ async function manageAction(_prev: FormResult, formData: FormData): Promise<Form
 }
 
 export default async function TicketPage({ params }: { params: { id: string } }) {
-  await requireBackoffice();
+  const me = await requireBackoffice();
   const ticket = await db.supportTicket.findUnique({
     where: { id: params.id },
     include: {
@@ -133,8 +140,10 @@ export default async function TicketPage({ params }: { params: { id: string } })
     },
   });
   if (!ticket) notFound();
-  // Abrir o chamado é o "lido" da equipe.
+  // Abrir o chamado é o "lido" da equipe. Leitura também fica na auditoria (quem viu o quê).
   if (ticket.unreadByStaff) await db.supportTicket.update({ where: { id: ticket.id }, data: { unreadByStaff: false } });
+  await recordBackofficeAudit({ userId: me.id, action: "ticket.view", entity: "SupportTicket", entityId: ticket.id });
+  const loadedAt = Date.now();
 
   const [staff, plans, otherTickets] = await Promise.all([
     db.backofficeUser.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
@@ -210,6 +219,7 @@ export default async function TicketPage({ params }: { params: { id: string } })
             <CardContent>
               <ActionForm action={replyAction} resetOnSuccess className="space-y-3">
                 <input type="hidden" name="ticketId" value={ticket.id} />
+                <input type="hidden" name="loadedAt" value={loadedAt} />
                 <div className="space-y-1.5">
                   <Label htmlFor="message" className="sr-only">
                     Mensagem
@@ -248,7 +258,12 @@ export default async function TicketPage({ params }: { params: { id: string } })
               <CardTitle className="text-base">Gerenciar</CardTitle>
             </CardHeader>
             <CardContent>
-              <ActionForm action={manageAction} className="space-y-3">
+              {/* key: depois de uma resposta que muda a situação, o formulário remonta com os valores atuais. */}
+              <ActionForm
+                key={`${ticket.status}-${ticket.priority}-${ticket.assigneeId ?? ""}`}
+                action={manageAction}
+                className="space-y-3"
+              >
                 <input type="hidden" name="ticketId" value={ticket.id} />
                 <div className="space-y-1.5">
                   <Label htmlFor="status">Situação</Label>

@@ -1,0 +1,82 @@
+{
+  "button": {
+    "open": "Falar com o suporte",
+    "close": "Fechar suporte",
+    "unread": "Há uma resposta nova do suporte"
+  },
+  "title": "Suporte Salutti",
+  "tabs": {
+    "new": "Novo pedido",
+    "mine": "Os meus pedidos"
+  },
+  "form": {
+    "topic": "Sobre o que é?",
+    "topicPlaceholder": "Escolha um tópico",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Resumo em poucas palavras",
+    "message": "Mensagem",
+    "send": "Enviar",
+    "sending": "A enviar…",
+    "privacy": "Para proteger os seus pacientes, não escreva nomes, números de identificação nem informações clínicas: descreva a situação de forma geral. A equipa Salutti lê o seu pedido e vê automaticamente a página em que estava, o navegador e o tamanho do ecrã, só para perceber o problema."
+  },
+  "topics": {
+    "bug": {
+      "label": "Algo não funciona",
+      "help": "Conte o que tentou fazer, o que aconteceu e o que esperava. Ex.: “Ao guardar a sessão na Agenda, o ecrã bloqueou.”"
+    },
+    "acesso": {
+      "label": "Início de sessão e acesso",
+      "help": "Diga o que acontece ao entrar (palavra-passe, código 2FA, convite da equipa). Nunca envie a sua palavra-passe."
+    },
+    "duvida": {
+      "label": "Dúvida de utilização",
+      "help": "Diga em que ecrã está e o que quer fazer."
+    },
+    "financeiro": {
+      "label": "Plano e faturação",
+      "help": "Assinatura, cobrança ou mudança de plano da Salutti."
+    },
+    "privacidade": {
+      "label": "Privacidade e proteção de dados",
+      "help": "Pedido de titular, exportação ou eliminação de dados, termo de consentimento."
+    },
+    "sugestao": {
+      "label": "Sugestão",
+      "help": "Que melhoria ajudaria a sua rotina? Conte o problema que resolve."
+    },
+    "outro": {
+      "label": "Outro assunto",
+      "help": "Escreva por palavras suas, nós encaminhamos."
+    }
+  },
+  "sent": {
+    "title": "Recebemos o seu pedido n.º {number}",
+    "body": "Vamos responder por aqui. Quando houver resposta, o botão de suporte mostra um ponto.",
+    "mine": "Ver os meus pedidos",
+    "another": "Abrir outro pedido"
+  },
+  "errors": {
+    "invalid": "Escolha o tópico, escreva um assunto (3 letras ou mais) e descreva o que aconteceu.",
+    "limit": "Demasiadas mensagens em pouco tempo. Tente novamente dentro de uma hora.",
+    "notFound": "Pedido não encontrado.",
+    "empty": "Escreva a mensagem."
+  },
+  "mine": {
+    "empty": "Ainda não abriu pedidos.",
+    "back": "Voltar",
+    "you": "Você",
+    "team": "Equipa Salutti",
+    "reply": "Responder",
+    "replyPlaceholder": "Escreva a sua resposta…",
+    "replied": "Mensagem enviada.",
+    "newReply": "Resposta nova",
+    "updated": "Atualizado em {date}"
+  },
+  "status": {
+    "aberto": "Aberto",
+    "em_andamento": "Em curso",
+    "aguardando_cliente": "A aguardar por si",
+    "resolvido": "Resolvido",
+    "fechado": "Fechado"
+  }
+}
