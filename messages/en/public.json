@@ -104,7 +104,7 @@
       },
       "consent": {
         "title": "Consent form per procedure",
-        "desc": "Each procedure has its own consent form, signed by the patient before the visit."
+        "desc": "Each procedure has its own consent form, with the patient's acceptance recorded before the visit."
       },
       "followUp": {
         "title": "Follow-up reminder",
@@ -126,7 +126,7 @@
     "differentiators": {
       "trace": {
         "title": "Lot linked to the patient",
-        "desc": "Product, lot, expiry and amount used are recorded in the session, as ANVISA requires."
+        "desc": "Product, lot, expiry and amount used are recorded in the session, supporting ANVISA traceability."
       },
       "fefo": {
         "title": "Automatic deduction",

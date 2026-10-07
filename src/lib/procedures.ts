@@ -1,6 +1,7 @@
 // Procedimentos da Salutti Estética: regras puras (sem banco) usadas pelo catálogo, pela sessão e pela ficha.
 import { addDays } from "date-fns";
 import { inSP, toDateTimeLocalSP } from "./dates";
+import { parseDecimal, roundQty } from "./stock";
 
 export const PROCEDURE_CATEGORIES = ["facial", "injetavel", "corporal", "capilar", "outro"] as const;
 export type ProcedureCategory = (typeof PROCEDURE_CATEGORIES)[number];
@@ -22,12 +23,9 @@ export const isPhotoStage = (v: unknown): v is PhotoStage => typeof v === "strin
 // Quantidade digitada no formato brasileiro ou internacional: "1,5", "1.5", "50", "1.000,5".
 // Vazio = null (linha ignorada); inválido ou negativo = NaN.
 export function parseQuantity(raw: unknown): number | null {
-  const s = String(raw ?? "").trim().replace(/\s/g, "");
-  if (!s) return null;
-  let normalized = s;
-  if (s.includes(",")) normalized = s.replace(/\./g, "").replace(",", ".");
-  if (!/^\d+(\.\d+)?$/.test(normalized)) return NaN;
-  return Math.round(Number(normalized) * 1000) / 1000;
+  if (!String(raw ?? "").trim()) return null;
+  const n = parseDecimal(raw);
+  return Number.isNaN(n) || n < 0 ? NaN : roundQty(n);
 }
 
 // Quantidade para exibir num campo editável (vírgula decimal no pt-BR, sem zeros à direita).

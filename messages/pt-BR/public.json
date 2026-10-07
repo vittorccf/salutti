@@ -104,7 +104,7 @@
       },
       "consent": {
         "title": "Termo por procedimento",
-        "desc": "Cada procedimento tem o próprio termo de consentimento, assinado pela paciente antes do atendimento."
+        "desc": "Cada procedimento tem o próprio termo de consentimento, com o aceite da paciente registrado antes do atendimento."
       },
       "followUp": {
         "title": "Lembrete de retorno",
@@ -126,7 +126,7 @@
     "differentiators": {
       "trace": {
         "title": "Lote ligado à paciente",
-        "desc": "Produto, lote, validade e quantidade aplicada ficam registrados na sessão, como pede a ANVISA."
+        "desc": "Produto, lote, validade e quantidade aplicada ficam registrados na sessão, como orienta a ANVISA para rastreabilidade."
       },
       "fefo": {
         "title": "Baixa automática",

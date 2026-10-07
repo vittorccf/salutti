@@ -1,7 +1,6 @@
 // Permissões e utilidades das telas de estoque (só existem quando a área tem o módulo ligado).
 import { notFound } from "next/navigation";
-import { requireContext } from "@/lib/auth";
-import { moduleEnabled } from "@/lib/areas";
+import { requireModule } from "@/lib/modules";
 import type { Formatters } from "@/i18n/format";
 
 export const UNITS = ["U", "mL", "seringa", "frasco", "un", "g"] as const;
@@ -13,8 +12,7 @@ export const canManageStock = (role: string) => role === "owner" || role === "ad
 export const canViewStockDetail = (role: string) => canManageStock(role) || role === "financial";
 
 export async function requireStock(level: "list" | "view" | "manage" = "list") {
-  const ctx = await requireContext();
-  if (!moduleEnabled(ctx.workspace.area, "estoque")) notFound();
+  const ctx = await requireModule("estoque");
   if (level === "view" && !canViewStockDetail(ctx.role)) notFound();
   if (level === "manage" && !canManageStock(ctx.role)) notFound();
   return ctx;

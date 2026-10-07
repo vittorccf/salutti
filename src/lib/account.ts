@@ -18,20 +18,6 @@ export const ACCOUNT_TYPES: Record<AccountType, { label: string; description: st
 export const isAccountType = (v: unknown): v is AccountType => v === "autonomo" || v === "clinica";
 export const accountTypeLabel = (v: string) => (isAccountType(v) ? ACCOUNT_TYPES[v].label : v);
 
-// Áreas de atendimento oferecidas para cada tipo de conta.
-export const SEGMENTS: Record<AccountType, { value: string; label: string }[]> = {
-  autonomo: [
-    { value: "solo_psicologo", label: "Psicologia (com CRP)" },
-    { value: "solo_psicanalista", label: "Psicanálise ou outra terapia (sem exigência de CRP)" },
-    { value: "odonto", label: "Odontologia" },
-  ],
-  clinica: [
-    { value: "clinica", label: "Clínica multiprofissional" },
-    { value: "ubs", label: "UBS ou serviço público" },
-    { value: "odonto", label: "Clínica odontológica" },
-  ],
-};
-
 // Segmento válido para o tipo de conta dentro da área (Salutti ou Salutti Estética).
 export const segmentAllowed = (type: AccountType, segment: string, area: Area = "mental") =>
   AREAS[area].segments[type].includes(segment);
@@ -40,8 +26,9 @@ export const segmentAllowed = (type: AccountType, segment: string, area: Area = 
 export function segmentAfterMigration(to: AccountType, segment: string) {
   const area = areaOfSegment(segment);
   if (segmentAllowed(to, segment, area)) return segment;
-  if (area === "estetica") return to === "clinica" ? "estetica_clinica" : AREAS.estetica.segments.autonomo[0];
-  return to === "clinica" ? "clinica" : segment === "solo_psicanalista" ? "solo_psicanalista" : "solo_psicologo";
+  // Sem correspondência direta: o primeiro segmento do novo tipo na mesma área (psicanalista continua psicanalista).
+  if (area === "mental" && to === "autonomo" && segment === "solo_psicanalista") return segment;
+  return AREAS[area].segments[to][0];
 }
 
 // Para virar autônomo, a conta precisa caber em um profissional e um usuário.

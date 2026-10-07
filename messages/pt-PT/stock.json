@@ -51,7 +51,8 @@
     "uso": "Utilização em consulta",
     "ajuste": "Acerto de inventário",
     "perda": "Perda",
-    "venda": "Venda"
+    "venda": "Venda",
+    "estorno": "Estorno de atendimento"
   },
   "reasons": {
     "vencido": "Expirado",
@@ -76,7 +77,10 @@
     "expiresRequired": "Indique a validade do lote.",
     "noDifference": "O saldo contado é igual ao saldo do sistema: não há acerto a fazer.",
     "reasonRequired": "Escolha o motivo da perda.",
-    "saleOnlyResale": "A venda só se aplica a produtos de revenda."
+    "saleOnlyResale": "A venda só se aplica a produtos de revenda.",
+    "alreadyRecorded": "Esta sessão já tem o procedimento registado.",
+    "notRecorded": "Esta sessão não tem registo para estornar.",
+    "reversalReason": "Indique o motivo do estorno."
   },
   "list": {
     "title": "Stock",

@@ -1,7 +1,7 @@
 // Ficha da paciente na Salutti Estética: histórico de procedimentos (com insumos e lotes aplicados) e fotos
 // clínicas (antes/durante/depois). Só para a equipe clínica: quem chama confere canSeeClinical.
 import Link from "next/link";
-import { Camera, History, Trash2 } from "lucide-react";
+import { Camera, History, Trash2, Undo2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { mediaUrl } from "@/lib/media";
 import { dateKeySP } from "@/lib/dates";
@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { removeClinicalPhotoAction, uploadClinicalPhotoAction } from "../_actions";
+import { removeClinicalPhotoAction, revokeMarketingAction, uploadClinicalPhotoAction } from "../_actions";
 
 export async function PatientAesthetics({ workspaceId, patientId, uploaded }: { workspaceId: string; patientId: string; uploaded: boolean }) {
   const [t, ts, f] = await Promise.all([getTranslations("aesthetics.patient"), getTranslations("aesthetics.stages"), getFormat()]);
@@ -28,11 +28,11 @@ export async function PatientAesthetics({ workspaceId, patientId, uploaded }: { 
       take: 50,
     }),
     db.stockMovement.findMany({
-      where: { workspaceId, patientId, kind: "uso" },
+      where: { workspaceId, patientId, kind: { in: ["uso", "estorno"] } },
       include: { lot: true, product: true },
       orderBy: { createdAt: "asc" },
     }),
-    db.clinicalPhoto.findMany({ where: { workspaceId, patientId }, orderBy: { takenAt: "desc" } }),
+    db.clinicalPhoto.findMany({ where: { workspaceId, patientId, removedAt: null }, orderBy: { takenAt: "desc" } }),
     db.procedure.findMany({ where: { workspaceId }, select: { id: true, name: true, active: true }, orderBy: { name: "asc" } }),
   ]);
   const procedureName = new Map(procedures.map((p) => [p.id, p.name]));
@@ -83,7 +83,8 @@ export async function PatientAesthetics({ workspaceId, patientId, uploaded }: { 
                         ) : (
                           <ul className="space-y-0.5">
                             {lines.map((u) => (
-                              <li key={u.id}>
+                              <li key={u.id} className={u.kind === "estorno" ? "text-muted-foreground" : undefined}>
+                                {u.kind === "estorno" ? `${t("reversed")}: ` : null}
                                 {t("supplyLine", {
                                   product: u.product.name,
                                   quantity: f.number(Math.abs(u.quantity)),
@@ -149,16 +150,42 @@ export async function PatientAesthetics({ workspaceId, patientId, uploaded }: { 
                                 <span>{f.date(p.takenAt)}</span>
                                 {p.region ? <span>· {p.region}</span> : null}
                                 {p.allowMarketing ? <Badge variant="muted">{t("marketingAllowed")}</Badge> : null}
-                                <form action={removeClinicalPhotoAction} className="ml-auto">
+                              </figcaption>
+                              {p.allowMarketing ? (
+                                <form action={revokeMarketingAction}>
                                   <input type="hidden" name="id" value={p.id} />
-                                  <Button type="submit" variant="ghost" size="sm" className="h-7 px-2">
-                                    <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                                    <span className="sr-only">
-                                      {t("remove")} ({ts(stage)}, {f.date(p.takenAt)})
-                                    </span>
+                                  <Button type="submit" variant="link" size="sm" className="h-auto p-0 text-xs">
+                                    <Undo2 className="h-3.5 w-3.5" aria-hidden /> {t("revokeMarketing")}
                                   </Button>
                                 </form>
-                              </figcaption>
+                              ) : null}
+                              {/* Remoção lógica com motivo: a foto sai da ficha, o registro fica no prontuário. */}
+                              <details className="text-xs">
+                                <summary className="flex cursor-pointer items-center gap-1 text-muted-foreground hover:text-foreground">
+                                  <Trash2 className="h-3.5 w-3.5" aria-hidden /> {t("remove")}
+                                  <span className="sr-only">
+                                    ({ts(stage)}, {f.date(p.takenAt)})
+                                  </span>
+                                </summary>
+                                <form action={removeClinicalPhotoAction} className="mt-2 flex gap-2">
+                                  <input type="hidden" name="id" value={p.id} />
+                                  <Label htmlFor={`remove-reason-${p.id}`} className="sr-only">
+                                    {t("removeReason")}
+                                  </Label>
+                                  <Input
+                                    id={`remove-reason-${p.id}`}
+                                    name="reason"
+                                    required
+                                    maxLength={300}
+                                    placeholder={t("removeReason")}
+                                    className="h-8 text-xs"
+                                  />
+                                  <Button type="submit" variant="outline" size="sm" className="h-8">
+                                    {t("removeConfirm")}
+                                  </Button>
+                                </form>
+                                <p className="mt-1 text-muted-foreground">{t("removeHint")}</p>
+                              </details>
                             </figure>
                           ))
                         )}

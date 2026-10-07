@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import type { Module } from "@/lib/areas";
+import { AREAS, type Module } from "@/lib/areas";
 
 // `module`: item que só aparece quando o módulo está ligado na área do consultório (src/lib/areas.ts).
 const nav: { href: string; label: string; icon: typeof Users; module?: Module }[] = [
@@ -38,7 +38,7 @@ const nav: { href: string; label: string; icon: typeof Users; module?: Module }[
 ];
 
 // `modules`: módulos ligados na área do consultório ativo. Sem a lista, vale o menu da Salutti.
-const MENTAL_MODULES: Module[] = ["convenios", "prontuario"];
+const MENTAL_MODULES = (Object.keys(AREAS.mental.modules) as Module[]).filter((m) => AREAS.mental.modules[m]);
 
 export const SidebarNav = ({ clinical = true, modules = MENTAL_MODULES }: { clinical?: boolean; modules?: Module[] }) => {
   const pathname = usePathname();

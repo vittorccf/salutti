@@ -43,7 +43,7 @@ export default async function ProceduresPage() {
 
       {procedures.length === 0 ? (
         <EmptyState
-          icon={<Syringe className="h-6 w-6" />}
+          icon={<Syringe className="h-6 w-6" aria-hidden />}
           title={t("emptyTitle")}
           description={t("emptyDescription")}
           action={

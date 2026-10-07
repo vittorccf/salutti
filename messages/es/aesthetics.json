@@ -137,7 +137,19 @@
     "returnTitle": "Retorno sugerido",
     "returnDate": "{date}, {days, plural, one {# día} other {# días}} después de esta sesión.",
     "scheduleReturn": "Agendar retorno",
-    "editProcedure": "Ver procedimiento"
+    "editProcedure": "Ver procedimiento",
+    "reversedNotice": "Registro revertido: los insumos volvieron al stock. Regístrelo de nuevo con los datos correctos.",
+    "details": "Ficha técnica (opcional)",
+    "detailsPlaceholder": "Ej.: dilución 100 U en 2,5 mL; glabela 20 U, frontal 10 U, periocular 12 U",
+    "adverse": "Complicación (si hubo)",
+    "adversePlaceholder": "Ej.: hematoma leve en región frontal, se indicó compresa fría",
+    "consentMissingWarning": "El consentimiento de esta versión aún no fue registrado como aceptado. Regístrelo antes de aplicar.",
+    "reversedBadge": "Reversión",
+    "financialSummary": "Valor, costo y margen",
+    "reverseTitle": "Revertir registro (error de carga)",
+    "reverseHint": "Los insumos vuelven a los mismos lotes y la reversión queda en el historial con el motivo. Luego, regístrelo de nuevo.",
+    "reverseReason": "Motivo de la reversión",
+    "reverseSubmit": "Revertir y devolver al stock"
   },
   "patient": {
     "historyTitle": "Historial de procedimientos",
@@ -165,6 +177,11 @@
     "remove": "Quitar foto",
     "marketingAllowed": "Divulgación autorizada",
     "photoAlt": "Foto clínica: {stage}, {date}",
-    "noPhotoStage": "Sin foto"
+    "noPhotoStage": "Sin foto",
+    "reversed": "Revertido",
+    "revokeMarketing": "Revocar divulgación",
+    "removeReason": "Motivo de la eliminación",
+    "removeConfirm": "Quitar",
+    "removeHint": "La foto sale de la ficha, pero el registro queda guardado en la historia clínica."
   }
 }

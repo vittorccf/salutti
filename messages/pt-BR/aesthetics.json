@@ -137,7 +137,19 @@
     "returnTitle": "Retorno sugerido",
     "returnDate": "{date}, {days, plural, one {# dia} other {# dias}} depois desta sessão.",
     "scheduleReturn": "Agendar retorno",
-    "editProcedure": "Ver procedimento"
+    "editProcedure": "Ver procedimento",
+    "reversedNotice": "Registro estornado: os insumos voltaram ao estoque. Registre de novo com os dados corretos.",
+    "details": "Ficha técnica (opcional)",
+    "detailsPlaceholder": "Ex.: diluição 100 U em 2,5 mL; glabela 20 U, frontal 10 U, periocular 12 U",
+    "adverse": "Intercorrência (se houver)",
+    "adversePlaceholder": "Ex.: hematoma leve em região frontal, orientada compressa fria",
+    "consentMissingWarning": "O termo de consentimento desta versão ainda não foi registrado como aceito. Registre antes de aplicar.",
+    "reversedBadge": "Estorno",
+    "financialSummary": "Valor, custo e margem",
+    "reverseTitle": "Estornar registro (lançamento errado)",
+    "reverseHint": "Os insumos voltam aos mesmos lotes e o estorno fica no histórico com o motivo. Depois, registre de novo.",
+    "reverseReason": "Motivo do estorno",
+    "reverseSubmit": "Estornar e devolver ao estoque"
   },
   "patient": {
     "historyTitle": "Histórico de procedimentos",
@@ -165,6 +177,11 @@
     "remove": "Remover foto",
     "marketingAllowed": "Divulgação autorizada",
     "photoAlt": "Foto clínica: {stage}, {date}",
-    "noPhotoStage": "Sem foto"
+    "noPhotoStage": "Sem foto",
+    "reversed": "Estornado",
+    "revokeMarketing": "Revogar divulgação",
+    "removeReason": "Motivo da remoção",
+    "removeConfirm": "Remover",
+    "removeHint": "A foto sai da ficha, mas o registro fica guardado no prontuário."
   }
 }

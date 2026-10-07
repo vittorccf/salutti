@@ -81,7 +81,7 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
           </h1>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
-        {canManage ? (
+        {canManage && !(products.length === 0 && tipo === "todos") ? (
           <Button asChild>
             <Link href="/app/estoque/novo">
               <PlusCircle className="h-4 w-4" aria-hidden /> {t("newProduct")}

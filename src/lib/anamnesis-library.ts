@@ -353,6 +353,12 @@ export const ANAMNESIS_LIBRARY: LibraryTemplate[] = [
               options: ["Não", "Sim"],
             },
             { key: "anticoagulantes", label: "Uso de anticoagulantes, AAS ou anti-inflamatórios (AINEs)", type: "text" },
+            {
+              key: "aminoglicosideos",
+              label: "Uso de aminoglicosídeos (gentamicina, amicacina) ou outros que potencializam a toxina",
+              type: "select",
+              options: ["Não", "Sim"],
+            },
             { key: "alergia_componentes", label: "Alergia a componentes (albumina, ácido hialurônico, lidocaína)", type: "text" },
             { key: "infeccao_local", label: "Infecção, inflamação ou herpes ativo na região", type: "select", options: ["Não", "Sim"] },
             { key: "autoimunes", label: "Doenças autoimunes ou uso de imunossupressores", type: "text" },
@@ -361,6 +367,7 @@ export const ANAMNESIS_LIBRARY: LibraryTemplate[] = [
         {
           title: "Procedimentos prévios",
           questions: [
+            { key: "ultima_toxina", label: "Data da última aplicação de toxina botulínica (e região)", type: "text" },
             { key: "procedimentos_previos", label: "Procedimentos prévios (data e região)", type: "textarea" },
             { key: "produtos_usados", label: "Produtos usados (marca e lote, se souber)", type: "textarea" },
             {

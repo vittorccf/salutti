@@ -42,7 +42,8 @@ async function createAppointmentAction(formData: FormData) {
   const ctx = await requireContext();
   const data = schema.parse(Object.fromEntries(formData.entries()));
   await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId, professionalId: data.professionalId });
-  const insurancePlanId = data.billing !== "particular" ? data.billing : null;
+  // Área sem módulo de convênios (estética): só particular, mesmo que o formulário traga outro valor.
+  const insurancePlanId = data.billing !== "particular" && moduleEnabled(ctx.workspace.area, "convenios") ? data.billing : null;
   if (insurancePlanId) await assertInsurancePlan(ctx.workspace.id, insurancePlanId);
   const procedureId = moduleEnabled(ctx.workspace.area, "procedimentos") && data.procedureId ? data.procedureId : null;
   if (procedureId && (await db.procedure.count({ where: { id: procedureId, workspaceId: ctx.workspace.id } })) === 0) notFound();

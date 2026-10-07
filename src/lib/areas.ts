@@ -67,7 +67,7 @@ export const AREAS: Record<Area, AreaConfig> = {
 export const ALL_PROFESSIONAL_TYPES = [...new Set(AREAS_LIST.flatMap((a) => AREAS[a].professionalTypes))] as [string, ...string[]];
 export const ALL_COUNCILS = [...new Set(AREAS_LIST.flatMap((a) => AREAS[a].councils))] as [string, ...string[]];
 
-export const moduleEnabled =(area: string | null | undefined, module: Module) => AREAS[areaOf(area)].modules[module];
+export const moduleEnabled = (area: string | null | undefined, module: Module) => AREAS[areaOf(area)].modules[module];
 
 export const segmentsFor = (area: Area, type: AccountType) => AREAS[area].segments[type];
 

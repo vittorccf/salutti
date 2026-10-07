@@ -5,29 +5,22 @@ import { createHash } from "node:crypto";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "@/i18n/server";
 import { errorMessage } from "@/i18n/errors";
-import { requireContext } from "@/lib/auth";
-import { canSeeClinical } from "@/lib/permissions";
-import { moduleEnabled } from "@/lib/areas";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { assertInWorkspace } from "@/lib/tenant";
-import { recordUse, StockError } from "@/lib/stock";
+import { recordUse, reverseUse, StockError } from "@/lib/stock";
 import { UploadError } from "@/lib/media";
 import { stageImage } from "@/lib/media-store";
-import { media } from "@/lib/providers/media";
 import { parseDateOnly, dateKeySP } from "@/lib/dates";
 import { isPhotoStage, isProcedureCategory, parseQuantity } from "@/lib/procedures";
 import type { FormResult } from "@/components/forms/action-form";
+import { requireProceduresContext } from "./_lib";
 
 // Mensagem de erro própria (chave de aesthetics.errors), traduzida em `fail`.
 class AestheticsError extends Error {}
 
 // Contexto das ações: módulo ligado e papel clínico (registro de insumo em paciente, termo e foto são dados de saúde).
-async function aestheticsContext() {
-  const ctx = await requireContext();
-  if (!moduleEnabled(ctx.workspace.area, "procedimentos") || !canSeeClinical(ctx.role)) notFound();
-  return ctx;
-}
+const aestheticsContext = () => requireProceduresContext({ clinical: true });
 
 const fail = async (e: unknown): Promise<FormResult> => {
   const t = await getTranslations("aesthetics.errors");
@@ -148,8 +141,9 @@ export async function recordProcedureAction(_prev: FormResult, formData: FormDat
   let used: Awaited<ReturnType<typeof recordUse>>;
   try {
     if (!appt.procedureId) throw new AestheticsError("procedure");
-    const already = await db.stockMovement.count({ where: { workspaceId: ctx.workspace.id, appointmentId, kind: "uso" } });
-    if (already > 0) throw new AestheticsError("alreadyRecorded");
+    if (appt.procedureRecordedAt) throw new AestheticsError("alreadyRecorded");
+    const details = str(formData, "procedureDetails", 4000) || null;
+    const adverse = str(formData, "procedureAdverseEvent", 4000) || null;
     const products = formData.getAll("product").map(String);
     const quantities = formData.getAll("quantity");
     const lots = formData.getAll("lot").map(String);
@@ -160,14 +154,17 @@ export async function recordProcedureAction(_prev: FormResult, formData: FormDat
       if (Number.isNaN(q)) throw new AestheticsError("quantity");
       items.push({ productId, lotId: lots[i] || null, quantity: q });
     });
-    if (items.length === 0) throw new AestheticsError("nothingToRecord");
-    // recordUse confere produto e lote no workspace e recusa lote vencido ou saldo insuficiente.
+    // Procedimento sem insumo (ex.: limpeza de pele) registra só a ficha técnica.
+    if (items.length === 0 && !details) throw new AestheticsError("nothingToRecord");
+    // recordUse marca a sessão como registrada (na mesma transação: clique duplo não baixa duas vezes), confere
+    // produto e lote no workspace e recusa lote vencido ou saldo insuficiente.
     used = await recordUse({
       workspaceId: ctx.workspace.id,
       userId: ctx.user.id,
       appointmentId: appt.id,
       patientId: appt.patientId,
       items,
+      appointmentData: { procedureDetails: details, procedureAdverseEvent: adverse },
     });
   } catch (e) {
     return fail(e);
@@ -181,6 +178,28 @@ export async function recordProcedureAction(_prev: FormResult, formData: FormDat
     metadata: { procedureId: appt.procedureId, items: used.length },
   });
   redirect(`/app/agenda/${appt.id}?registrado=1`);
+}
+
+// Estorno do registro (lançamento errado): devolve o estoque com motivo e libera a sessão para registrar de novo.
+export async function reverseProcedureAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const ctx = await aestheticsContext();
+  const appt = await sessionFor(ctx.workspace.id, String(formData.get("appointmentId") ?? ""));
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 500);
+  let reversed: Awaited<ReturnType<typeof reverseUse>>;
+  try {
+    reversed = await reverseUse({ workspaceId: ctx.workspace.id, userId: ctx.user.id, appointmentId: appt.id, reason });
+  } catch (e) {
+    return fail(e);
+  }
+  await recordAudit({
+    workspaceId: ctx.workspace.id,
+    userId: ctx.user.id,
+    action: "procedure.reverse",
+    entity: "Appointment",
+    entityId: appt.id,
+    metadata: { procedureId: appt.procedureId, lots: reversed.length, reason },
+  });
+  redirect(`/app/agenda/${appt.id}?estornado=1`);
 }
 
 // Termo aceito: grava o consentimento com o hash do texto do termo (prova de qual versão foi aceita).
@@ -246,14 +265,18 @@ export async function uploadClinicalPhotoAction(_prev: FormResult, formData: For
       },
     });
     photoId = photo.id;
-    await db.consentRecord.createMany({
-      data: [
-        { workspaceId: ctx.workspace.id, patientId, purpose: "foto_clinica", legalBasis: "consentimento", granted: true },
-        ...(allowMarketing
-          ? [{ workspaceId: ctx.workspace.id, patientId, purpose: "foto_divulgacao", legalBasis: "consentimento", granted: true }]
-          : []),
-      ],
+    // Um consentimento vigente por finalidade e paciente (não um por foto).
+    const purposes = ["foto_clinica", ...(allowMarketing ? ["foto_divulgacao"] : [])];
+    const current = await db.consentRecord.findMany({
+      where: { workspaceId: ctx.workspace.id, patientId, purpose: { in: purposes }, granted: true, revokedAt: null },
+      select: { purpose: true },
     });
+    const missing = purposes.filter((p) => !current.some((c) => c.purpose === p));
+    if (missing.length) {
+      await db.consentRecord.createMany({
+        data: missing.map((purpose) => ({ workspaceId: ctx.workspace.id, patientId, purpose, legalBasis: "consentimento", granted: true })),
+      });
+    }
     await staged.commit();
   } catch (e) {
     await staged?.rollback();
@@ -271,17 +294,48 @@ export async function uploadClinicalPhotoAction(_prev: FormResult, formData: For
   redirect(`/app/pacientes/${patientId}?foto=1#fotos-clinicas`);
 }
 
+// Remoção lógica: a foto sai da ficha, mas o registro e a imagem ficam guardados com o motivo (prontuário).
+// A exclusão definitiva só acontece pela LGPD (anonimizar ou excluir a paciente).
 export async function removeClinicalPhotoAction(formData: FormData) {
   const ctx = await aestheticsContext();
   const id = String(formData.get("id") ?? "");
-  const photo = await db.clinicalPhoto.findFirst({ where: { id, workspaceId: ctx.workspace.id } });
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 300) || null;
+  const photo = await db.clinicalPhoto.findFirst({ where: { id, workspaceId: ctx.workspace.id, removedAt: null } });
   if (!photo) notFound();
-  await db.clinicalPhoto.delete({ where: { id: photo.id } });
-  await media.remove(photo.mediaId);
+  await db.clinicalPhoto.update({ where: { id: photo.id }, data: { removedAt: new Date(), removedReason: reason, allowMarketing: false } });
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
-    action: "clinical_photo.delete",
+    action: "clinical_photo.remove",
+    entity: "ClinicalPhoto",
+    entityId: photo.id,
+    metadata: { patientId: photo.patientId, reason },
+  });
+  redirect(`/app/pacientes/${photo.patientId}#fotos-clinicas`);
+}
+
+// Revoga a autorização de divulgação da foto. Sem nenhuma foto ainda autorizada, revoga também o consentimento
+// "foto_divulgacao" da paciente.
+export async function revokeMarketingAction(formData: FormData) {
+  const ctx = await aestheticsContext();
+  const id = String(formData.get("id") ?? "");
+  const photo = await db.clinicalPhoto.findFirst({ where: { id, workspaceId: ctx.workspace.id, allowMarketing: true } });
+  if (!photo) notFound();
+  const now = new Date();
+  await db.clinicalPhoto.update({ where: { id: photo.id }, data: { allowMarketing: false, marketingRevokedAt: now } });
+  const stillAllowed = await db.clinicalPhoto.count({
+    where: { workspaceId: ctx.workspace.id, patientId: photo.patientId, allowMarketing: true, removedAt: null },
+  });
+  if (stillAllowed === 0) {
+    await db.consentRecord.updateMany({
+      where: { workspaceId: ctx.workspace.id, patientId: photo.patientId, purpose: "foto_divulgacao", revokedAt: null },
+      data: { revokedAt: now },
+    });
+  }
+  await recordAudit({
+    workspaceId: ctx.workspace.id,
+    userId: ctx.user.id,
+    action: "clinical_photo.revoke_marketing",
     entity: "ClinicalPhoto",
     entityId: photo.id,
     metadata: { patientId: photo.patientId },

@@ -218,6 +218,11 @@ model Appointment {
   meetingOwnerId String?
   // Procedimento do catálogo (Salutti Estética): sugere duração e valor; o registro da aplicação baixa o estoque.
   procedureId    String?
+  // Registro do procedimento (baixa de estoque): marca dentro da transação para impedir registro em dobro;
+  // o estorno limpa a marca. Ficha técnica: diluição, pontos/unidades por região; intercorrência, se houver.
+  procedureRecordedAt   DateTime?
+  procedureDetails      String?
+  procedureAdverseEvent String?
   status          String        @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
   price           Float
   notes           String?
@@ -664,7 +669,7 @@ model StockMovement {
   workspaceId   String
   productId     String
   lotId         String?
-  kind          String    // entrada | uso | ajuste | perda | venda
+  kind          String    // entrada | uso | estorno | ajuste | perda | venda
   quantity      Float     // positivo entra, negativo sai
   reason        String?   // perda: vencido | sobra_frasco | quebra | outro
   appointmentId String?
@@ -673,7 +678,8 @@ model StockMovement {
   createdAt     DateTime  @default(now())
 
   workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Restrict: o histórico (rastreabilidade de lote em paciente) não some junto com o produto; produto se desativa.
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
   lot           StockLot? @relation(fields: [lotId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, productId])
@@ -693,7 +699,12 @@ model ClinicalPhoto {
   stage          String    @default("antes") // antes | durante | depois
   region         String?
   allowMarketing Boolean   @default(false)
+  // Autorização de divulgação revogada (fica a data; allowMarketing volta a false).
+  marketingRevokedAt DateTime?
   takenAt        DateTime  @default(now())
+  // Remoção lógica: some da ficha, mas o registro e a imagem ficam (prontuário). Só a LGPD apaga de vez.
+  removedAt      DateTime?
+  removedReason  String?
 
   workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 

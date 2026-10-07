@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { Handshake } from "lucide-react";
-import { requireContext } from "@/lib/auth";
+import { requireModule } from "@/lib/modules";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { getFormat, getTranslations } from "@/i18n/server";
@@ -26,7 +26,7 @@ const planSchema = z.object({
 
 async function createPlanAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireModule("convenios");
   const parsed = planSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect(`/app/convenios?erro=${encodeURIComponent(parsed.error.issues[0].message)}`);
   const plan = await db.insurancePlan.create({
@@ -56,7 +56,7 @@ const providerSchema = z.object({
 
 async function saveProviderAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireModule("convenios");
   const parsed = providerSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect(`/app/convenios?erro=${encodeURIComponent(parsed.error.issues[0].message)}`);
   const { cnpj, cnes } = parsed.data;
@@ -72,7 +72,7 @@ async function saveProviderAction(formData: FormData) {
 }
 
 export default async function InsurancePlansPage({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
-  const ctx = await requireContext();
+  const ctx = await requireModule("convenios");
   const t = await getTranslations("finance.insurance");
   const te = await getTranslations("finance.errors");
   const tc = await getTranslations("common");

@@ -29,8 +29,9 @@ describe("lotStatus", () => {
     expect(lotStatus(lot("a", 1), filler, NOW)).toBe("vencendo");
   });
 
-  it("vencido na data de validade ou depois", () => {
-    expect(lotStatus(lot("a", 0), filler, NOW)).toBe("vencido");
+  it("vale até o fim do dia da validade; vencido no dia seguinte", () => {
+    expect(lotStatus(lot("a", 0), filler, NOW)).toBe("vencendo");
+    expect(lotStatus(lot("a", -1), filler, NOW)).toBe("vencido");
     expect(lotStatus(lot("a", -5), filler, NOW)).toBe("vencido");
   });
 

@@ -1,16 +1,9 @@
 // Só no servidor: contexto das telas de procedimentos (módulo ligado na área do consultório).
-import { notFound } from "next/navigation";
-import { requireContext } from "@/lib/auth";
-import { moduleEnabled } from "@/lib/areas";
-import { canSeeClinical } from "@/lib/permissions";
+import { requireModule } from "@/lib/modules";
 import { db } from "@/lib/db";
+import { RETURN_SUGGESTIONS } from "@/lib/procedures";
 
-export async function requireProceduresContext({ clinical = false } = {}) {
-  const ctx = await requireContext();
-  if (!moduleEnabled(ctx.workspace.area, "procedimentos")) notFound();
-  if (clinical && !canSeeClinical(ctx.role)) notFound();
-  return ctx;
-}
+export const requireProceduresContext = ({ clinical = false } = {}) => requireModule("procedimentos", { clinical });
 
 // Produtos do estoque que podem entrar no kit (insumos e revenda ativos).
 export const kitProducts = (workspaceId: string) =>
@@ -18,7 +11,7 @@ export const kitProducts = (workspaceId: string) =>
 
 // Sugestões do estado vazio: começam o cadastro já preenchido.
 export const PRESETS = {
-  toxin: { category: "injetavel", durationMinutes: 30, returnDays: 120 },
+  toxin: { category: "injetavel", durationMinutes: 30, returnDays: RETURN_SUGGESTIONS[0].days },
   cleansing: { category: "facial", durationMinutes: 60, returnDays: null },
   lipFiller: { category: "injetavel", durationMinutes: 60, returnDays: null },
 } as const;

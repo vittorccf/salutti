@@ -51,7 +51,8 @@
     "uso": "Used in appointment",
     "ajuste": "Inventory adjustment",
     "perda": "Loss",
-    "venda": "Sale"
+    "venda": "Sale",
+    "estorno": "Visit reversal"
   },
   "reasons": {
     "vencido": "Expired",
@@ -76,7 +77,10 @@
     "expiresRequired": "Enter the lot's expiration date.",
     "noDifference": "The counted balance matches the system balance: nothing to adjust.",
     "reasonRequired": "Choose the reason for the loss.",
-    "saleOnlyResale": "Sales only apply to retail products."
+    "saleOnlyResale": "Sales only apply to retail products.",
+    "alreadyRecorded": "This session already has the procedure recorded.",
+    "notRecorded": "This session has no record to reverse.",
+    "reversalReason": "Enter the reason for the reversal."
   },
   "list": {
     "title": "Inventory",

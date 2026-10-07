@@ -51,7 +51,8 @@
     "uso": "Uso en atención",
     "ajuste": "Ajuste de inventario",
     "perda": "Pérdida",
-    "venda": "Venta"
+    "venda": "Venta",
+    "estorno": "Reversión de atención"
   },
   "reasons": {
     "vencido": "Vencido",
@@ -76,7 +77,10 @@
     "expiresRequired": "Indica la fecha de vencimiento del lote.",
     "noDifference": "El saldo contado es igual al del sistema: no hay nada que ajustar.",
     "reasonRequired": "Elige el motivo de la pérdida.",
-    "saleOnlyResale": "La venta solo aplica a productos de reventa."
+    "saleOnlyResale": "La venta solo aplica a productos de reventa.",
+    "alreadyRecorded": "Esta sesión ya tiene el procedimiento registrado.",
+    "notRecorded": "Esta sesión no tiene registro para revertir.",
+    "reversalReason": "Indique el motivo de la reversión."
   },
   "list": {
     "title": "Inventario",

@@ -20,8 +20,20 @@ limpeza de pele, antes/depois). Clínica também funciona, mas é segunda priori
 | Fotos clínicas | ficha da paciente | Antes/durante/depois por procedimento e região, com autorização de uso clínico e **autorização separada** para divulgação (`allowMarketing`). |
 | Convênios/TISS | — | Desligado (procedimento estético não é coberto por convênio). |
 
-Núcleo do estoque pronto em `src/lib/stock.ts` (`receiveLot`, `recordUse` com FEFO e validade após aberto,
-`adjustLot`, `stockAlerts`, `lotStatus`, `openExpiresAt`). Erros: `StockError` com chave em `stock.errors.*`.
+Núcleo do estoque em `src/lib/stock.ts` (`receiveLot`, `recordUse` com FEFO e validade após aberto,
+`adjustLot`, `reverseUse`, `stockAlerts`, `lotStatus`, `openExpiresAt`). Erros: `StockError` com chave em `stock.errors.*`.
+
+Garantias:
+- Baixa atômica (`updateMany` com `quantity >= take`): duas baixas simultâneas no mesmo lote não se sobrescrevem.
+- `Appointment.procedureRecordedAt` é marcado dentro da transação do registro: clique duplo não baixa duas vezes.
+- Estorno (lançamento errado) devolve o saldo líquido a cada lote com motivo, grava movimentos `estorno` e libera
+  a sessão para novo registro; nada do histórico é apagado. `StockMovement.product` é `Restrict` (produto se desativa).
+- Validade vale o dia inteiro (compara o dia em São Paulo): "válido até 31/10" pode ser usado no dia 31.
+- Venda de lote vencido é recusada; perda de vencido é o descarte.
+- Ficha técnica opcional na sessão (`procedureDetails`: diluição, unidades por região) e intercorrência.
+- Fotos clínicas: remoção lógica com motivo (`removedAt`); autorização de divulgação revogável
+  (`marketingRevokedAt`); um consentimento vigente por finalidade e paciente. Só a LGPD apaga de vez.
+- Rotas de módulo desligado dão 404 (`requireModule` em `src/lib/modules.ts`), inclusive Convênios na Estética.
 
 ## Regras e referências
 

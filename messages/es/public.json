@@ -104,7 +104,7 @@
       },
       "consent": {
         "title": "Consentimiento por procedimiento",
-        "desc": "Cada procedimiento tiene su propio consentimiento informado, firmado por la paciente antes de la atención."
+        "desc": "Cada procedimiento tiene su propio consentimiento informado, con la aceptación de la paciente registrada antes de la atención."
       },
       "followUp": {
         "title": "Recordatorio de retorno",
@@ -126,7 +126,7 @@
     "differentiators": {
       "trace": {
         "title": "Lote vinculado a la paciente",
-        "desc": "Producto, lote, vencimiento y cantidad aplicada quedan registrados en la sesión, como exige la ANVISA."
+        "desc": "Producto, lote, vencimiento y cantidad aplicada quedan registrados en la sesión, para la trazabilidad que orienta la ANVISA."
       },
       "fefo": {
         "title": "Descuento automático",
