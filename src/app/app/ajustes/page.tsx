@@ -1,4 +1,3 @@
-import { supportMailto } from "@/lib/contact";
 import { autonomoBlockers } from "@/lib/account";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -13,8 +12,8 @@ import { addLibraryTemplatesAction } from "../_actions/anamnesis";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { PLANS, billingConfigured, type PaidPlan } from "@/lib/providers/billing";
-import { billingPortalAction, subscribeAction } from "../_actions/billing";
+import { billingConfigured } from "@/lib/providers/billing";
+import { PlanOptions } from "../_components/billing/plan-options";
 import { changeAccountTypeAction, updateProfileAction, updateWorkspaceAction } from "../_actions/account";
 import { ActionForm } from "@/components/forms/action-form";
 import { AddressFields } from "@/components/forms/address-fields";
@@ -437,45 +436,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 {aviso.text}
               </p>
             ) : null}
-            <div className="grid gap-3 sm:grid-cols-3">
-              {(Object.keys(PLANS) as PaidPlan[]).map((key) => {
-                const p = PLANS[key];
-                const current = ctx.workspace.planTier === key;
-                return (
-                  <div key={key} className={current ? "rounded-md border border-brand p-3" : "rounded-md border p-3"}>
-                    <p className="font-semibold">
-                      {p.name} · {t(`plan.${key}Price`)}
-                    </p>
-                    <p className="text-muted-foreground">{t(`plan.${key}Description`)}</p>
-                    {current ? (
-                      <Badge variant="success" className="mt-3">{t("plan.currentBadge")}</Badge>
-                    ) : isOwner ? (
-                      <form action={subscribeAction} className="mt-3">
-                        <input type="hidden" name="plan" value={key} />
-                        <Button type="submit" size="sm" variant={key === "pro" ? "default" : "outline"}>
-                          {billingConfigured() ? t("plan.subscribe", { plan: p.name }) : t("plan.activateSimulated", { plan: p.name })}
-                        </Button>
-                      </form>
-                    ) : null}
-                  </div>
-                );
-              })}
-              <div className="rounded-md border p-3">
-                <p className="font-semibold">{t("plan.clinicTitle")}</p>
-                <p className="text-muted-foreground">{t("plan.clinicDescription")}</p>
-                <Button size="sm" variant="outline" className="mt-3" asChild>
-                  <a href={supportMailto("Plano Clínica")}>{t("plan.contact")}</a>
-                </Button>
-              </div>
-            </div>
-            {isOwner && billingConfigured() && (ctx.workspace.planTier === "starter" || ctx.workspace.planTier === "pro") ? (
-              <form action={billingPortalAction}>
-                <Button type="submit" variant="outline" size="sm">
-                  {t("plan.manage")}
-                </Button>
-              </form>
-            ) : null}
-            {!isOwner ? <p className="text-muted-foreground">{t("plan.ownerOnly")}</p> : null}
+            <PlanOptions planTier={ctx.workspace.planTier} isOwner={isOwner} />
           </CardContent>
         </Card>
       </div>

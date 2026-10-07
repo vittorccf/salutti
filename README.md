@@ -88,9 +88,9 @@ Para integrações reais (Stripe, Asaas, NFE.io, WhatsApp, Receita Saúde): troc
 
 ### Assinatura da Salutti (Stripe Billing)
 
-Em Ajustes → Plano Salutti, quem é dono do consultório assina Starter ou Pro. Com `STRIPE_SECRET_KEY` real, o botão abre o Checkout do Stripe e o webhook atualiza o plano; sem ela, a ativação é simulada (sem cobrança) e aparece como tal.
+Em Ajustes → Plano Salutti, quem é dono do consultório assina um dos planos pagos do catálogo (backoffice → Planos: Básico, Essencial, Anual). Com `STRIPE_SECRET_KEY` real, o botão abre o Checkout do Stripe e o webhook atualiza o plano; sem ela, a ativação é simulada (sem cobrança) e aparece como tal. Com o teste grátis vencido (ou a assinatura cancelada), o app leva para `/app/assinatura`; continuam abertos só LGPD/exportação, segurança da conta e suporte.
 
-1. No Stripe, crie dois preços recorrentes mensais (Starter R$ 49, Pro R$ 129) e preencha `STRIPE_PRICE_STARTER` e `STRIPE_PRICE_PRO`.
+1. No Stripe, crie um preço recorrente em BRL para cada plano pago (mesmo valor e recorrência do catálogo) e cole o `price_…` no plano, em backoffice → Planos. O backoffice confere valor, moeda e recorrência no Stripe antes de salvar.
 2. Crie o endpoint de webhook `https://<seu-domínio>/api/stripe/webhook` com os eventos `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted`, e preencha `STRIPE_WEBHOOK_SECRET`.
 3. Ative o Customer Portal do Stripe para o botão "Gerenciar assinatura e faturas".
 

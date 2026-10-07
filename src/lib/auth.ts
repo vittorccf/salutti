@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
 import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
+import { accessExpired } from "@/lib/plan-access";
 
 // Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
 // obrigatório: o padrão está no repositório público e permitiria forjar sessões.
@@ -183,10 +184,13 @@ export const getCurrentContext = async () => {
   };
 };
 
-export const requireContext = async () => {
+// Com o teste grátis vencido, tudo leva para /app/assinatura; `allowExpired` libera o que precisa continuar
+// funcionando sem plano (assinar, exportar e excluir dados pela LGPD, segurança da conta, suporte).
+export const requireContext = async (opts: { allowExpired?: boolean } = {}) => {
   const ctx = await getCurrentContext();
   if (!ctx) {
     redirect("/login");
   }
+  if (!opts.allowExpired && accessExpired(ctx.workspace)) redirect("/app/assinatura");
   return ctx;
 };

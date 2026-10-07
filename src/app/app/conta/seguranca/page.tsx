@@ -47,7 +47,7 @@ async function currentUserCodeOk(userId: string, code: string) {
 
 async function startAction() {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   await db.user.update({
     where: { id: ctx.user.id },
     data: { totpSecret: encryptSecret(generateTotpSecret()), totpEnabledAt: null, totpRecoveryHashes: null },
@@ -57,7 +57,7 @@ async function startAction() {
 
 async function confirmAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const user = await db.user.findUnique({ where: { id: ctx.user.id } });
   if (!user?.totpSecret || user.totpEnabledAt) redirect(PAGE);
   if (!verifyTotp(decryptSecret(user.totpSecret), String(formData.get("code") ?? ""))) redirect(`${PAGE}?erro=codigo`);
@@ -73,7 +73,7 @@ async function confirmAction(formData: FormData) {
 
 async function disableAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   if (!(await currentUserCodeOk(ctx.user.id, String(formData.get("code") ?? "")))) redirect(`${PAGE}?erro=codigo`);
   await db.user.update({
     where: { id: ctx.user.id },
@@ -85,7 +85,7 @@ async function disableAction(formData: FormData) {
 
 async function regenerateAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   if (!(await currentUserCodeOk(ctx.user.id, String(formData.get("code") ?? "")))) redirect(`${PAGE}?erro=codigo`);
   const { codes, hashes } = generateRecoveryCodes();
   await db.user.update({ where: { id: ctx.user.id }, data: { totpRecoveryHashes: JSON.stringify(hashes) } });
@@ -97,7 +97,7 @@ async function regenerateAction(formData: FormData) {
 // Desvincula o Google só de quem tem senha: conta criada pelo Google ficaria sem como entrar.
 async function unlinkGoogleAction() {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const user = await db.user.findUniqueOrThrow({ where: { id: ctx.user.id } });
   if (!user.passwordHash) redirect(PAGE);
   await db.user.update({ where: { id: user.id }, data: { googleSub: null, googleEmail: null } });
@@ -115,7 +115,7 @@ async function dismissCodesAction() {
 const GOOGLE_STATUS = { ok: "googleOk", emuso: "googleInUse", email: "googleEmail", erro: "googleError" } as const;
 
 export default async function SecurityPage({ searchParams }: { searchParams: Promise<{ erro?: string; google?: string }> }) {
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const { erro, google: googleStatus } = await searchParams;
   const googleMessage = googleStatus && googleStatus in GOOGLE_STATUS ? GOOGLE_STATUS[googleStatus as keyof typeof GOOGLE_STATUS] : null;
   const t = await getTranslations("auth.security");

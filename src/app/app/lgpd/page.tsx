@@ -22,7 +22,7 @@ const rights = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"] as const;
 
 async function exportDataAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const patientId = formData.get("patientId") as string;
   await assertInWorkspace(ctx.workspace.id, { patientId });
   await recordAudit({
@@ -48,7 +48,7 @@ async function removeClinicalPhotos(workspaceId: string, patientId: string) {
 
 async function anonymizeAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const patientId = formData.get("patientId") as string;
   const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
   // Tudo o que identifica a pessoa sai: contato, documentos, endereço completo, nascimento e foto.
@@ -91,7 +91,7 @@ async function anonymizeAction(formData: FormData) {
 
 async function softDeleteAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const patientId = formData.get("patientId") as string;
   const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
   ensureAffected(
@@ -113,7 +113,7 @@ async function softDeleteAction(formData: FormData) {
 }
 
 export default async function LgpdPage() {
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const [auditLog, consents, patients] = await Promise.all([
     db.auditLog.findMany({
       where: { workspaceId: ctx.workspace.id },

@@ -1,6 +1,20 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-07. A seção "Entrar com Google" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Cobrança pelo Stripe com o catálogo" é a mais recente; as demais ficam como histórico.
+
+## Cobrança pelo Stripe com o catálogo (2026-10-08) — branch `feat/stripe-catalogo`
+
+O dono escolheu o Stripe (conta própria, CPF) em vez do Mercado Pago: a integração já existia e o portal do cliente evita
+construir telas de cartão/cancelamento. O checkout agora cobra os planos do catálogo do backoffice (Básico, Essencial, Anual):
+`PlatformPlan.stripePriceId` guarda o `price_…`, conferido no Stripe ao salvar (valor, BRL, recorrência). O webhook acha o plano
+pelo preço cobrado (troca pelo portal funciona) e só ativa com pagamento confirmado (boleto pendente não ativa). Teste grátis
+vencido ou assinatura cancelada: `requireContext()` leva a `/app/assinatura`; `allowExpired` libera LGPD/exportação, segurança
+da conta, suporte, aceite dos termos e as ações de assinatura. O cadastro usa `PlatformPlan.trialDays`.
+
+**Pendente do dono:** conta no Stripe, os 3 preços, `STRIPE_SECRET_KEY` e `STRIPE_WEBHOOK_SECRET` na Vercel, IDs dos preços no
+backoffice, portal do cliente ativado e, em Billing → Revenue recovery, cancelar a assinatura depois das novas tentativas
+(é o cancelamento que bloqueia o inadimplente). Antes de cobrar de verdade: identificar o vendedor (nome, CPF/CNPJ, endereço)
+em `LEGAL_ENTITY` (`src/lib/legal.ts`).
 
 ## Zoom removido, Saluttin oculto e copiar link do Meet (2026-10-07)
 
@@ -54,8 +68,8 @@ Básico R$ 49,90/mês, Essencial R$ 89,90/mês, Anual R$ 749,90/ano.
 
 **Botão de suporte:** flutuante em todas as telas logadas, com 7 tópicos (definidos com o PO), aviso de privacidade, "Meus chamados" e resposta. Revisado por psicólogo, advogado do diabo e qualidade.
 
-**Ficou para depois:** Stripe ainda cobra Starter/Pro (alinhar ao catálogo novo); anexos/print no chamado; e-mail ao cliente
-quando a equipe responde; 2FA no backoffice; retenção dos chamados; o cadastro ainda usa 15 dias fixos em vez de `PlatformPlan.trialDays`.
+**Ficou para depois:** anexos/print no chamado; e-mail ao cliente quando a equipe responde; 2FA no backoffice; retenção dos
+chamados. (Stripe com o catálogo e `trialDays` no cadastro: feitos em 2026-10-08.)
 
 ## Salutti Estética (2026-10-07) — PRs #28, #29 e o pacote seguinte
 

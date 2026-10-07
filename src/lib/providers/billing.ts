@@ -1,33 +1,15 @@
 // Assinatura SaaS da própria Salutti via Stripe Billing (API REST, sem SDK).
 // Sem STRIPE_SECRET_KEY real, o app fica em sandbox: a ativação é simulada e marcada como tal.
+// Os planos e preços vêm do catálogo do backoffice (PlatformPlan); cada plano pago aponta para um price_… do Stripe.
 //
 // STRIPE_SECRET_KEY        sk_live_… / sk_test_…
 // STRIPE_WEBHOOK_SECRET    whsec_… (endpoint /api/stripe/webhook)
-// STRIPE_PRICE_STARTER     price_… (R$ 49/mês)
-// STRIPE_PRICE_PRO         price_… (R$ 129/mês)
 import crypto from "node:crypto";
-
-export type PaidPlan = "starter" | "pro";
-
-export const PLANS: Record<PaidPlan, { name: string; price: string; description: string }> = {
-  starter: { name: "Starter", price: "R$ 49/mês", description: "Solo · até 50 pacientes ativos" },
-  pro: { name: "Pro", price: "R$ 129/mês", description: "Solo + IA preditiva ilimitada" },
-};
 
 export const billingConfigured = () => {
   const key = process.env.STRIPE_SECRET_KEY ?? "";
   return key.startsWith("sk_") && !key.includes("mock");
 };
-
-const priceFor = (plan: PaidPlan) =>
-  plan === "starter" ? process.env.STRIPE_PRICE_STARTER : process.env.STRIPE_PRICE_PRO;
-
-export const planForPrice = (priceId: string | undefined): PaidPlan | null =>
-  priceId && priceId === process.env.STRIPE_PRICE_STARTER
-    ? "starter"
-    : priceId && priceId === process.env.STRIPE_PRICE_PRO
-      ? "pro"
-      : null;
 
 // A API do Stripe recebe form-urlencoded com chaves aninhadas: a[b][0][c]=v.
 const encode = (obj: Record<string, unknown>, prefix = ""): string[] =>
@@ -68,23 +50,31 @@ async function customerFor(workspace: { id: string; name: string }, email: strin
   return created.id;
 }
 
+type StripePrice = {
+  id: string;
+  active: boolean;
+  currency: string;
+  unit_amount: number | null;
+  recurring: { interval: string; interval_count: number } | null;
+};
+
+const INTERVALS: Record<string, string> = { mensal: "month", anual: "year" };
+
 export const billing = {
   async createCheckout(opts: {
-    plan: PaidPlan;
+    plan: { code: string; stripePriceId: string };
     workspace: { id: string; name: string };
     email: string;
-    baseUrl: string;
+    returnUrl: string;
   }) {
-    const price = priceFor(opts.plan);
-    if (!price) throw new Error(`Preço do plano ${opts.plan} não configurado`);
     const customer = await customerFor(opts.workspace, opts.email);
-    const metadata = { workspaceId: opts.workspace.id, plan: opts.plan };
+    const metadata = { workspaceId: opts.workspace.id, plan: opts.plan.code };
     const session = await stripe<{ url: string }>("POST", "checkout/sessions", {
       mode: "subscription",
       customer,
-      line_items: { 0: { price, quantity: 1 } },
-      success_url: `${opts.baseUrl}/app/ajustes?assinatura=ok`,
-      cancel_url: `${opts.baseUrl}/app/ajustes`,
+      line_items: { 0: { price: opts.plan.stripePriceId, quantity: 1 } },
+      success_url: `${opts.returnUrl}?assinatura=ok`,
+      cancel_url: opts.returnUrl,
       locale: "pt-BR",
       metadata,
       subscription_data: { metadata },
@@ -92,15 +82,40 @@ export const billing = {
     return session.url;
   },
 
-  async createPortal(opts: { workspace: { id: string; name: string }; email: string; baseUrl: string }) {
+  async createPortal(opts: { workspace: { id: string; name: string }; email: string; returnUrl: string }) {
     const customer = await customerFor(opts.workspace, opts.email);
     const portal = await stripe<{ url: string }>("POST", "billing_portal/sessions", {
       customer,
-      return_url: `${opts.baseUrl}/app/ajustes`,
+      return_url: opts.returnUrl,
     });
     return portal.url;
   },
+
+  // Confere se o preço do Stripe cobra o mesmo que o catálogo mostra; devolve o motivo da divergência ou null.
+  async checkPrice(priceId: string, plan: { priceCents: number; interval: string }): Promise<string | null> {
+    let price: StripePrice;
+    try {
+      price = await stripe<StripePrice>("GET", `prices/${encodeURIComponent(priceId)}`);
+    } catch {
+      return "Preço não encontrado no Stripe. Confira o ID e se a chave é do mesmo modo (teste ou produção).";
+    }
+    return priceMismatch(price, plan);
+  },
 };
+
+export function priceMismatch(price: StripePrice, plan: { priceCents: number; interval: string }): string | null {
+  if (!price.active) return "Esse preço está arquivado no Stripe.";
+  if (!price.recurring) return "Esse preço não é recorrente. Crie um preço de assinatura no Stripe.";
+  if (price.currency !== "brl") return "Esse preço não está em reais (BRL).";
+  if (price.recurring.interval !== INTERVALS[plan.interval] || price.recurring.interval_count !== 1) {
+    return `A recorrência no Stripe não bate com o plano (${plan.interval}).`;
+  }
+  if (price.unit_amount !== plan.priceCents) {
+    const brl = (cents: number | null) => ((cents ?? 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    return `O Stripe cobra ${brl(price.unit_amount)} e o plano mostra ${brl(plan.priceCents)}. Crie um preço novo no Stripe ou ajuste o valor.`;
+  }
+  return null;
+}
 
 // Verifica o cabeçalho Stripe-Signature (t=…,v1=…) com HMAC-SHA256 e tolerância de 5 minutos.
 export function verifyStripeSignature(payload: string, header: string | null, secret: string, nowSeconds = Date.now() / 1000) {
