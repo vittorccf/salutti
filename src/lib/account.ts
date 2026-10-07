@@ -1,3 +1,5 @@
+import { AREAS, areaOfSegment, type Area } from "./areas";
+
 // Tipo de conta: profissional autônomo (um profissional, o próprio dono) ou clínica (equipe, recepção, CNPJ).
 // A escolha acontece no cadastro e pode ser trocada em Ajustes.
 export type AccountType = "autonomo" | "clinica";
@@ -30,11 +32,15 @@ export const SEGMENTS: Record<AccountType, { value: string; label: string }[]> =
   ],
 };
 
-export const segmentAllowed = (type: AccountType, segment: string) => SEGMENTS[type].some((s) => s.value === segment);
+// Segmento válido para o tipo de conta dentro da área (Salutti ou Salutti Estética).
+export const segmentAllowed = (type: AccountType, segment: string, area: Area = "mental") =>
+  AREAS[area].segments[type].includes(segment);
 
 // Na troca de tipo, a área de atendimento acompanha: "clínica multiprofissional" vira "psicologia" e vice-versa.
 export function segmentAfterMigration(to: AccountType, segment: string) {
-  if (segmentAllowed(to, segment)) return segment;
+  const area = areaOfSegment(segment);
+  if (segmentAllowed(to, segment, area)) return segment;
+  if (area === "estetica") return to === "clinica" ? "estetica_clinica" : AREAS.estetica.segments.autonomo[0];
   return to === "clinica" ? "clinica" : segment === "solo_psicanalista" ? "solo_psicanalista" : "solo_psicologo";
 }
 

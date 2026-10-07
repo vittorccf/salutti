@@ -47,6 +47,8 @@ model Workspace {
   name            String
   slug            String         @unique
   // Tipo de conta, escolhido no cadastro e trocável em Ajustes: autonomo (um profissional) | clinica (equipe).
+  // Área de atuação (marca): mental (Salutti) | estetica (Salutti Estética). Ver src/lib/areas.ts.
+  area            String         @default("mental")
   accountType     String         @default("autonomo")
   // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
   brandDisplay    String         @default("salutti")
@@ -89,6 +91,11 @@ model Workspace {
   tissBatches     TissBatch[]
   tissGuides      TissGuide[]
   invitations     Invitation[]
+  procedures      Procedure[]
+  products        Product[]
+  stockLots       StockLot[]
+  stockMovements  StockMovement[]
+  clinicalPhotos  ClinicalPhoto[]
 }
 
 model Membership {
@@ -209,6 +216,8 @@ model Appointment {
   // Evento do Google Agenda que contém o Meet, e de quem é a agenda (para apagar ao cancelar a sessão).
   meetingEventId String?
   meetingOwnerId String?
+  // Procedimento do catálogo (Salutti Estética): sugere duração e valor; o registro da aplicação baixa o estoque.
+  procedureId    String?
   status          String        @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
   price           Float
   notes           String?
@@ -561,4 +570,132 @@ model Invitation {
   invitedBy   User      @relation("InviteSentBy", fields: [invitedById], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
+}
+
+// ---------- Salutti Estética: catálogo, estoque com rastreabilidade e fotos clínicas ----------
+
+// Procedimento oferecido (toxina, preenchimento, limpeza de pele...): duração e valor sugeridos, intervalo de
+// retorno, termo de consentimento próprio e o "kit" de insumos que costuma consumir.
+model Procedure {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  name            String
+  category        String   @default("facial") // facial | injetavel | corporal | capilar | outro
+  durationMinutes Int      @default(60)
+  price           Float?
+  // Dias até o retorno/manutenção sugerido (ex.: toxina ~120); nulo = sem retorno programado.
+  returnDays      Int?
+  consentText     String?
+  notes           String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  supplies        ProcedureSupply[]
+
+  @@index([workspaceId])
+}
+
+// Insumo que o procedimento costuma consumir e quanto (ex.: toxina 50 U); só sugestão no registro.
+model ProcedureSupply {
+  id          String    @id @default(cuid())
+  procedureId String
+  productId   String
+  quantity    Float
+
+  procedure   Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([procedureId, productId])
+}
+
+// Produto em estoque: insumo (consumido no procedimento) ou revenda (vendido à paciente).
+model Product {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  name               String
+  brand              String?
+  kind               String   @default("insumo") // insumo | revenda
+  unit               String   @default("un")     // U | mL | seringa | frasco | un | g
+  anvisaRegistry     String?
+  supplier           String?
+  unitCost           Float?
+  minStock           Float    @default(0)
+  // Validade depois de aberto/reconstituído, em horas (ex.: toxina 72 h); nulo = não se aplica.
+  openShelfLifeHours Int?
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lots               StockLot[]
+  movements          StockMovement[]
+  supplies           ProcedureSupply[]
+
+  @@index([workspaceId])
+}
+
+// Lote recebido: número, validade e saldo atual. Saída sugerida por FEFO (vence primeiro, sai primeiro).
+model StockLot {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  productId       String
+  lotNumber       String
+  expiresAt       DateTime
+  initialQuantity Float
+  quantity        Float
+  unitCost        Float?
+  supplier        String?
+  receivedAt      DateTime  @default(now())
+  // Quando o frasco foi aberto/reconstituído (conta a validade após aberto do produto).
+  openedAt        DateTime?
+  notes           String?
+
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements       StockMovement[]
+
+  @@index([workspaceId, productId])
+}
+
+// Toda entrada e saída de estoque. Saída por uso guarda a sessão e a paciente: é a rastreabilidade
+// "qual lote foi aplicado em quem" (recall, intercorrência, fiscalização sanitária).
+model StockMovement {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  productId     String
+  lotId         String?
+  kind          String    // entrada | uso | ajuste | perda | venda
+  quantity      Float     // positivo entra, negativo sai
+  reason        String?   // perda: vencido | sobra_frasco | quebra | outro
+  appointmentId String?
+  patientId     String?
+  userId        String?
+  createdAt     DateTime  @default(now())
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  lot           StockLot? @relation(fields: [lotId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, productId])
+  @@index([lotId])
+  @@index([patientId])
+}
+
+// Foto clínica (antes, durante, depois) ligada à paciente e, se houver, à sessão. A imagem fica em MediaFile;
+// uso em divulgação exige autorização separada (allowMarketing), além da autorização de uso clínico.
+model ClinicalPhoto {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  patientId      String
+  appointmentId  String?
+  procedureId    String?
+  mediaId        String
+  stage          String    @default("antes") // antes | durante | depois
+  region         String?
+  allowMarketing Boolean   @default(false)
+  takenAt        DateTime  @default(now())
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, patientId])
 }
