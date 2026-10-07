@@ -1,5 +1,6 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { AreaTheme } from "@/components/brand/area-theme";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,13 +13,14 @@ export async function SignupScreen({ area = "mental" }: { area?: Area }) {
   const t = await getTranslations("auth.signup");
   const estetica = area === "estetica";
   return (
-    <main className="ds2-glow min-h-screen grid place-items-center p-4 py-12">
+    <main data-area={area} className="ds2-glow min-h-screen grid place-items-center p-4 py-12">
+      <AreaTheme area={area} />
       <div className="fixed right-4 top-4">
         <LanguageSwitcher />
       </div>
       <Card className="w-full max-w-[560px]">
         <CardHeader className="text-center">
-          <BrandLogo height={40} area={area} className="mx-auto" />
+          <BrandLogo height={area === "mental" ? 40 : 46} area={area} className="mx-auto" />
           <CardTitle>{estetica ? t("titleEstetica") : t("title")}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>

@@ -91,6 +91,72 @@
     --shadow-card: 0 0 0 1px rgba(138, 164, 192, 0.06), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
   }
 
+
+  /* Salutti Estética (artifact "Salutti Estética"): o mesmo DS 2.0 vestido de lilás. Vale dentro de qualquer
+     elemento com data-area="estetica" (shell do app e páginas públicas da área). Só tokens mudam. */
+  [data-area="estetica"] {
+    --background: 260 50% 98%;
+    --foreground: 258 27% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 258 27% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 258 27% 10%;
+    --primary: 258 27% 10%;
+    --primary-foreground: 0 0% 100%;
+    --brand: 259 36% 48%;
+    --brand-foreground: 0 0% 100%;
+    --secondary: 262 44% 95%;
+    --secondary-foreground: 258 27% 10%;
+    --muted: 262 44% 95%;
+    --muted-foreground: 254 14% 40%;
+    --accent: 263 64% 95%;
+    --accent-foreground: 258 42% 40%;
+    --border: 262 35% 91%;
+    --input: 254 14% 58%;
+    --ring: 259 36% 48%;
+    --primary-strong: var(--brand);
+    --brand-ink: 258 27% 10%;
+    --brand-lilac: 265 53% 86%;
+    --brand-orchid: 259 36% 48%;
+    --brand-plum: 258 26% 32%;
+    --estetica-tag: 265 53% 86%;
+    --estetica-tag-foreground: 258 43% 29%;
+    --gradient-brand: linear-gradient(45deg, #0f0e15 0%, #4a3d68 45%, #b49ddf 75%, #eeb59a 100%);
+    --gradient-brand-light: linear-gradient(45deg, #ebe4f7 0%, #d8c8ee 40%, #e5cfe9 70%, #f8d6c8 100%);
+    --gradient-glow: radial-gradient(60% 55% at 50% 0%, rgba(216, 200, 238, 0.9) 0%, rgba(248, 246, 252, 0) 100%);
+    --gradient-saluttin: linear-gradient(135deg, #cbb9ec 0%, #eea58c 100%);
+    --shadow-card: 0 1px 2px 0 rgba(22, 18, 31, 0.06);
+    --font-serif: var(--font-cormorant);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  .dark [data-area="estetica"], .dark[data-area="estetica"] {
+    --background: 249 20% 7%;
+    --foreground: 262 35% 94%;
+    --card: 252 20% 10%;
+    --card-foreground: 262 35% 94%;
+    --popover: 252 20% 10%;
+    --popover-foreground: 262 35% 94%;
+    --primary: 262 35% 94%;
+    --primary-foreground: 249 20% 7%;
+    --brand: 261 57% 83%;
+    --brand-foreground: 249 20% 7%;
+    --secondary: 253 21% 13%;
+    --secondary-foreground: 262 35% 94%;
+    --muted: 253 21% 13%;
+    --muted-foreground: 257 16% 68%;
+    --accent: 253 21% 13%;
+    --accent-foreground: 260 56% 87%;
+    --border: 253 19% 18%;
+    --input: 252 12% 46%;
+    --ring: 261 57% 83%;
+    --destructive-foreground: 249 20% 7%;
+    --success-foreground: 249 20% 7%;
+    --warning-foreground: 249 20% 7%;
+    --gradient-glow: radial-gradient(60% 55% at 50% 0%, rgba(107, 79, 168, 0.33) 0%, rgba(15, 14, 21, 0) 100%);
+    --shadow-card: 0 0 0 1px rgba(203, 185, 236, 0.06), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
+  }
+
   * { @apply border-border; }
   body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
   h1, h2, h3 { @apply font-display; }
@@ -110,5 +176,9 @@
   /* Brilho suave no topo da tela (Dia lavanda, Noite ardósia): no máximo um degradê por tela. */
   .ds2-glow { background-image: var(--gradient-glow); }
   /* Borda de 1px no degradê do Saluttin (página do assistente). */
+  /* Estética: a voz delicada (Cormorant Garamond) só na saudação, no hero e no acento; a interface segue Geist. */
+  [data-area="estetica"] .text-display { font-family: var(--font-cormorant), ui-serif, Georgia, serif; font-size: 34px; line-height: 40px; font-weight: 500; letter-spacing: -0.005em; }
+  [data-area="estetica"] .text-hero { font-family: var(--font-cormorant), ui-serif, Georgia, serif; font-weight: 500; letter-spacing: -0.01em; }
+  [data-area="estetica"] .text-accent-serif { font-weight: 400; }
   .border-saluttin { border: 1px solid transparent; background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box, var(--gradient-saluttin) border-box; }
 }
