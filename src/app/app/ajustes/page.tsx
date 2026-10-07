@@ -117,8 +117,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+        <h1 className="text-page-title flex items-center gap-2">
+          <Settings className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
           {t("intro", { clinic })}
@@ -166,7 +166,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   type="checkbox"
                   name="showPatientBirthdays"
                   defaultChecked={ctx.user.showPatientBirthdays}
-                  className="mt-0.5 h-4 w-4 accent-primary"
+                  className="mt-0.5 h-4 w-4 accent-brand"
                 />
                 <span>
                   {t("profile.showPatientBirthdays")}
@@ -253,7 +253,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                       { v: "banner", l: t("workspace.banner", { clinic }) },
                     ].map((o) => (
                       <label key={o.v} className="flex items-center gap-2">
-                        <input type="radio" name="brandDisplay" value={o.v} defaultChecked={ws.brandDisplay === o.v} className="h-4 w-4 accent-primary" />
+                        <input type="radio" name="brandDisplay" value={o.v} defaultChecked={ws.brandDisplay === o.v} className="h-4 w-4 accent-brand" />
                         {o.l}
                       </label>
                     ))}
@@ -281,7 +281,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card id="conexoes" className="scroll-mt-20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> Google Meet
+              <Plug className="h-5 w-5 text-brand" aria-hidden /> Google Meet
             </CardTitle>
             <CardDescription>
               {t("google.description")}
@@ -347,7 +347,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-primary-strong" aria-hidden /> {t("certificate.title")}
+              <KeyRound className="h-5 w-5 text-brand" aria-hidden /> {t("certificate.title")}
             </CardTitle>
             <CardDescription>{t("certificate.description")}</CardDescription>
           </CardHeader>
@@ -362,7 +362,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5 text-primary-strong" aria-hidden /> {t("integrations.title")}
+              <Plug className="h-5 w-5 text-brand" aria-hidden /> {t("integrations.title")}
             </CardTitle>
             <CardDescription>{t("integrations.description")}</CardDescription>
           </CardHeader>
@@ -421,7 +421,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary-strong" aria-hidden /> {t("plan.title")}
+              <CreditCard className="h-5 w-5 text-brand" aria-hidden /> {t("plan.title")}
             </CardTitle>
             <CardDescription>
               {t.rich("plan.current", {
@@ -449,7 +449,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 const p = PLANS[key];
                 const current = ctx.workspace.planTier === key;
                 return (
-                  <div key={key} className={current ? "rounded-md border border-primary p-3" : "rounded-md border p-3"}>
+                  <div key={key} className={current ? "rounded-md border border-brand p-3" : "rounded-md border p-3"}>
                     <p className="font-semibold">
                       {p.name} · {t(`plan.${key}Price`)}
                     </p>

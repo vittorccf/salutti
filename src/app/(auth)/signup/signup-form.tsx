@@ -34,9 +34,9 @@ export function SignupForm() {
               <label
                 key={kind}
                 className={cn(
-                  "flex cursor-pointer gap-3 rounded-lg border p-3 text-sm transition-colors hover:bg-accent/40",
+                  "flex cursor-pointer gap-3 rounded-md border p-3 text-sm transition-colors hover:bg-accent",
                   "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-                  type === kind && "border-primary bg-accent/40",
+                  type === kind && "border-brand bg-accent",
                 )}
               >
                 <input
@@ -48,7 +48,7 @@ export function SignupForm() {
                   checked={type === kind}
                   onChange={() => setType(kind)}
                 />
-                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary-strong" aria-hidden />
+                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
                 <span>
                   <span className="block font-semibold">{labels(`accountType.${kind}`)}</span>
                   <span className="block text-xs text-muted-foreground">{labels(`accountTypeDescription.${kind}`)}</span>

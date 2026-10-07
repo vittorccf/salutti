@@ -17,14 +17,18 @@ const config: Config = {
           foreground: "hsl(var(--primary-foreground))",
           strong: "hsl(var(--primary-strong))",
         },
+        // Identidade na interface (links, item ativo, foco) e cores fixas do logo (Salutti 2.0).
         brand: {
-          teal: "hsl(var(--brand-teal))",
-          "teal-light": "hsl(var(--brand-teal-light))",
-          apricot: "hsl(var(--brand-apricot))",
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+          night: "hsl(var(--brand-night))",
+          slate: "hsl(var(--brand-slate))",
+          "mist-blue": "hsl(var(--brand-mist-blue))",
+          periwinkle: "hsl(var(--brand-periwinkle))",
+          lavender: "hsl(var(--brand-lavender))",
+          peach: "hsl(var(--brand-peach))",
           ink: "hsl(var(--brand-ink))",
           mist: "hsl(var(--brand-mist))",
-          // Pêssego do Salutti 2.0 (pingo do "i" do logo Diálogo; telas de entrada).
-          peach: "hsl(var(--brand-peach, 15 74% 74%))",
         },
         highlight: {
           DEFAULT: "hsl(var(--highlight))",
@@ -66,15 +70,28 @@ const config: Config = {
           strong: "hsl(var(--warning-strong))",
         },
       },
+      // Raios do DS: controles 10px, popovers 14px, cards 18px, ícone do app 28%.
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        icon: "27%",
+        sm: "6px",
+        md: "var(--radius)",
+        lg: "14px",
+        xl: "18px",
+        icon: "28%",
       },
+      boxShadow: {
+        card: "var(--shadow-card)",
+      },
+      backgroundImage: {
+        "gradient-brand": "var(--gradient-brand)",
+        "gradient-brand-light": "var(--gradient-brand-light)",
+        "gradient-glow": "var(--gradient-glow)",
+        "gradient-saluttin": "var(--gradient-saluttin)",
+      },
+      // Geist é a família única da interface; Instrument Serif itálico só como acento de marketing.
       fontFamily: {
-        sans: ["var(--font-figtree)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-sora)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-geist)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-geist)", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "ui-serif", "Georgia", "serif"],
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },

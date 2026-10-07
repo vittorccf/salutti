@@ -14,6 +14,7 @@ import { useFormat, useTranslations } from "@/i18n/client";
 type Point = { label: string; paid: number; expected: number };
 
 // Cores e textos vêm dos tokens do DS, então o gráfico acompanha o tema claro/escuro.
+// Série principal (recebido) em brand; previsto em cinza neutro (muted-foreground), distinguível nos dois temas.
 const tick = { fontSize: 12, fill: "hsl(var(--muted-foreground))" };
 
 // Eixo Y compacto no idioma da interface: "R$ 1,5 mil", "R$1.5K".
@@ -43,8 +44,8 @@ export const CashflowChart = ({ data }: { data: Point[] }) => {
           labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
         />
         <Legend wrapperStyle={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }} />
-        <Bar dataKey="expected" name={t("expected")} fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="paid" name={t("paid")} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="expected" name={t("expected")} fill="hsl(var(--muted-foreground))" fillOpacity={0.45} radius={[4, 4, 0, 0]} />
+        <Bar dataKey="paid" name={t("paid")} fill="hsl(var(--brand))" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   </div>

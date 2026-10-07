@@ -86,11 +86,11 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <div className="flex items-start gap-4">
         <Avatar src={mediaUrl(patient.photoId)} name={patient.fullName} className="h-16 w-16 text-base" />
         <div>
-          <h1 className="text-2xl font-bold">{t("title", { name: patient.fullName })}</h1>
+          <h1 className="text-page-title">{t("title", { name: patient.fullName })}</h1>
           {age !== null ? <p className="text-sm text-muted-foreground">{t("age", { age })}</p> : null}
           {/* Contato e endereço recolhidos: a ficha costuma ficar aberta em telas compartilhadas (sigilo, art. 9º do Código de Ética). */}
           <details className="mt-1 text-sm text-muted-foreground">
-            <summary className="cursor-pointer w-fit text-primary-strong">{t("showContact")}</summary>
+            <summary className="cursor-pointer w-fit text-brand">{t("showContact")}</summary>
             <div className="mt-1 space-y-0.5">
               <p className="flex flex-wrap items-center gap-x-1.5">
                 <PhoneText value={patient.phone} fallback={t("noPhone")} />
@@ -176,13 +176,13 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-primary-strong" aria-hidden /> {t("portalTitle")}
+              <Smartphone className="h-5 w-5 text-brand" aria-hidden /> {t("portalTitle")}
             </CardTitle>
             <CardDescription>
               {patient.portalAccess ? (
                 <>
                   {t("portalLink")}{" "}
-                  <Link className="text-primary-strong underline-offset-4 hover:underline" href={`/portal/${patient.portalAccess.token}`}>
+                  <Link className="text-brand underline-offset-4 hover:underline" href={`/portal/${patient.portalAccess.token}`}>
                     /portal/{patient.portalAccess.token.slice(0, 8)}…
                   </Link>
                 </>
@@ -223,7 +223,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
               {patient.dailyCards.map((d) => (
                 <div key={d.id} className="rounded-md border p-2 text-center text-xs">
                   <p className="text-muted-foreground">{f.date(d.date)}</p>
-                  <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{d.mood}/5</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums">{d.mood}/5</p>
                   <p className="font-medium">{label("mood", d.mood)}</p>
                   <p className="text-muted-foreground">{t("anxiety", { value: d.anxiety ?? "-" })}</p>
                 </div>
@@ -314,7 +314,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary-strong" aria-hidden /> {t("lgpdTitle")}
+            <ShieldCheck className="h-5 w-5 text-brand" aria-hidden /> {t("lgpdTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -339,7 +339,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
           <div className="text-xs text-muted-foreground">
             {t.rich("rights", {
               link: (chunks) => (
-                <Link className="text-primary-strong underline-offset-4 hover:underline" href="/app/lgpd">
+                <Link className="text-brand underline-offset-4 hover:underline" href="/app/lgpd">
                   {chunks}
                 </Link>
               ),

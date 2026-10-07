@@ -140,7 +140,7 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="ds2 ds2-glow -m-4 min-h-[calc(100vh-57px)] space-y-8 p-4 md:-m-6 md:p-6">
+    <div className="ds2-glow -m-4 min-h-[calc(100vh-57px)] space-y-8 p-4 md:-m-6 md:p-6">
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-display">
@@ -156,19 +156,19 @@ export default async function DashboardPage() {
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link href="/app/agenda/novo">
-              <CalendarDays className="h-4 w-4" /> {t("schedule")}
+              <CalendarDays className="h-4 w-4" aria-hidden /> {t("schedule")}
             </Link>
           </Button>
           <Button asChild>
             <Link href="/app/financeiro/novo">
-              <ArrowUpRight className="h-4 w-4" /> {t("newCharge")}
+              <ArrowUpRight className="h-4 w-4" aria-hidden /> {t("newCharge")}
             </Link>
           </Button>
         </div>
       </header>
 
       {!onboarding.complete ? (
-        <Card className="border-primary/30">
+        <Card className="border-brand/30">
           <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold">
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <CakeSlice className="h-5 w-5 text-primary-strong" aria-hidden /> {tb("title")}
+              <CakeSlice className="h-5 w-5 text-brand" aria-hidden /> {tb("title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
               {birthdays.map((b) => (
                 <li
                   key={`${b.kind}-${b.id}`}
-                  className={`flex items-center justify-between gap-3 rounded-md border p-3 text-sm ${b.daysUntil === 0 ? "border-primary/40 bg-accent/40" : ""}`}
+                  className={`flex items-center justify-between gap-3 rounded-md border p-3 text-sm ${b.daysUntil === 0 ? "border-brand/40 bg-accent/40" : ""}`}
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
                       {b.kind !== "patient" && b.turning > 0 ? ` · ${tb("turning", { age: b.turning })}` : ""}
                     </p>
                   </div>
-                  <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-primary-strong" : "text-muted-foreground"}`}>
+                  <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-brand" : "text-muted-foreground"}`}>
                     {whenLabel(b.daysUntil)}
                   </span>
                 </li>
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-4">
         <KpiCard
-          icon={<TrendingUp className="h-4 w-4" />}
+          icon={<TrendingUp className="h-4 w-4" aria-hidden />}
           label={t("revenueMonth")}
           value={f.money(cur)}
           hint={
@@ -250,30 +250,31 @@ export default async function DashboardPage() {
           }
         />
         <KpiCard
-          icon={<AlertTriangle className="h-4 w-4" />}
+          icon={<AlertTriangle className="h-4 w-4" aria-hidden />}
           label={t("overdue")}
           value={f.money(overdueAgg._sum.amount ?? 0)}
           hint={t("overdueCount", { count: overdueAgg._count ?? 0 })}
           tone="warn"
         />
         <KpiCard
-          icon={<CalendarDays className="h-4 w-4" />}
+          icon={<CalendarDays className="h-4 w-4" aria-hidden />}
           label={t("sessionsFromToday")}
           value={f.number(todayAppointments)}
         />
         <KpiCard
-          icon={<Users className="h-4 w-4" />}
+          icon={<Users className="h-4 w-4" aria-hidden />}
           label={t("activePatients")}
           value={f.number(activePatients)}
         />
       </div>
 
-      {/* IA Insights */}
+      {/* Insights do Saluttin: o ponto pêssego é o indicador; o degradê da borda fica só em /app/saluttin
+          (o painel já tem o brilho do topo, e a IA não deve parecer a autoridade da tela). */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> {t("insightsTitle")}
+              <Sparkles className="h-5 w-5 text-brand" aria-hidden /> {t("insightsTitle")}
               <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
             </CardTitle>
             <CardDescription>{t("insightsDescription")}</CardDescription>
@@ -299,13 +300,13 @@ export default async function DashboardPage() {
                       ? "bg-destructive/10 text-destructive-strong"
                       : insight.severity === "warn"
                         ? "bg-warning/10 text-warning-strong"
-                        : "bg-primary/10 text-primary-strong"
+                        : "bg-accent text-accent-foreground"
                   }`}
                 >
                   {insight.kind === "revenue_drop" ? (
-                    pct < 0 ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />
+                    pct < 0 ? <TrendingDown className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />
                   ) : (
-                    <Sparkles className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" aria-hidden />
                   )}
                 </div>
                 <div>
@@ -322,7 +323,7 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary-strong" aria-hidden /> {t("upcomingTitle")}
+            <Clock className="h-5 w-5 text-brand" aria-hidden /> {t("upcomingTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -383,13 +384,13 @@ const KpiCard = ({
         <p className="text-sm text-muted-foreground">{label}</p>
         <div
           className={`grid h-8 w-8 place-content-center rounded-md ${
-            tone === "warn" ? "bg-warning/10 text-warning-strong" : "bg-primary/10 text-primary-strong"
+            tone === "warn" ? "bg-warning/10 text-warning-strong" : "bg-accent text-accent-foreground"
           }`}
         >
           {icon}
         </div>
       </div>
-      <p className="mt-3 text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
       {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
     </CardContent>
   </Card>

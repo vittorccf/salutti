@@ -9,7 +9,7 @@ import { SignupForm } from "./signup-form";
 export default async function SignupPage() {
   const t = await getTranslations("auth.signup");
   return (
-    <main className="ds2 ds2-glow min-h-screen grid place-items-center p-4 py-12">
+    <main className="ds2-glow min-h-screen grid place-items-center p-4 py-12">
       <div className="fixed right-4 top-4">
         <LanguageSwitcher />
       </div>
@@ -23,12 +23,12 @@ export default async function SignupPage() {
           <SignupForm />
           <p className="mt-4 text-center text-sm text-muted-foreground">
             {t("hasAccount")}{" "}
-            <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
+            <Link href="/login" className="text-brand underline-offset-4 hover:underline">
               {t("login")}
             </Link>
           </p>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            {t("help")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
+            {t("help")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
           </p>
         </CardContent>
       </Card>

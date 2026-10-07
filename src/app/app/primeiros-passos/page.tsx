@@ -83,7 +83,7 @@ export default async function OnboardingPage() {
   const label = labeler(await getTranslations("common.labels"));
   const link = (href: string) => {
     const LinkChunk = (chunks: React.ReactNode) => (
-      <Link href={href} className="text-primary-strong underline-offset-4 hover:underline">
+      <Link href={href} className="text-brand underline-offset-4 hover:underline">
         {chunks}
       </Link>
     );
@@ -94,7 +94,7 @@ export default async function OnboardingPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <h1 className="text-page-title">{t("title")}</h1>
         <p className="text-muted-foreground">
           {t("intro", { workspace: ctx.workspace.name })}
         </p>
@@ -107,7 +107,7 @@ export default async function OnboardingPage() {
             aria-valuenow={progress.done}
             aria-label={t("progressLabel")}
           >
-            <div className="h-full bg-primary transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
+            <div className="h-full bg-brand transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
           </div>
           <span className="text-sm font-medium tabular-nums">
             {t("progress", { done: progress.done, total: progress.total })}
@@ -210,7 +210,7 @@ export default async function OnboardingPage() {
                     value={lib.slug}
                     disabled={isAdded}
                     defaultChecked={isAdded || lib.defaultFor.includes(ctx.workspace.segment)}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                   />
                   <span>
                     <span className="flex items-center gap-2 font-medium">

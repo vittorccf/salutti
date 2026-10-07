@@ -70,7 +70,7 @@ export default async function InvitePage({
   const error = ERRORS.find((e) => e === erro);
 
   return (
-    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
+    <main className="min-h-screen ds2-glow grid place-items-center p-4">
       <div className="fixed right-4 top-4">
         <LanguageSwitcher />
       </div>
@@ -92,7 +92,7 @@ export default async function InvitePage({
         {inv ? (
           <CardContent className="space-y-4">
             {error ? (
-              <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
+              <p role="alert" className="rounded-md bg-destructive/[.12] p-3 text-sm text-destructive-strong">
                 {t(`errors.${error}`, { email: inv.email })}
               </p>
             ) : null}

@@ -37,7 +37,7 @@ export function EmailInput({ id, name, defaultValue, required, placeholder }: Pr
               fix: (chunks) => (
                 <button
                   type="button"
-                  className="font-medium text-primary-strong underline-offset-4 hover:underline"
+                  className="font-medium text-brand underline-offset-4 hover:underline"
                   onClick={() => {
                     setValue(suggestion);
                     setSuggestion(null);

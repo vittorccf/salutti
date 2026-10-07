@@ -92,8 +92,8 @@ export default async function PatientPortalPage({
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-accent/30 to-background">
-      <header className="border-b bg-background/80 backdrop-blur sticky top-0">
+    <main className="ds2-glow min-h-screen">
+      <header className="sticky top-0 border-b bg-background/80 backdrop-blur">
         <div className="container flex flex-wrap items-center justify-between gap-2 py-4">
           <Link href="/" className="flex items-center gap-3">
             <BrandLogo height={26} />
@@ -103,10 +103,10 @@ export default async function PatientPortalPage({
         </div>
       </header>
 
-      <div className="container py-8 space-y-6 text-base">
+      <div className="container space-y-6 py-8 text-base leading-6">
         <div>
-          <h1 className="text-2xl font-bold">{t("hello", { name: patient.fullName.split(" ")[0] })}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-page-title">{t("hello", { name: patient.fullName.split(" ")[0] })}</h1>
+          <p className="mt-1 text-muted-foreground">
             {t("intro")}
           </p>
         </div>
@@ -115,21 +115,21 @@ export default async function PatientPortalPage({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CalendarDays className="h-5 w-5 text-primary-strong" aria-hidden /> {t("upcoming")}
+                <CalendarDays className="h-5 w-5 text-brand" aria-hidden /> {t("upcoming")}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2">
               {patient.appointments.length === 0 ? (
                 <p className="text-muted-foreground">{t("noSessions")}</p>
               ) : (
                 patient.appointments.map((a) => (
-                  <div key={a.id} className="rounded-md border p-2">
+                  <div key={a.id} className="rounded-md border p-3">
                     <p className="font-medium">{f.dateTime(a.startsAt)}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {a.professional.fullName} · {label("modality", a.modality)}
                     </p>
                     {a.meetingUrl ? (
-                      <a className="text-sm font-medium text-primary-strong underline-offset-4 hover:underline" href={a.meetingUrl} target="_blank" rel="noreferrer">
+                      <a className="font-medium text-brand underline-offset-4 hover:underline" href={a.meetingUrl} target="_blank" rel="noreferrer">
                         {t("joinMeeting", { platform: platform(a.meetingUrl) })}
                       </a>
                     ) : null}
@@ -143,15 +143,15 @@ export default async function PatientPortalPage({
             <CardHeader>
               <CardTitle>{t("pendingPayments")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2">
               {patient.charges.length === 0 ? (
                 <p className="text-muted-foreground">{t("noPending")}</p>
               ) : (
                 patient.charges.map((c) => (
-                  <div key={c.id} className="rounded-md border p-2 flex items-center justify-between">
+                  <div key={c.id} className="flex items-center justify-between rounded-md border p-3">
                     <div>
                       <p className="font-medium tabular-nums">{f.money(c.amount)}</p>
-                      <p className="text-xs text-muted-foreground">{t("dueOn", { date: f.date(c.dueDate) })}</p>
+                      <p className="text-sm text-muted-foreground">{t("dueOn", { date: f.date(c.dueDate) })}</p>
                     </div>
                   </div>
                 ))
@@ -163,12 +163,12 @@ export default async function PatientPortalPage({
             <CardHeader>
               <CardTitle>{t("receipts")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2">
               {patient.receipts.length === 0 ? (
                 <p className="text-muted-foreground">{t("noReceipts")}</p>
               ) : (
                 patient.receipts.map((r) => (
-                  <div key={r.id} className="rounded-md border p-2 flex justify-between">
+                  <div key={r.id} className="flex justify-between rounded-md border p-3">
                     <span>{r.receiptNumber}</span>
                     <span className="tabular-nums">{f.money(r.amount)}</span>
                   </div>
@@ -181,7 +181,7 @@ export default async function PatientPortalPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-primary-strong" aria-hidden /> {t("dailyCard")}
+              <Smartphone className="h-5 w-5 text-brand" aria-hidden /> {t("dailyCard")}
             </CardTitle>
             <CardDescription>{t("dailyCardDescription")}</CardDescription>
           </CardHeader>
@@ -220,7 +220,7 @@ export default async function PatientPortalPage({
                 <Label htmlFor="notes">{t("notes")}</Label>
                 <Textarea name="notes" id="notes" rows={2} />
               </div>
-              <Button className="bg-primary-strong hover:bg-primary-strong/90 w-full sm:col-span-2 sm:w-auto sm:justify-self-start md:col-span-4">{t("save")}</Button>
+              <Button className="w-full sm:col-span-2 sm:w-auto sm:justify-self-start md:col-span-4">{t("save")}</Button>
             </form>
 
             {ok ? (
@@ -231,9 +231,9 @@ export default async function PatientPortalPage({
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
               {patient.dailyCards.map((d) => (
-                <div key={d.id} className="rounded-md border p-2 text-center text-xs">
+                <div key={d.id} className="rounded-md border p-2 text-center text-sm">
                   <p className="text-muted-foreground">{f.date(d.date)}</p>
-                  <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{d.mood}/5</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums">{d.mood}/5</p>
                   <p className="font-medium">{label("mood", Math.max(1, Math.min(5, d.mood)))}</p>
                   {d.anxiety ? <p className="text-muted-foreground">{t("anxietyValue", { value: d.anxiety })}</p> : null}
                 </div>

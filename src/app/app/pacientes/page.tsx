@@ -54,8 +54,8 @@ export default async function PatientsPage({
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+          <h1 className="text-page-title flex items-center gap-2">
+            <Users className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
           </h1>
           <p className="text-muted-foreground text-sm">
             {q ? t("resultsFor", { count: patients.length, query: q }) : tc("patients", { count: patients.length })}
@@ -63,7 +63,7 @@ export default async function PatientsPage({
         </div>
         <Button asChild>
           <Link href="/app/pacientes/novo">
-            <UserPlus className="h-4 w-4" /> {t("new")}
+            <UserPlus className="h-4 w-4" aria-hidden /> {t("new")}
           </Link>
         </Button>
       </header>
@@ -77,15 +77,16 @@ export default async function PatientsPage({
 
       {patients.length === 0 ? (
         <EmptyState
-          icon={<Users className="h-6 w-6" />}
+          icon={<Users className="h-6 w-6" aria-hidden />}
           title={q ? t("emptySearchTitle") : t("emptyTitle")}
           description={
             q ? t("emptySearchDescription") : t("emptyDescription")
           }
           action={
-            <Button asChild>
+            // O cabeçalho já tem a ação principal "Novo paciente": aqui fica secundária.
+            <Button variant="outline" asChild>
               <Link href="/app/pacientes/novo">
-                <Plus className="h-4 w-4" /> {t("create")}
+                <Plus className="h-4 w-4" aria-hidden /> {t("create")}
               </Link>
             </Button>
           }

@@ -145,8 +145,8 @@ export default async function AppointmentDetailPage({
     <div className="max-w-3xl space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title", { patient: appt.patient.fullName })}
+          <h1 className="text-page-title flex items-center gap-2">
+            <Calendar className="h-6 w-6 text-brand" aria-hidden /> {t("title", { patient: appt.patient.fullName })}
           </h1>
           <p className="text-sm text-muted-foreground tabular-nums">
             {t("when", { start: f.dateTime(appt.startsAt), end: f.time(appt.endsAt) })} ·{" "}
@@ -157,7 +157,7 @@ export default async function AppointmentDetailPage({
           {appt.meetingUrl ? (
             <Button variant="outline" asChild>
               <a href={appt.meetingUrl} target="_blank" rel="noreferrer">
-                <Video className="h-4 w-4" /> {t("join", { platform: !platform || platform === "Videochamada" ? t("videoCall") : platform })}
+                <Video className="h-4 w-4" aria-hidden /> {t("join", { platform: !platform || platform === "Videochamada" ? t("videoCall") : platform })}
                 {isSimulatedMeeting(appt.meetingUrl) ? (
                   <Badge variant="muted" className="ml-1">{t("simulated")}</Badge>
                 ) : null}
@@ -171,14 +171,14 @@ export default async function AppointmentDetailPage({
                 <option value="zoom">Zoom</option>
               </Select>
               <Button type="submit" variant="outline">
-                <Video className="h-4 w-4" /> {t("generateLink")}
+                <Video className="h-4 w-4" aria-hidden /> {t("generateLink")}
               </Button>
             </form>
           ) : null}
           <form action={sendReminderAction}>
             <input type="hidden" name="id" value={appt.id} />
             <Button type="submit" variant="outline" disabled={!appt.patient.phone}>
-              <MessageSquareText className="h-4 w-4" />
+              <MessageSquareText className="h-4 w-4" aria-hidden />
               {appt.reminderSentAt ? t("resendReminder") : t("sendReminder")}
             </Button>
           </form>
@@ -196,7 +196,7 @@ export default async function AppointmentDetailPage({
           <CardHeader>
             <CardTitle>{t("patient")}</CardTitle>
             <CardDescription>
-              <Link href={`/app/pacientes/${appt.patient.id}`} className="text-primary-strong underline-offset-4 hover:underline">
+              <Link href={`/app/pacientes/${appt.patient.id}`} className="text-brand underline-offset-4 hover:underline">
                 {appt.patient.fullName}
               </Link>{" "}
               · <PhoneText value={appt.patient.phone} fallback={t("noPhone")} />
@@ -226,8 +226,8 @@ export default async function AppointmentDetailPage({
                 <form key={s} action={setStatusAction}>
                   <input type="hidden" name="id" value={appt.id} />
                   <input type="hidden" name="status" value={s} />
-                  <Button type="submit" size="sm" variant={s === "done" ? "success" : s === "no_show" ? "destructive" : "outline"}>
-                    {s === "done" ? <CheckCircle2 className="h-4 w-4" /> : s === "no_show" ? <XCircle className="h-4 w-4" /> : null}
+                  <Button type="submit" size="sm" variant="outline">
+                    {s === "done" ? <CheckCircle2 className="h-4 w-4 text-success-strong" aria-hidden /> : s === "no_show" ? <XCircle className="h-4 w-4 text-destructive-strong" aria-hidden /> : null}
                     {t(({ confirmed: "confirm", done: "done", no_show: "noShow", cancelled: "cancel" } as const)[s])}
                   </Button>
                 </form>
@@ -237,13 +237,13 @@ export default async function AppointmentDetailPage({
               {appt.clinicalNote ? (
                 <Button variant="outline" asChild>
                   <Link href={`/app/prontuario/${appt.patient.id}`}>
-                    <FileSignature className="h-4 w-4" /> {t("viewNote")}
+                    <FileSignature className="h-4 w-4" aria-hidden /> {t("viewNote")}
                   </Link>
                 </Button>
               ) : (
                 <Button asChild>
                   <Link href={`/app/prontuario/${appt.patient.id}/nova-evolucao?appointmentId=${appt.id}`}>
-                    <Sparkles className="h-4 w-4" /> {t("newNote")}
+                    <Sparkles className="h-4 w-4" aria-hidden /> {t("newNote")}
                   </Link>
                 </Button>
               )}

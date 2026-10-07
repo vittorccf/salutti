@@ -11,13 +11,14 @@ const statusMap = {
     scheduled: "muted",
     confirmed: "success",
     done: "success",
-    no_show: "destructive",
+    // Faltar ou atrasar faz parte do processo: aviso, não erro (vermelho só para falhas técnicas).
+    no_show: "warning",
     cancelled: "secondary",
   },
   charge: {
     pending: "warning",
     paid: "success",
-    overdue: "destructive",
+    overdue: "warning",
     cancelled: "secondary",
     refunded: "secondary",
   },

@@ -7,6 +7,7 @@ import { eligibleSessions, generateBatches, TissError } from "@/lib/tiss-service
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -91,7 +92,7 @@ export default async function InsurancePlanPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">{t("title", { name: plan.name })}</h1>
+        <h1 className="text-page-title">{t("title", { name: plan.name })}</h1>
         <p className="text-sm text-muted-foreground tabular-nums">
           {t("subtitle", { ans: plan.ansRegistry, price: f.money(plan.sessionPrice) })}
           {plan.providerCode ? t("providerCode", { code: plan.providerCode }) : ""}
@@ -188,7 +189,9 @@ export default async function InsurancePlanPage({
         </CardHeader>
         <CardContent className="p-0">
           {batches.length === 0 ? (
-            <p className="px-6 pb-6 text-sm text-muted-foreground">{t("noBatches")}</p>
+            <div className="px-6 pb-6">
+              <EmptyState title={t("noBatches")} className="p-6" />
+            </div>
           ) : (
             <Table>
               <THead>

@@ -132,7 +132,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
                   name={`${name}Remove`}
                   checked={remove}
                   onChange={(e) => setRemove(e.target.checked)}
-                  className="h-4 w-4 accent-primary"
+                  className="h-4 w-4 accent-brand"
                 />
                 <span>
                   {t("remove")}<span className="sr-only"> {shortLabel}</span>
@@ -145,7 +145,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
           </p>
           {consentLabel && picked && !remove ? (
             <label className="flex items-start gap-2 text-sm">
-              <input type="checkbox" name={`${name}Consent`} required className="mt-0.5 h-4 w-4 accent-primary" />
+              <input type="checkbox" name={`${name}Consent`} required className="mt-0.5 h-4 w-4 accent-brand" />
               <span>{consentLabel}</span>
             </label>
           ) : null}
