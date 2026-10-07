@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Banknote, CalendarCheck, Camera, FileSignature, Package, PackageCheck, Repeat, Sparkles } from "lucide-react";
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { AREAS } from "@/lib/areas";
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import { AreaTheme } from "@/components/brand/area-theme";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,7 +38,7 @@ export default async function EsteticaHome() {
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="container flex items-center justify-between gap-3 py-4">
           <Link href="/estetica" className="flex shrink-0 items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <BrandLogo area="estetica" height={36} />
+            <Logo area="estetica" size={36} />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>

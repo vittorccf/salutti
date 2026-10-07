@@ -1,4 +1,4 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { clearPendingTwoFactor, createSession, getPendingTwoFactor, setActiveWorkspaceCookie } from "@/lib/auth";
@@ -80,7 +80,7 @@ export default async function VerifyTwoFactorPage({ searchParams }: { searchPara
     <main className="min-h-screen ds2-glow grid place-items-center p-4">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
-          <BrandLogo variant="symbol" height={48} className="mx-auto" />
+          <Logo variant="symbol" size={48} className="mx-auto" />
           <CardTitle>{t("title")}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>

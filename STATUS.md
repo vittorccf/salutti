@@ -1,6 +1,13 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-07. A seção "Salutti Estética" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-07. A seção "Logo Diálogo em SVG embutido" é a mais recente; as demais ficam como histórico.
+
+## Logo Diálogo em SVG embutido (2026-10-07) — branch `feat/logo-dialogo-svg`
+
+- `BrandLogo` (duas `<img>`) virou `<Logo>` em `src/components/brand/logo.tsx`: SVG embutido que acompanha o tema, variantes `horizontal`/`symbol`/`icon`/`wordmark`, tons `default`/`negative`/`mono`, `area="estetica"` com selo. Pingo do "i" passou de pêssego a pervinca em todas as áreas (na Estética por escolha do dono; o resto do DS da Estética não mudou).
+- Os 7 SVGs de `public/brand` foram gerados da geometria do `bundle.js` do DS "Salutti 2.0": os arquivos do asset store do artifact ainda estão em índigo/coral (desatualizados) e não devem ser copiados.
+- Favicon, `apple-icon.png` e PNGs do PWA agora vêm do `salutti-icone.svg` (balões brancos sobre o degradê ardósia).
+- O app não tem templates de e-mail; quando houver, usar `<Logo>` ou `public/brand/salutti-logo.svg`.
 
 ## Salutti Estética (2026-10-07) — PRs #28, #29 e o pacote seguinte
 
