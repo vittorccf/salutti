@@ -2,6 +2,16 @@
 
 > Última atualização deste arquivo: 2026-10-07. A seção "Entrar com Google" é a mais recente; as demais ficam como histórico.
 
+## Zoom removido, Saluttin oculto e copiar link do Meet (2026-10-07)
+
+O dono não vai usar o Zoom: saiu a opção no agendamento e na tela da sessão, o card em Ajustes → Integrações, o código da
+API (`src/lib/providers/video.ts`), as variáveis `ZOOM_*`, os textos e a menção na política e nos termos. Sessões antigas
+com link do Zoom continuam abrindo o link (o botão mostra "Videochamada").
+
+Saluttin oculto (`SALUTTIN_ENABLED = false` em `src/lib/features.ts`): sai do menu, do painel, da página inicial, de Ajustes
+e do prontuário; `/app/saluttin` dá 404; evolução nova não vai para a OpenAI e fica sem resumo. Textos que citavam o Saluttin
+ficaram neutros (religar = flag true + rever esses textos). Na tela da sessão, botão "Copiar link" ao lado de "Entrar no Google Meet".
+
 ## Entrar com Google (2026-10-07) — branch `feat/login-google` (sobre `feat/termos-privacidade`)
 
 Botão "Continuar com Google" no login, no cadastro (das duas áreas) e no convite. Mesmo cliente OAuth do Meet, outro fluxo:
@@ -117,7 +127,7 @@ Cada item tem PR próprio, testes e CI verde (exceto onde indicado). Merge na or
 **Depende do dono do projeto:**
 1. Merges (o agente não faz merge sem revisão).
 2. Vercel/produção: `AUTH_SECRET` (antes do #4) e um Postgres com `DATABASE_URL`, ex.: Neon (antes do #11). Depois do #11: `DATABASE_URL=<url> npm run db:seed` para os logins de demonstração.
-3. Credenciais reais para sair do modo de teste: Google (Meet), Zoom, Stripe (chaves, preços, webhook).
+3. Credenciais reais para sair do modo de teste: Google (Meet), Stripe (chaves, preços, webhook).
 4. Local: trocar `DATABASE_URL` do `.env` para o Postgres local (ver `.env.example`) e usar `npm run db:local`.
 
 **Ainda não feito (decisão do dono):** WhatsApp Cloud API, Memed/receita digital, app mobile nativo, modo offline para UBS, guia odontológica (GTO) no TISS, Auth.js/SSO.

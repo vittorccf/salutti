@@ -79,7 +79,7 @@ export default function TermsPage() {
 
       <Section id="integracoes" title="6. Integrações de terceiros">
         <p>
-          Recursos como Google Agenda, Google Meet, Zoom e meios de pagamento dependem de serviços de terceiros, com
+          Recursos como Google Agenda, Google Meet e meios de pagamento dependem de serviços de terceiros, com
           termos e políticas próprios. A Salutti não responde por indisponibilidades ou mudanças desses serviços, mas
           avisará quando um recurso for afetado. O uso de dados do Google segue a seção 5 da {privacy}.
         </p>

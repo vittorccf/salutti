@@ -85,7 +85,7 @@ export default async function PatientPortalPage({
   const t = await getTranslations("public.portal");
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));
-  // meetingPlatform devolve o nome do serviço (Google Meet, Zoom) ou "Videochamada" quando não reconhece o link.
+  // meetingPlatform devolve o nome do serviço (Google Meet) ou "Videochamada" quando não reconhece o link.
   const platform = (url: string) => {
     const name = meetingPlatform(url);
     return !name || name === "Videochamada" ? t("videoCall") : name;

@@ -85,7 +85,6 @@
       "title": "Integrações",
       "description": "As integrações em sandbox funcionam com dados simulados até indicar a chave real.",
       "stripe": "Subscrições SaaS + cartão recorrente",
-      "zoom": "Link de videochamada pela API do Zoom",
       "asaas": "Pix Automático e boleto",
       "nfe": "Emissão de NFS-e por município",
       "whatsapp": "Lembretes e plano de cobrança",

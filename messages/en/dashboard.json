@@ -48,7 +48,7 @@
     "added": "Added",
     "addTemplates": "Add selected templates",
     "step4": "Review integrations",
-    "step4Body": "Pix, invoicing, Google Meet and Zoom run in test mode until you enter the real keys.",
+    "step4Body": "Pix, invoicing and Google Meet run in test mode until you enter the real keys.",
     "openSettings": "Open Settings",
     "step5": "Add the first patient",
     "patientDone": "Patient added.",

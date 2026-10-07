@@ -29,7 +29,7 @@ Cobertura completa do prompt original:
 
 | Requisito de discovery                                                  | Onde está |
 | ----------------------------------------------------------------------- | --------- |
-| Agendamento de consultas + Meet/Zoom                                    | `/app/agenda` · link gerado para sessões online |
+| Agendamento de consultas + Google Meet                                  | `/app/agenda` · link gerado para sessões online |
 | Pix Automático (Asaas-like) + recorrência                               | `/app/financeiro/novo`, `lib/providers/pix.ts` |
 | Links de pagamento públicos                                             | `/pay/[token]` |
 | Emissão NFS-e (NFE.io-like) por município                               | `/app/fiscal`, `lib/providers/nfse.ts` |
@@ -110,12 +110,11 @@ Em **Convênios**, cadastre a operadora (registro ANS, valor contratado por sess
 - Odontologia (guia GTO) e profissionais sem conselho ainda não são faturáveis.
 - O XML é validado nos testes contra os XSD oficiais (`tests/fixtures/tiss-4.03.00`). Operadoras podem exigir autorização prévia, senha ou pedido médico: confira o contrato antes do primeiro envio.
 
-### Videochamada (Google Meet e Zoom)
+### Videochamada (Google Meet)
 
-Ao agendar uma sessão online, escolha Google Meet ou Zoom e o link é gerado na hora (também dá para gerar depois, na tela da sessão). Sem as chaves abaixo, o link é **simulado** e aparece com o selo "Simulado". O título da reunião é genérico ("Sessão · Salutti"): o nome do paciente não vai para o Google nem para o Zoom.
+Ao agendar uma sessão online, o link do Google Meet é gerado na hora (também dá para gerar depois, na tela da sessão). Sem as chaves abaixo, o link é **simulado** e aparece com o selo "Simulado". O título da reunião é genérico ("Sessão · Salutti"): o nome do paciente não vai para o Google.
 
 - **Google Meet** (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`): crie um cliente OAuth "Aplicativo da Web" no Google Cloud, ative a Google Calendar API e cadastre a URI de retorno `<origem>/api/integracoes/google/retorno` (ex.: `https://salutti.vercel.app/api/integracoes/google/retorno` e `http://localhost:3000/...`). Cada usuário conecta a própria conta em **Ajustes → Google Meet**; o Meet é criado só na agenda de quem atende (usuário vinculado ao cadastro profissional), como evento privado, com título genérico e sem convidados; sem a conta de quem atende conectada, a sessão fica sem link e a tela explica o motivo. O escopo `calendar.events` é sensível: até a verificação do app pelo Google, só usuários de teste cadastrados no console (até 100) conseguem conectar. Em produção, defina `APP_URL` (ex.: `https://salutti.vercel.app`) para a URI de retorno não depender do domínio do preview. Com o app em modo de teste, o Google expira o acesso em 7 dias: a Salutti detecta e pede para reconectar.
-- **Zoom** (`ZOOM_ACCOUNT_ID`, `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`): crie um app "Server-to-Server OAuth" no Zoom Marketplace com o escopo `meeting:write:admin`. As reuniões ficam na conta do dono do app, com sala de espera ativada.
 
 ## ✋ Trade-offs deliberados deste protótipo
 

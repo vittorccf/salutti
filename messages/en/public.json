@@ -4,13 +4,13 @@
     "tryFree": "Try for free",
     "badge": "Up to date with LGPD and Receita Saúde",
     "headline": "The <hl>Healthcare ERP</hl> that automates what nobody wants to do.",
-    "subtitle": "For psychologists, psychoanalysts, therapists and clinics who want to get back to caring for people, not spreadsheets. Scheduling, Pix, invoicing, WhatsApp and predictive AI in one system.",
+    "subtitle": "For psychologists, psychoanalysts, therapists and clinics who want to get back to caring for people, not spreadsheets. Scheduling, Pix, invoicing and WhatsApp in one system.",
     "ctaCreate": "Create my practice",
     "ctaDemo": "See the demo",
     "fineprint": "15-day free trial · No credit card · Cancel anytime",
     "features": {
       "schedule": {
-        "title": "Scheduling with Meet/Zoom",
+        "title": "Scheduling with Meet",
         "desc": "Automatic WhatsApp confirmations, 24h/2h reminders, encrypted telehealth link."
       },
       "finance": {

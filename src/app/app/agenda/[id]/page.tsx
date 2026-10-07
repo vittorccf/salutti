@@ -21,6 +21,7 @@ import { PhoneText } from "@/components/ui/phone";
 import { moduleEnabled } from "@/lib/areas";
 import { canSeeClinical } from "@/lib/permissions";
 import { SessionProcedure } from "@/app/app/procedimentos/_components/session-procedure";
+import { CopyButton } from "@/components/copy-button";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +59,6 @@ async function createMeetingAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
   const id = formData.get("id") as string;
-  const provider = formData.get("videoProvider") === "zoom" ? "zoom" : "google_meet";
   const appt = await db.appointment.findFirst({ where: { id, workspaceId: ctx.workspace.id, modality: "online" } });
   if (!appt) notFound();
   try {
@@ -66,7 +66,7 @@ async function createMeetingAction(formData: FormData) {
       workspaceId: ctx.workspace.id,
       professionalId: appt.professionalId,
       userId: ctx.user.id,
-      provider,
+      provider: "google_meet",
       topic: (await getTranslations("schedule.form"))("meetingTopic"),
       startsAt: appt.startsAt,
       durationMinutes: Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000),
@@ -81,7 +81,7 @@ async function createMeetingAction(formData: FormData) {
       action: "appointment.meeting",
       entity: "Appointment",
       entityId: id,
-      metadata: { provider, simulated: meeting.simulated },
+      metadata: { provider: "google_meet", simulated: meeting.simulated },
     });
   } catch (e) {
     if (e instanceof MeetAccountError) redirect(`/app/agenda/${id}?aviso=${e.issue}`);
@@ -158,21 +158,20 @@ export default async function AppointmentDetailPage({
         </div>
         <div className="flex gap-2 flex-wrap">
           {appt.meetingUrl ? (
-            <Button variant="outline" asChild>
-              <a href={appt.meetingUrl} target="_blank" rel="noreferrer">
-                <Video className="h-4 w-4" aria-hidden /> {t("join", { platform: !platform || platform === "Videochamada" ? t("videoCall") : platform })}
-                {isSimulatedMeeting(appt.meetingUrl) ? (
-                  <Badge variant="muted" className="ml-1">{t("simulated")}</Badge>
-                ) : null}
-              </a>
-            </Button>
+            <>
+              <Button variant="outline" asChild>
+                <a href={appt.meetingUrl} target="_blank" rel="noreferrer">
+                  <Video className="h-4 w-4" aria-hidden /> {t("join", { platform: !platform || platform === "Videochamada" ? t("videoCall") : platform })}
+                  {isSimulatedMeeting(appt.meetingUrl) ? (
+                    <Badge variant="muted" className="ml-1">{t("simulated")}</Badge>
+                  ) : null}
+                </a>
+              </Button>
+              <CopyButton text={appt.meetingUrl} label={t("copyLink")} copiedLabel={t("linkCopied")} />
+            </>
           ) : appt.modality === "online" ? (
             <form action={createMeetingAction} className="flex gap-2">
               <input type="hidden" name="id" value={appt.id} />
-              <Select name="videoProvider" defaultValue="google_meet" aria-label={t("platform")} className="w-auto">
-                <option value="google_meet">Google Meet</option>
-                <option value="zoom">Zoom</option>
-              </Select>
               <Button type="submit" variant="outline">
                 <Video className="h-4 w-4" aria-hidden /> {t("generateLink")}
               </Button>

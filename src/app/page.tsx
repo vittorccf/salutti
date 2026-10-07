@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 import { getTranslations } from "@/i18n/server";
 
 // Textos em public.home.features.<chave> e public.home.differentiators.<chave>.
@@ -23,7 +24,7 @@ const features = [
   { key: "schedule", icon: <CalendarCheck className="h-5 w-5" /> },
   { key: "finance", icon: <Banknote className="h-5 w-5" /> },
   { key: "tax", icon: <FileSignature className="h-5 w-5" /> },
-  { key: "saluttin", icon: <Brain className="h-5 w-5" /> },
+  ...(SALUTTIN_ENABLED ? [{ key: "saluttin", icon: <Brain className="h-5 w-5" /> }] : []),
   { key: "whatsapp", icon: <MessageSquareText className="h-5 w-5" /> },
   { key: "lgpd", icon: <ShieldCheck className="h-5 w-5" /> },
 ];
