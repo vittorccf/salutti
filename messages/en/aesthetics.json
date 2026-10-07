@@ -149,7 +149,10 @@
     "reverseTitle": "Reverse record (wrong entry)",
     "reverseHint": "The supplies return to the same lots and the reversal stays in the history with the reason. Then record again.",
     "reverseReason": "Reason for the reversal",
-    "reverseSubmit": "Reverse and return to stock"
+    "reverseSubmit": "Reverse and return to stock",
+    "consentSigned": "Consent accepted and signed on {date}.",
+    "signatureLabel": "Patient signature",
+    "signatureAlt": "Patient signature on the consent form"
   },
   "patient": {
     "historyTitle": "Procedure history",
@@ -182,6 +185,8 @@
     "revokeMarketing": "Revoke marketing use",
     "removeReason": "Reason for removal",
     "removeConfirm": "Remove",
-    "removeHint": "The photo leaves the record view, but it stays stored in the clinical record."
+    "removeHint": "The photo leaves the record view, but it stays stored in the clinical record.",
+    "session": "Session (optional)",
+    "noSession": "No session"
   }
 }

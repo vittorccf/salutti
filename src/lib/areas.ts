@@ -25,6 +25,10 @@ type AreaConfig = {
   segments: Record<AccountType, string[]>;
   professionalTypes: string[];
   councils: string[];
+  /** sufixo das chaves de título de login/cadastro (auth.*.title + sufixo): "" na Salutti, "Estetica" na Estética */
+  titleKey: "" | "Estetica";
+  /** tipo de conta já escolhido no cadastro (null = a pessoa escolhe) */
+  defaultAccountType: AccountType | null;
 };
 
 export const AREAS: Record<Area, AreaConfig> = {
@@ -38,6 +42,8 @@ export const AREAS: Record<Area, AreaConfig> = {
     segments: { autonomo: ["solo_psicologo", "solo_psicanalista", "odonto"], clinica: ["clinica", "ubs", "odonto"] },
     professionalTypes: ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"],
     councils: ["CRP", "CRM", "CRO", "sem_registro"],
+    titleKey: "",
+    defaultAccountType: null,
   },
   estetica: {
     name: "Salutti Estética",
@@ -60,6 +66,9 @@ export const AREAS: Record<Area, AreaConfig> = {
     },
     professionalTypes: ["farmaceutico", "biomedico", "esteticista", "enfermeiro", "dentista", "medico"],
     councils: ["CRF", "CRBM", "COREN", "CRO", "CRM", "sem_registro"],
+    // Foco da área: a profissional autônoma (a clínica escolhe "Clínica" no cadastro).
+    titleKey: "Estetica",
+    defaultAccountType: "autonomo",
   },
 };
 

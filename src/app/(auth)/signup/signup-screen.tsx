@@ -11,7 +11,6 @@ import { AREAS, type Area } from "@/lib/areas";
 // Tela de cadastro, usada por /signup (Salutti) e /estetica/cadastro (Salutti Estética).
 export async function SignupScreen({ area = "mental" }: { area?: Area }) {
   const t = await getTranslations("auth.signup");
-  const estetica = area === "estetica";
   return (
     <main data-area={area} className="ds2-glow min-h-screen grid place-items-center p-4 py-12">
       <AreaTheme area={area} />
@@ -21,7 +20,7 @@ export async function SignupScreen({ area = "mental" }: { area?: Area }) {
       <Card className="w-full max-w-[560px]">
         <CardHeader className="text-center">
           <BrandLogo height={area === "mental" ? 40 : 46} area={area} className="mx-auto" />
-          <CardTitle>{estetica ? t("titleEstetica") : t("title")}</CardTitle>
+          <CardTitle>{t(`title${AREAS[area].titleKey}`)}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>

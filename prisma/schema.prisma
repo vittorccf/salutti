@@ -389,6 +389,8 @@ model ConsentRecord {
   legalBasis   String   // consentimento | tutela_saude | obrigacao_legal | execucao_contrato
   granted      Boolean  @default(true)
   documentHash String?
+  // Assinatura da paciente na tela (PNG em MediaFile, kind consent_signature), quando colhida no consultório.
+  signatureId  String?
   grantedAt    DateTime @default(now())
   revokedAt    DateTime?
 

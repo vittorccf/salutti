@@ -80,7 +80,9 @@
     "saleOnlyResale": "La venta solo aplica a productos de reventa.",
     "alreadyRecorded": "Esta sesión ya tiene el procedimiento registrado.",
     "notRecorded": "Esta sesión no tiene registro para revertir.",
-    "reversalReason": "Indique el motivo de la reversión."
+    "reversalReason": "Indique el motivo de la reversión.",
+    "openedAtInvalid": "Indique la fecha y hora de apertura, o marque que el frasco no fue abierto.",
+    "openedAtRange": "La apertura debe ser posterior al ingreso del lote y no puede estar en el futuro."
   },
   "list": {
     "title": "Inventario",
@@ -229,7 +231,13 @@
     "quantity": "Cantidad",
     "noPatient": "Sin paciente",
     "openSession": "Abrir sesión",
-    "summaryTitle": "Resumen del lote"
+    "summaryTitle": "Resumen del lote",
+    "correctOpened": "Corregir apertura del frasco",
+    "openedAtLabel": "Abierto el",
+    "notOpened": "El frasco no fue abierto",
+    "correctOpenedSubmit": "Guardar corrección",
+    "correctOpenedHint": "Cambia la validez después de abierto. La corrección queda en la auditoría con el valor anterior.",
+    "openedCorrected": "Apertura corregida."
   },
   "dashboard": {
     "title": "{count, plural, one {Inventario · # alerta} other {Inventario · # alertas}}",

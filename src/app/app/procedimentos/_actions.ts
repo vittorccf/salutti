@@ -11,6 +11,7 @@ import { assertInWorkspace } from "@/lib/tenant";
 import { recordUse, reverseUse, StockError } from "@/lib/stock";
 import { UploadError } from "@/lib/media";
 import { stageImage } from "@/lib/media-store";
+import { media } from "@/lib/providers/media";
 import { parseDateOnly, dateKeySP } from "@/lib/dates";
 import { isPhotoStage, isProcedureCategory, parseQuantity } from "@/lib/procedures";
 import type { FormResult } from "@/components/forms/action-form";
@@ -202,6 +203,15 @@ export async function reverseProcedureAction(_prev: FormResult, formData: FormDa
   redirect(`/app/agenda/${appt.id}?estornado=1`);
 }
 
+const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+function parseSignature(raw: FormDataEntryValue | null) {
+  const m = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(String(raw ?? ""));
+  if (!m) return null;
+  const bytes = Buffer.from(m[1], "base64");
+  if (bytes.length > 300_000 || !bytes.subarray(0, 8).equals(PNG)) return null;
+  return { mime: "image/png", bytes };
+}
+
 // Termo aceito: grava o consentimento com o hash do texto do termo (prova de qual versão foi aceita).
 export async function acceptConsentAction(formData: FormData) {
   const ctx = await aestheticsContext();
@@ -211,6 +221,9 @@ export async function acceptConsentAction(formData: FormData) {
     ? await db.procedure.findFirst({ where: { id: appt.procedureId, workspaceId: ctx.workspace.id } })
     : null;
   if (!procedure?.consentText) notFound();
+  // Assinatura na tela (opcional): PNG pequeno em data URL. Qualquer outra coisa é ignorada.
+  const signature = parseSignature(formData.get("signature"));
+  const signatureId = signature ? await media.save("consent_signature", { workspaceId: ctx.workspace.id }, signature) : null;
   const record = await db.consentRecord.create({
     data: {
       workspaceId: ctx.workspace.id,
@@ -219,6 +232,7 @@ export async function acceptConsentAction(formData: FormData) {
       legalBasis: "consentimento",
       granted: true,
       documentHash: sha256(procedure.consentText),
+      signatureId,
     },
   });
   await recordAudit({
@@ -227,7 +241,7 @@ export async function acceptConsentAction(formData: FormData) {
     action: "consent.procedure",
     entity: "ConsentRecord",
     entityId: record.id,
-    metadata: { appointmentId: appt.id, procedureId: procedure.id },
+    metadata: { appointmentId: appt.id, procedureId: procedure.id, signed: Boolean(signatureId) },
   });
   redirect(`/app/agenda/${appt.id}`);
 }
@@ -238,8 +252,15 @@ export async function uploadClinicalPhotoAction(_prev: FormResult, formData: For
   const ctx = await aestheticsContext();
   const patientId = String(formData.get("patientId") ?? "");
   await assertInWorkspace(ctx.workspace.id, { patientId });
-  const procedureId = String(formData.get("procedureId") ?? "") || null;
+  let procedureId = String(formData.get("procedureId") ?? "") || null;
   if (procedureId && (await db.procedure.count({ where: { id: procedureId, workspaceId: ctx.workspace.id } })) === 0) notFound();
+  // Sessão da foto (opcional): da mesma paciente; sem procedimento escolhido, herda o da sessão.
+  const appointmentId = String(formData.get("appointmentId") ?? "") || null;
+  if (appointmentId) {
+    const appt = await db.appointment.findFirst({ where: { id: appointmentId, workspaceId: ctx.workspace.id, patientId } });
+    if (!appt) notFound();
+    procedureId ??= appt.procedureId;
+  }
   const allowMarketing = formData.get("allowMarketing") === "on";
   let staged: Awaited<ReturnType<typeof stageImage>> | null = null;
   let photoId: string;
@@ -256,6 +277,7 @@ export async function uploadClinicalPhotoAction(_prev: FormResult, formData: For
       data: {
         workspaceId: ctx.workspace.id,
         patientId,
+        appointmentId,
         procedureId,
         mediaId: staged.id,
         stage,
@@ -265,17 +287,24 @@ export async function uploadClinicalPhotoAction(_prev: FormResult, formData: For
       },
     });
     photoId = photo.id;
-    // Um consentimento vigente por finalidade e paciente (não um por foto).
-    const purposes = ["foto_clinica", ...(allowMarketing ? ["foto_divulgacao"] : [])];
-    const current = await db.consentRecord.findMany({
-      where: { workspaceId: ctx.workspace.id, patientId, purpose: { in: purposes }, granted: true, revokedAt: null },
-      select: { purpose: true },
-    });
-    const missing = purposes.filter((p) => !current.some((c) => c.purpose === p));
-    if (missing.length) {
-      await db.consentRecord.createMany({
-        data: missing.map((purpose) => ({ workspaceId: ctx.workspace.id, patientId, purpose, legalBasis: "consentimento", granted: true })),
+    // Um consentimento vigente por finalidade, paciente e versão do texto (hash do texto que a profissional viu).
+    // Texto mudou: nova versão, novo registro; os anteriores ficam como prova do que foi aceito antes.
+    const tp = await getTranslations("aesthetics.patient");
+    const texts: Record<string, string> = {
+      foto_clinica: tp("clinicalConsent"),
+      ...(allowMarketing ? { foto_divulgacao: `${tp("marketing")}
+${tp("marketingHint")}` } : {}),
+    };
+    for (const [purpose, text] of Object.entries(texts)) {
+      const documentHash = sha256(text);
+      const exists = await db.consentRecord.count({
+        where: { workspaceId: ctx.workspace.id, patientId, purpose, documentHash, granted: true, revokedAt: null },
       });
+      if (!exists) {
+        await db.consentRecord.create({
+          data: { workspaceId: ctx.workspace.id, patientId, purpose, legalBasis: "consentimento", granted: true, documentHash },
+        });
+      }
     }
     await staged.commit();
   } catch (e) {

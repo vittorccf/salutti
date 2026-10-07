@@ -270,5 +270,10 @@
     "hide": "Hide password",
     "confirm": "Confirm password",
     "mismatch": "Passwords don't match."
+  },
+  "signature": {
+    "clear": "Clear",
+    "hint": "The patient signs with a finger or stylus on the screen. Optional.",
+    "signed": "Signature captured. To redo it, clear and sign again."
   }
 }

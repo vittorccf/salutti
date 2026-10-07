@@ -270,5 +270,10 @@
     "hide": "Ocultar palavra-passe",
     "confirm": "Confirme a palavra-passe",
     "mismatch": "As palavras-passe não coincidem."
+  },
+  "signature": {
+    "clear": "Limpar",
+    "hint": "A paciente assina com o dedo ou a caneta no ecrã. Opcional.",
+    "signed": "Assinatura recolhida. Para refazer, limpe e assine de novo."
   }
 }

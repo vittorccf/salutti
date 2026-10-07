@@ -35,11 +35,15 @@ async function exportDataAction(formData: FormData) {
   redirect(`/api/lgpd/export?patientId=${patientId}`);
 }
 
-// Fotos clínicas (antes/depois) também identificam a pessoa: saem junto com os demais dados.
+// Fotos clínicas (antes/depois) e assinaturas nos termos também identificam a pessoa: saem junto com os demais
+// dados. O registro do consentimento fica (prova do aceite), sem a imagem da assinatura.
 async function removeClinicalPhotos(workspaceId: string, patientId: string) {
   const photos = await db.clinicalPhoto.findMany({ where: { workspaceId, patientId }, select: { mediaId: true } });
   for (const p of photos) await media.remove(p.mediaId);
   await db.clinicalPhoto.deleteMany({ where: { workspaceId, patientId } });
+  const signed = await db.consentRecord.findMany({ where: { workspaceId, patientId, signatureId: { not: null } }, select: { signatureId: true } });
+  for (const c of signed) await media.remove(c.signatureId);
+  await db.consentRecord.updateMany({ where: { workspaceId, patientId, signatureId: { not: null } }, data: { signatureId: null } });
 }
 
 async function anonymizeAction(formData: FormData) {

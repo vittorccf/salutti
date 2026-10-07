@@ -26,7 +26,8 @@ test("estética: cadastro → estoque → procedimento com kit → sessão regis
   // Marca e menu da área: Procedimentos e Estoque, sem Convênios.
   const aside = page.locator("aside");
   await expect(aside.getByRole("img", { name: "Salutti Estética" })).toBeVisible();
-  await expect(aside.getByText("Estética", { exact: true })).toBeVisible();
+  // O selo "estética" faz parte do arquivo do logo (Cormorant em curvas).
+  await expect(aside.locator('img[src*="salutti-estetica-logo"]').first()).toBeVisible();
   await expect(aside.getByRole("link", { name: "Procedimentos" })).toBeVisible();
   await expect(aside.getByRole("link", { name: "Estoque" })).toBeVisible();
   await expect(aside.getByRole("link", { name: "Convênios" })).toHaveCount(0);
@@ -74,7 +75,7 @@ test("estética: cadastro → estoque → procedimento com kit → sessão regis
   await expect(page.getByText("Toxina botulínica").first()).toBeVisible();
 
   // Paciente e sessão com o procedimento (duração e valor vêm dele).
-  await createPatient(page, "Paciente Estética E2E");
+  const patientUrl = await createPatient(page, "Paciente Estética E2E");
   await page.goto("/app/agenda/novo");
   await page.locator("#patientId").selectOption({ label: "Paciente Estética E2E" });
   await page.locator("#procedureId").selectOption({ label: "Toxina botulínica · 45 min" });
@@ -87,8 +88,18 @@ test("estética: cadastro → estoque → procedimento com kit → sessão regis
 
   // Termo aceito e procedimento registrado (lote automático, FEFO).
   await expect(page.getByText("A paciente ainda não aceitou esta versão do termo.")).toBeVisible();
+  // Assinatura da paciente na tela: um traço no quadro de assinatura.
+  const pad = page.getByRole("img", { name: "Assinatura da paciente" });
+  const box = (await pad.boundingBox())!;
+  await page.mouse.move(box.x + 20, box.y + 60);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 120, box.y + 30, { steps: 8 });
+  await page.mouse.move(box.x + 220, box.y + 80, { steps: 8 });
+  await page.mouse.up();
+  await expect(page.getByText(/Assinatura colhida/)).toBeVisible();
   await page.getByRole("button", { name: "Registrar termo aceito" }).click();
-  await expect(page.getByText(/Termo aceito em/)).toBeVisible();
+  await expect(page.getByText(/Termo aceito e assinado em/)).toBeVisible();
+  await expect(page.getByRole("img", { name: "Assinatura da paciente no termo" })).toBeVisible();
   await expect(page.locator("#quantity-0")).toHaveValue("50");
   await page.getByRole("button", { name: "Registrar procedimento" }).click();
   await expect(page.getByText("Procedimento registrado e estoque atualizado.")).toBeVisible();
@@ -119,4 +130,39 @@ test("estética: cadastro → estoque → procedimento com kit → sessão regis
   await expect(page.getByRole("link", { name: "1 abaixo do mínimo" })).toBeVisible();
   await page.goto("/app/estoque");
   await expect(page.getByText("Saldo 50 U, mínimo 100 U")).toBeVisible();
+
+  // Estorno de lançamento errado: o saldo volta ao lote e a sessão pode ser registrada de novo.
+  await page.goto(sessionUrl);
+  await page.getByText("Estornar registro (lançamento errado)").click();
+  await page.locator("#reverse-reason").fill("Quantidade lançada errada");
+  await page.getByRole("button", { name: "Estornar e devolver ao estoque" }).click();
+  await expect(page.getByText(/Registro estornado/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Registrar procedimento" })).toBeVisible();
+  await page.goto(productUrl);
+  await expect(page.getByText("Saldo utilizável: 100 U")).toBeVisible();
+
+  // Fotos clínicas: antes, ligada à sessão, com divulgação autorizada; depois revogada e removida com motivo.
+  await page.goto(patientUrl);
+  const dataUrl = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 48;
+    const x = c.getContext("2d")!;
+    x.fillStyle = "#d8c8ee";
+    x.fillRect(0, 0, 64, 48);
+    return c.toDataURL("image/png");
+  });
+  await page.locator('input[name="photo"]').setInputFiles({ name: "antes.png", mimeType: "image/png", buffer: Buffer.from(dataUrl.split(",")[1], "base64") });
+  await page.locator('input[name="photoConsent"]').check();
+  await page.locator("#photo-session").selectOption({ index: 1 });
+  await page.locator('input[name="allowMarketing"]').check();
+  await page.getByRole("button", { name: "Adicionar foto" }).click();
+  await expect(page.getByText("Foto adicionada.")).toBeVisible();
+  await expect(page.getByText("Divulgação autorizada")).toBeVisible();
+  await page.getByRole("button", { name: "Revogar divulgação" }).click();
+  await expect(page.getByText("Divulgação autorizada")).toHaveCount(0);
+  await page.getByText("Remover foto").click();
+  await page.getByPlaceholder("Motivo da remoção").fill("Foto duplicada");
+  await page.getByRole("button", { name: "Remover", exact: true }).click();
+  await expect(page.getByText(/Nenhuma foto clínica ainda/)).toBeVisible();
 });

@@ -64,7 +64,6 @@ export async function LoginScreen({ area = "mental", searchParams }: { area?: Ar
   if (session) redirect("/app");
   const params = await searchParams;
   const t = await getTranslations("auth.login");
-  const estetica = area === "estetica";
   const error = ERRORS.find((e) => e === params.error);
 
   return (
@@ -76,7 +75,7 @@ export async function LoginScreen({ area = "mental", searchParams }: { area?: Ar
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <BrandLogo height={area === "mental" ? 40 : 46} area={area} className="mx-auto" />
-          <CardTitle>{estetica ? t("titleEstetica") : t("title")}</CardTitle>
+          <CardTitle>{t(`title${AREAS[area].titleKey}`)}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>

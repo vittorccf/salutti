@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { media } from "@/lib/providers/media";
+import { CLINICAL_MEDIA, media, type MediaKind } from "@/lib/providers/media";
 import { canSeeClinical } from "@/lib/permissions";
 
 // Imagens só para quem tem acesso: foto de perfil para quem divide um consultório com o dono da foto;
@@ -19,7 +19,7 @@ export const GET = async (_req: Request, { params }: { params: { id: string } })
     allowed =
       file.userId === session.userId ||
       (await db.membership.count({ where: { userId: file.userId, workspaceId: { in: mine } } })) > 0;
-  } else if (file.kind === "clinical_photo" && file.workspaceId) {
+  } else if (CLINICAL_MEDIA.includes(file.kind as MediaKind) && file.workspaceId) {
     // Foto clínica é dado de saúde: só papéis clínicos do consultório (recepção e financeiro não).
     allowed = memberships.some((m) => m.workspaceId === file.workspaceId && canSeeClinical(m.role));
   } else if (file.workspaceId) {
@@ -32,7 +32,7 @@ export const GET = async (_req: Request, { params }: { params: { id: string } })
       "content-type": file.mime,
       "content-length": String(file.size),
       // Foto de paciente não fica no cache do navegador (computador compartilhado, anonimização, saída da equipe).
-      "cache-control": file.kind === "patient_photo" || file.kind === "clinical_photo" ? "private, no-store" : "private, max-age=3600",
+      "cache-control": file.kind === "patient_photo" || CLINICAL_MEDIA.includes(file.kind as MediaKind) ? "private, no-store" : "private, max-age=3600",
       "x-content-type-options": "nosniff",
       "content-security-policy": "default-src 'none'; sandbox",
     },

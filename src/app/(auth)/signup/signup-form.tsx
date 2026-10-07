@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { ACCOUNT_TYPES, type AccountType } from "@/lib/account";
-import { segmentsFor, type Area } from "@/lib/areas";
+import { AREAS, segmentsFor, type Area } from "@/lib/areas";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/i18n/client";
 import { signupAction } from "./_actions";
@@ -22,7 +22,7 @@ const segmentKey = (type: AccountType, value: string) => (type === "clinica" && 
 // Cadastro em duas partes: primeiro o tipo de conta (autônomo ou clínica), depois os campos que valem para ele.
 // Na Salutti Estética o foco é a profissional autônoma: o tipo já vem escolhido (dá para trocar para clínica).
 export function SignupForm({ area = "mental" }: { area?: Area }) {
-  const [type, setType] = useState<AccountType | null>(area === "estetica" ? "autonomo" : null);
+  const [type, setType] = useState<AccountType | null>(AREAS[area].defaultAccountType);
   const t = useTranslations("auth.signup.form");
   const labels = useTranslations("common.labels");
 

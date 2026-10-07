@@ -9,7 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StockBadge } from "../../_components/stock-badge";
-import { formatQty, requireStock } from "../../_lib";
+import { canManageStock, formatQty, requireStock } from "../../_lib";
+import { toDateTimeLocalSP } from "@/lib/dates";
+import { ActionForm } from "@/components/forms/action-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { correctOpenedAtAction } from "../../_actions";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +88,33 @@ export default async function LotTracePage({ params }: { params: Promise<{ lotId
         <Stat label={t("balance")} value={q(lot.quantity)} hint={t("received", { quantity: q(lot.initialQuantity), date: f.date(lot.receivedAt) })} />
         <Stat label={t("patients")} value={f.number(patientIds.length)} hint={t("used", { quantity: q(totals.uso ?? 0) })} />
       </div>
+
+      {/* Correção da abertura (só quem gerencia e só produto com validade depois de aberto). */}
+      {lot.product.openShelfLifeHours && canManageStock(ctx.role) ? (
+        <details className="rounded-xl border bg-card p-4 text-sm">
+          <summary className="cursor-pointer font-medium text-brand">{t("correctOpened")}</summary>
+          <ActionForm action={correctOpenedAtAction} className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <input type="hidden" name="lotId" value={lot.id} />
+            <div className="space-y-1">
+              <Label htmlFor="openedAt">{t("openedAtLabel")}</Label>
+              <Input
+                id="openedAt"
+                name="openedAt"
+                type="datetime-local"
+                defaultValue={lot.openedAt ? toDateTimeLocalSP(lot.openedAt) : ""}
+                max={toDateTimeLocalSP(new Date())}
+              />
+              <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+                <input type="checkbox" name="notOpened" className="h-4 w-4 accent-brand" /> {t("notOpened")}
+              </label>
+            </div>
+            <Button type="submit" variant="outline">
+              {t("correctOpenedSubmit")}
+            </Button>
+          </ActionForm>
+          <p className="mt-2 text-xs text-muted-foreground">{t("correctOpenedHint")}</p>
+        </details>
+      ) : null}
 
       <Card>
         <CardHeader>
