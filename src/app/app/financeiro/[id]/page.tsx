@@ -170,21 +170,21 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             <form action={markPaidAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit" variant="success">
-                <CheckCircle2 className="h-4 w-4" /> {t("confirmPayment")}
+                <CheckCircle2 className="h-4 w-4" aria-hidden /> {t("confirmPayment")}
               </Button>
             </form>
           ) : null}
           <form action={sendChargeReminder}>
             <input type="hidden" name="id" value={charge.id} />
             <Button type="submit" variant="outline" disabled={!charge.patient.phone}>
-              <MessageSquareText className="h-4 w-4" /> {t("sendReminder")}
+              <MessageSquareText className="h-4 w-4" aria-hidden /> {t("sendReminder")}
             </Button>
           </form>
           {charge.status === "paid" && (!charge.receipt || !charge.invoice) ? (
             <form action={issueReceiptAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit">
-                <FileSignature className="h-4 w-4" /> {t("issue")}
+                <FileSignature className="h-4 w-4" aria-hidden /> {t("issue")}
               </Button>
             </form>
           ) : null}
@@ -251,7 +251,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             {charge.invoice ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <FileSignature className="h-4 w-4 text-brand" /> {t("invoice", { number: charge.invoice.invoiceNumber })}
+                  <FileSignature className="h-4 w-4 text-brand" aria-hidden /> {t("invoice", { number: charge.invoice.invoiceNumber })}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <StatusBadge kind="invoice" status={charge.invoice.issStatus} /> · ISS {charge.invoice.serviceCode}

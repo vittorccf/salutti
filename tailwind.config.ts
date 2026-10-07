@@ -79,7 +79,7 @@ const config: Config = {
         icon: "28%",
       },
       boxShadow: {
-        sm: "var(--shadow-card)",
+        card: "var(--shadow-card)",
       },
       backgroundImage: {
         "gradient-brand": "var(--gradient-brand)",

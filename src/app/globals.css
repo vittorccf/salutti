@@ -24,7 +24,7 @@
     --accent-foreground: 234 49% 44%;
     --destructive: 358 68% 54%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-strong: 0 66% 47%;
+    --destructive-strong: 4 77% 40%;
     --success: 142 72% 29%;
     --success-foreground: 0 0% 100%;
     --success-strong: 142 69% 25%;
@@ -94,6 +94,7 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
   h1, h2, h3 { @apply font-display; }
+  strong, b { font-weight: 600; }
   /* Ícones Lucide com traço de 1,75px (design system). */
   .lucide { stroke-width: 1.75; }
 }
@@ -104,10 +105,10 @@
   .text-page-title { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; }
   .text-card-title { font-size: 16px; line-height: 22px; font-weight: 600; letter-spacing: -0.01em; }
   .text-overline { font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
-  .text-hero { font-size: 52px; line-height: 56px; font-weight: 500; letter-spacing: -0.035em; }
+  .text-hero { font-size: clamp(36px, 6vw, 52px); line-height: 1.08; font-weight: 500; letter-spacing: -0.035em; }
   .text-accent-serif { font-family: var(--font-serif), ui-serif, Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; }
-  /* Borda de 1px no degradê do Saluttin (card da IA): no máximo um elemento com degradê por tela. */
   /* Brilho suave no topo da tela (Dia lavanda, Noite ardósia): no máximo um degradê por tela. */
   .ds2-glow { background-image: var(--gradient-glow); }
+  /* Borda de 1px no degradê do Saluttin (página do assistente). */
   .border-saluttin { border: 1px solid transparent; background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box, var(--gradient-saluttin) border-box; }
 }

@@ -156,12 +156,12 @@ export default async function DashboardPage() {
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link href="/app/agenda/novo">
-              <CalendarDays className="h-4 w-4" /> {t("schedule")}
+              <CalendarDays className="h-4 w-4" aria-hidden /> {t("schedule")}
             </Link>
           </Button>
           <Button asChild>
             <Link href="/app/financeiro/novo">
-              <ArrowUpRight className="h-4 w-4" /> {t("newCharge")}
+              <ArrowUpRight className="h-4 w-4" aria-hidden /> {t("newCharge")}
             </Link>
           </Button>
         </div>
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-4">
         <KpiCard
-          icon={<TrendingUp className="h-4 w-4" />}
+          icon={<TrendingUp className="h-4 w-4" aria-hidden />}
           label={t("revenueMonth")}
           value={f.money(cur)}
           hint={
@@ -250,26 +250,27 @@ export default async function DashboardPage() {
           }
         />
         <KpiCard
-          icon={<AlertTriangle className="h-4 w-4" />}
+          icon={<AlertTriangle className="h-4 w-4" aria-hidden />}
           label={t("overdue")}
           value={f.money(overdueAgg._sum.amount ?? 0)}
           hint={t("overdueCount", { count: overdueAgg._count ?? 0 })}
           tone="warn"
         />
         <KpiCard
-          icon={<CalendarDays className="h-4 w-4" />}
+          icon={<CalendarDays className="h-4 w-4" aria-hidden />}
           label={t("sessionsFromToday")}
           value={f.number(todayAppointments)}
         />
         <KpiCard
-          icon={<Users className="h-4 w-4" />}
+          icon={<Users className="h-4 w-4" aria-hidden />}
           label={t("activePatients")}
           value={f.number(activePatients)}
         />
       </div>
 
-      {/* IA Insights: card do Saluttin com a borda em degradê e o ponto pêssego como indicador */}
-      <Card className="border-saluttin">
+      {/* Insights do Saluttin: o ponto pêssego é o indicador; o degradê da borda fica só em /app/saluttin
+          (o painel já tem o brilho do topo, e a IA não deve parecer a autoridade da tela). */}
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -303,9 +304,9 @@ export default async function DashboardPage() {
                   }`}
                 >
                   {insight.kind === "revenue_drop" ? (
-                    pct < 0 ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />
+                    pct < 0 ? <TrendingDown className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />
                   ) : (
-                    <Sparkles className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" aria-hidden />
                   )}
                 </div>
                 <div>

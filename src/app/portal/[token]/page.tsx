@@ -233,7 +233,7 @@ export default async function PatientPortalPage({
               {patient.dailyCards.map((d) => (
                 <div key={d.id} className="rounded-md border p-2 text-center text-sm">
                   <p className="text-muted-foreground">{f.date(d.date)}</p>
-                  <p className="text-page-title mt-1 tabular-nums">{d.mood}/5</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums">{d.mood}/5</p>
                   <p className="font-medium">{label("mood", Math.max(1, Math.min(5, d.mood)))}</p>
                   {d.anxiety ? <p className="text-muted-foreground">{t("anxietyValue", { value: d.anxiety })}</p> : null}
                 </div>

@@ -42,12 +42,12 @@ export default async function ProntuarioPatientPage({
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <Link href={`/app/prontuario/${patient.id}/anamnese`}>
-              <FileSignature className="h-4 w-4" /> {t("applyAnamnesis")}
+              <FileSignature className="h-4 w-4" aria-hidden /> {t("applyAnamnesis")}
             </Link>
           </Button>
           <Button asChild>
             <Link href={`/app/prontuario/${patient.id}/nova-evolucao`}>
-              <FilePlus2 className="h-4 w-4" /> {t("newNote")}
+              <FilePlus2 className="h-4 w-4" aria-hidden /> {t("newNote")}
             </Link>
           </Button>
         </div>
@@ -56,7 +56,7 @@ export default async function ProntuarioPatientPage({
       <div className="space-y-4">
         {patient.clinicalNotes.length === 0 ? (
           <EmptyState
-            icon={<Sparkles className="h-6 w-6" aria-hidden />}
+            icon={<FilePlus2 className="h-6 w-6" aria-hidden />}
             title={t("emptyTitle")}
             description={t("emptyDescription")}
           />
@@ -97,7 +97,7 @@ export default async function ProntuarioPatientPage({
                   </div>
                 ) : null}
                 <div className="rounded-md border-dashed border bg-muted/30 p-3 text-xs flex items-start gap-2">
-                  <ShieldCheck className="h-4 w-4 text-brand shrink-0 mt-0.5" />
+                  <ShieldCheck className="h-4 w-4 text-brand shrink-0 mt-0.5" aria-hidden />
                   <p className="text-muted-foreground">
                     {t.rich("security", { hash: n.signedHash ?? "-", code: (chunks) => <code>{chunks}</code> })}
                   </p>
