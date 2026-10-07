@@ -13,6 +13,7 @@ import {
   CakeSlice,
   CalendarDays,
   Clock,
+  Package,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -22,6 +23,8 @@ import { insightsEngine } from "@/lib/providers/insights";
 import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
 import { onboardingProgress } from "@/lib/onboarding";
 import { upcomingBirthdays, type BirthdayPerson } from "@/lib/birthdays";
+import { moduleEnabled } from "@/lib/areas";
+import { stockAlerts } from "@/lib/stock";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +114,17 @@ export default async function DashboardPage() {
 
   const onboarding = await onboardingProgress(wsId);
 
+  // Alertas de estoque (área com o módulo ligado): abaixo do mínimo, vencendo em 30 dias, vencido ou aberto vencido.
+  const stock = moduleEnabled(ctx.workspace.area, "estoque") ? await stockAlerts(wsId, now) : null;
+  const stockCounts = stock
+    ? {
+        low: stock.low.length,
+        expiring: stock.lots.filter((l) => l.status === "vencendo").length,
+        expired: stock.lots.filter((l) => l.status === "vencido" || l.status === "aberto_vencido").length,
+      }
+    : null;
+  const stockTotal = stockCounts ? stockCounts.low + stockCounts.expiring + stockCounts.expired : 0;
+
   // Garante insights ao menos uma vez (auto-seed lazy)
   let liveInsights = insights;
   if (liveInsights.length === 0) {
@@ -121,13 +135,14 @@ export default async function DashboardPage() {
   const prev = paidLastMonth._sum.amount ?? 0;
   const pct = prev > 0 ? ((cur - prev) / prev) * 100 : 0;
 
-  const [t, tc, tb, tg, f, label] = await Promise.all([
+  const [t, tc, tb, tg, f, label, ts] = await Promise.all([
     getTranslations("dashboard.home"),
     getTranslations("common.actions"),
     getTranslations("common.birthdays"),
     getTranslations("common.greeting"),
     getFormat(),
     getTranslations("common.labels").then(labeler),
+    getTranslations("stock.dashboard"),
   ]);
   const hour = f.hour(now);
   const greeting = tg(hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening");
@@ -222,6 +237,47 @@ export default async function DashboardPage() {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {stockCounts && stockTotal > 0 ? (
+        <Card className="border-warning/40">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="grid h-8 w-8 shrink-0 place-content-center rounded-md bg-warning/10 text-warning-strong">
+                <Package className="h-4 w-4" aria-hidden />
+              </div>
+              <div>
+                <p className="font-semibold">{ts("title", { count: stockTotal })}</p>
+                <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {stockCounts.low > 0 ? (
+                    <li>
+                      <Link href="/app/estoque?situacao=baixo" className="text-brand hover:underline underline-offset-4">
+                        {ts("low", { count: stockCounts.low })}
+                      </Link>
+                    </li>
+                  ) : null}
+                  {stockCounts.expiring > 0 ? (
+                    <li>
+                      <Link href="/app/estoque?situacao=vencendo" className="text-brand hover:underline underline-offset-4">
+                        {ts("expiring", { count: stockCounts.expiring })}
+                      </Link>
+                    </li>
+                  ) : null}
+                  {stockCounts.expired > 0 ? (
+                    <li>
+                      <Link href="/app/estoque?situacao=vencido" className="text-brand hover:underline underline-offset-4">
+                        {ts("expired", { count: stockCounts.expired })}
+                      </Link>
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/app/estoque?situacao=alertas">{ts("open")}</Link>
+            </Button>
           </CardContent>
         </Card>
       ) : null}

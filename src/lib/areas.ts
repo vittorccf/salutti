@@ -14,8 +14,12 @@ export type Module = "convenios" | "prontuario" | "procedimentos" | "estoque";
 
 type AreaConfig = {
   name: string;
+  /** selo ao lado do logo (null = só o logo). Nome de marca: não se traduz. */
+  brandTag: string | null;
   /** página pública da área (inicial, cadastro e login) */
   publicPath: string;
+  loginPath: string;
+  signupPath: string;
   modules: Record<Module, boolean>;
   /** segmentos por tipo de conta (códigos de Workspace.segment) */
   segments: Record<AccountType, string[]>;
@@ -26,7 +30,10 @@ type AreaConfig = {
 export const AREAS: Record<Area, AreaConfig> = {
   mental: {
     name: "Salutti",
+    brandTag: null,
     publicPath: "/",
+    loginPath: "/login",
+    signupPath: "/signup",
     modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false },
     segments: { autonomo: ["solo_psicologo", "solo_psicanalista", "odonto"], clinica: ["clinica", "ubs", "odonto"] },
     professionalTypes: ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"],
@@ -34,7 +41,10 @@ export const AREAS: Record<Area, AreaConfig> = {
   },
   estetica: {
     name: "Salutti Estética",
+    brandTag: "Estética",
     publicPath: "/estetica",
+    loginPath: "/estetica/login",
+    signupPath: "/estetica/cadastro",
     // Procedimentos estéticos não são cobertos por convênio: o módulo de convênios/TISS fica desligado.
     modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true },
     segments: {
@@ -53,7 +63,11 @@ export const AREAS: Record<Area, AreaConfig> = {
   },
 };
 
-export const moduleEnabled = (area: string | null | undefined, module: Module) => AREAS[areaOf(area)].modules[module];
+// União de todas as áreas: os formulários validam contra ela (profissional de outra área continua válido).
+export const ALL_PROFESSIONAL_TYPES = [...new Set(AREAS_LIST.flatMap((a) => AREAS[a].professionalTypes))] as [string, ...string[]];
+export const ALL_COUNCILS = [...new Set(AREAS_LIST.flatMap((a) => AREAS[a].councils))] as [string, ...string[]];
+
+export const moduleEnabled =(area: string | null | undefined, module: Module) => AREAS[areaOf(area)].modules[module];
 
 export const segmentsFor = (area: Area, type: AccountType) => AREAS[area].segments[type];
 

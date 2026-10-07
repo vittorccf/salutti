@@ -14,6 +14,14 @@ import { labeler } from "@/i18n/labels";
 import { canSeeClinical } from "@/lib/permissions";
 import { mediaUrl } from "@/lib/media";
 import { Avatar } from "@/components/ui/avatar";
+import type { Metadata } from "next";
+import { AREAS, areaOf, moduleEnabled, type Module } from "@/lib/areas";
+
+// Título da aba pela marca do consultório ativo: "Salutti" ou "Salutti Estética".
+export async function generateMetadata(): Promise<Metadata> {
+  const ctx = await getCurrentContext();
+  return { title: AREAS[areaOf(ctx?.workspace.area)].name };
+}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getCurrentContext();
@@ -28,6 +36,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const avatarUrl = mediaUrl(ctx.user.avatarId);
   const bannerUrl = mediaUrl(ctx.workspace.bannerId);
   const brand = ctx.workspace.brandDisplay;
+  const area = areaOf(ctx.workspace.area);
+  // Com banner ou foto no lugar do logo, a marca da área aparece em texto logo abaixo.
+  const customBrand = (brand === "banner" && bannerUrl) || (brand === "photo" && avatarUrl);
+  const modules = (Object.keys(AREAS[area].modules) as Module[]).filter((m) => moduleEnabled(area, m));
 
   const sidebar = (
     <>
@@ -42,8 +54,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <span className="min-w-0 font-semibold leading-tight">{ctx.user.name}</span>
             </span>
           ) : (
-            <BrandLogo height={28} />
+            <BrandLogo height={28} area={area} />
           )}
+          {AREAS[area].brandTag && customBrand ? (
+            <span className="block text-xs font-medium text-brand">{AREAS[area].name}</span>
+          ) : null}
           <span className="block text-xs text-muted-foreground">{ctx.workspace.name}</span>
         </Link>
         <div className="mt-4">
@@ -56,7 +71,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav clinical={canSeeClinical(ctx.role)} />
+        <SidebarNav clinical={canSeeClinical(ctx.role)} modules={modules} />
       </div>
       {trialDays !== null ? (
         <>

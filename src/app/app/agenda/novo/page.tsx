@@ -17,6 +17,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { assertInsurancePlan } from "@/lib/tenant";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
+import { moduleEnabled } from "@/lib/areas";
+import { isDateTimeLocal } from "@/lib/procedures";
+import { ProcedurePicker } from "@/app/app/procedimentos/_components/procedure-picker";
+import { notFound } from "next/navigation";
 
 const schema = z.object({
   patientId: z.string(),
@@ -29,6 +33,7 @@ const schema = z.object({
   generateCharge: z.string().optional(),
   videoProvider: z.enum(["google_meet", "zoom", "none"]).default("google_meet"),
   billing: z.string().default("particular"), // "particular" ou id do convênio
+  procedureId: z.string().optional(), // só na área com o módulo de procedimentos (Salutti Estética)
 });
 
 
@@ -39,6 +44,8 @@ async function createAppointmentAction(formData: FormData) {
   await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId, professionalId: data.professionalId });
   const insurancePlanId = data.billing !== "particular" ? data.billing : null;
   if (insurancePlanId) await assertInsurancePlan(ctx.workspace.id, insurancePlanId);
+  const procedureId = moduleEnabled(ctx.workspace.area, "procedimentos") && data.procedureId ? data.procedureId : null;
+  if (procedureId && (await db.procedure.count({ where: { id: procedureId, workspaceId: ctx.workspace.id } })) === 0) notFound();
   // Pelo convênio, vale o valor contratado com a operadora.
   const plan = insurancePlanId ? await db.insurancePlan.findUnique({ where: { id: insurancePlanId } }) : null;
   const price = plan ? plan.sessionPrice : data.price;
@@ -81,6 +88,7 @@ async function createAppointmentAction(formData: FormData) {
       meetingOwnerId: meeting?.ownerId ?? null,
       price,
       insurancePlanId,
+      procedureId,
       notes: data.notes || null,
     },
   });
@@ -127,13 +135,23 @@ async function createAppointmentAction(formData: FormData) {
 export default async function NewAppointmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ patientId?: string }>;
+  searchParams: Promise<{ patientId?: string; procedureId?: string; startsAt?: string }>;
 }) {
   const ctx = await requireContext();
   const t = await getTranslations("schedule.form");
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));
   const params = await searchParams;
+  // Salutti Estética: campo "Procedimento" e pré-preenchimento do retorno (paciente, procedimento e data).
+  const aesthetic = moduleEnabled(ctx.workspace.area, "procedimentos");
+  const procedures = aesthetic
+    ? await db.procedure.findMany({
+        where: { workspaceId: ctx.workspace.id, active: true },
+        select: { id: true, name: true, durationMinutes: true, price: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
+  const prefilled = procedures.find((p) => p.id === params.procedureId) ?? null;
   const [patients, professionals, plans] = await Promise.all([
     db.patient.findMany({
       where: { workspaceId: ctx.workspace.id, deletedAt: null, active: true },
@@ -146,7 +164,7 @@ export default async function NewAppointmentPage({
     db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } }),
   ]);
 
-  const defaultDate = (() => {
+  const defaultDate = aesthetic && isDateTimeLocal(params.startsAt) ? params.startsAt : (() => {
     // Próxima hora cheia, no horário de São Paulo.
     const d = new Date(Math.ceil((Date.now() + 1) / 3_600_000) * 3_600_000);
     return toDateTimeLocalSP(d);
@@ -195,6 +213,9 @@ export default async function NewAppointmentPage({
                   ))}
                 </Select>
               </div>
+              {aesthetic && procedures.length > 0 ? (
+                <ProcedurePicker procedures={procedures} defaultValue={prefilled?.id} />
+              ) : null}
               <div className="space-y-1">
                 <Label htmlFor="professionalId">{t("professional")}</Label>
                 <Select name="professionalId" id="professionalId" required>
@@ -213,11 +234,19 @@ export default async function NewAppointmentPage({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="durationMinutes">{t("duration")}</Label>
-                <Input type="number" name="durationMinutes" id="durationMinutes" defaultValue={50} min={15} max={240} required />
+                <Input
+                  type="number"
+                  name="durationMinutes"
+                  id="durationMinutes"
+                  defaultValue={prefilled ? Math.min(240, Math.max(15, prefilled.durationMinutes)) : 50}
+                  min={15}
+                  max={240}
+                  required
+                />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="modality">{t("modality")}</Label>
-                <Select name="modality" id="modality" defaultValue="online">
+                <Select name="modality" id="modality" defaultValue={aesthetic ? "presencial" : "online"}>
                   <option value="presencial">{label("modality", "presencial")}</option>
                   <option value="online">{label("modality", "online")}</option>
                 </Select>
@@ -245,7 +274,7 @@ export default async function NewAppointmentPage({
               ) : null}
               <div className="space-y-1">
                 <Label htmlFor="price">{t("price")}</Label>
-                <Input type="number" step="0.01" name="price" id="price" defaultValue={180} required />
+                <Input type="number" step="0.01" name="price" id="price" defaultValue={prefilled?.price ?? 180} required />
               </div>
               <div className="sm:col-span-2 space-y-1">
                 <Label htmlFor="notes">{t("notes")}</Label>

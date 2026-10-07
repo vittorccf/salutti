@@ -25,6 +25,51 @@ export function lotStatus(lot: LotLike, product: ProductLike, now = new Date()) 
 }
 export type LotStatus = ReturnType<typeof lotStatus>;
 
+// Lote que ainda pode ser aplicado ou vendido (não vencido, nem vencido depois de aberto).
+export const isUsable = (status: LotStatus) => status === "ok" || status === "vencendo";
+
+// Arredonda a 3 casas: frações de mL/U não podem deixar resíduo de ponto flutuante no saldo.
+export const roundQty = (n: number) => Math.round(n * 1000) / 1000;
+
+// Quantidade digitada no formulário: aceita vírgula decimal ("0,5") e milhar com ponto ("1.000,5").
+// Devolve NaN se não for número.
+export function parseDecimal(value: unknown): number {
+  let s = String(value ?? "").trim().replace(/\s/g, "");
+  if (!s) return NaN;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+}
+
+// Saldo utilizável do produto (lotes não vencidos) e próxima validade entre eles.
+export function productSummary<L extends LotLike>(lots: L[], product: ProductLike & { minStock: number }, now = new Date()) {
+  let total = 0;
+  let nextExpiry: Date | null = null;
+  const statuses = new Set<LotStatus>();
+  for (const l of lots) {
+    if (!(l.quantity > 0)) continue;
+    const st = lotStatus(l, product, now);
+    statuses.add(st);
+    if (!isUsable(st)) continue;
+    total += l.quantity;
+    if (!nextExpiry || l.expiresAt < nextExpiry) nextExpiry = l.expiresAt;
+  }
+  total = roundQty(total);
+  const low = product.minStock > 0 && total < product.minStock;
+  // Situação mais grave primeiro: vencido (inclusive depois de aberto) > vencendo > abaixo do mínimo > ok.
+  const status =
+    statuses.has("vencido") || statuses.has("aberto_vencido")
+      ? ("vencido" as const)
+      : statuses.has("vencendo")
+        ? ("vencendo" as const)
+        : low
+          ? ("baixo" as const)
+          : ("ok" as const);
+  const expiring = statuses.has("vencendo");
+  const expired = statuses.has("vencido") || statuses.has("aberto_vencido");
+  return { total, nextExpiry, low, expiring, expired, status };
+}
+export type ProductStatus = ReturnType<typeof productSummary>["status"];
+
 // Fim da validade depois de aberto (null se o frasco não foi aberto ou o produto não tem esse prazo).
 export const openExpiresAt = (lot: LotLike, product: ProductLike) =>
   lot.openedAt && product.openShelfLifeHours ? new Date(lot.openedAt.getTime() + product.openShelfLifeHours * 3_600_000) : null;
@@ -32,7 +77,7 @@ export const openExpiresAt = (lot: LotLike, product: ProductLike) =>
 // Ordem de uso: frasco já aberto primeiro (antes que vença depois de aberto), depois o que vence antes.
 export function fefoOrder<T extends LotLike>(lots: T[], product: ProductLike, now = new Date()): T[] {
   return lots
-    .filter((l) => l.quantity > 0 && (lotStatus(l, product, now) === "ok" || lotStatus(l, product, now) === "vencendo"))
+    .filter((l) => l.quantity > 0 && isUsable(lotStatus(l, product, now)))
     .sort((a, b) => Number(Boolean(b.openedAt)) - Number(Boolean(a.openedAt)) || a.expiresAt.getTime() - b.expiresAt.getTime());
 }
 
@@ -171,12 +216,21 @@ export async function stockAlerts(workspaceId: string, now = new Date()) {
   const low: { productId: string; name: string; unit: string; total: number; minStock: number }[] = [];
   const lots: { productId: string; name: string; unit: string; lotId: string; lotNumber: string; quantity: number; status: LotStatus; expiresAt: Date }[] = [];
   for (const p of products) {
-    const total = Math.round(p.lots.reduce((s, l) => s + l.quantity, 0) * 1000) / 1000;
-    if (p.minStock > 0 && total < p.minStock) low.push({ productId: p.id, name: p.name, unit: p.unit, total, minStock: p.minStock });
+    // Lote vencido não conta para o estoque mínimo: não pode ser usado.
+    const { total, low: isLow } = productSummary(p.lots, p, now);
+    if (isLow) low.push({ productId: p.id, name: p.name, unit: p.unit, total, minStock: p.minStock });
     for (const l of p.lots) {
       const status = lotStatus(l, p, now);
       if (status !== "ok") lots.push({ productId: p.id, name: p.name, unit: p.unit, lotId: l.id, lotNumber: l.lotNumber, quantity: l.quantity, status, expiresAt: l.expiresAt });
     }
   }
   return { low, lots };
+}
+
+// Registra a abertura/reconstituição do frasco agora (começa a contar a validade depois de aberto).
+export async function openLot(input: { workspaceId: string; lotId: string; now?: Date }) {
+  const lot = await db.stockLot.findFirst({ where: { id: input.lotId, workspaceId: input.workspaceId } });
+  if (!lot) throw new StockError("lot");
+  if (lot.openedAt) return lot;
+  return db.stockLot.update({ where: { id: lot.id }, data: { openedAt: input.now ?? new Date() } });
 }

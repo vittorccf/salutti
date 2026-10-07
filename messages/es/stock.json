@@ -1,1 +1,237 @@
-{}
+{
+  "status": {
+    "ok": "Al día",
+    "baixo": "Bajo el mínimo",
+    "vencendo": "Por vencer",
+    "vencido": "Vencido",
+    "aberto_vencido": "Abierto vencido",
+    "inativo": "Inactivo",
+    "esgotado": "Agotado"
+  },
+  "kinds": {
+    "insumo": "Insumo",
+    "revenda": "Reventa"
+  },
+  "units": {
+    "U": {
+      "one": "U",
+      "other": "U"
+    },
+    "mL": {
+      "one": "mL",
+      "other": "mL"
+    },
+    "seringa": {
+      "one": "jeringa",
+      "other": "jeringas"
+    },
+    "frasco": {
+      "one": "frasco",
+      "other": "frascos"
+    },
+    "un": {
+      "one": "u.",
+      "other": "u."
+    },
+    "g": {
+      "one": "g",
+      "other": "g"
+    }
+  },
+  "unitNames": {
+    "U": "U (unidades de toxina)",
+    "mL": "mL",
+    "seringa": "Jeringa",
+    "frasco": "Frasco",
+    "un": "Unidad (aguja, cánula, caja...)",
+    "g": "g"
+  },
+  "movementKinds": {
+    "entrada": "Entrada",
+    "uso": "Uso en atención",
+    "ajuste": "Ajuste de inventario",
+    "perda": "Pérdida",
+    "venda": "Venta"
+  },
+  "reasons": {
+    "vencido": "Vencido",
+    "sobra_frasco": "Sobrante del frasco",
+    "quebra": "Rotura",
+    "outro": "Otro"
+  },
+  "errors": {
+    "quantity": "Indica una cantidad mayor que cero. Usa coma para fracciones, como 0,5.",
+    "product": "Producto no encontrado en este consultorio.",
+    "lot": "Lote no encontrado en este consultorio.",
+    "expired": "Este lote está vencido (o pasó su validez tras abrirse) y no se puede usar.",
+    "insufficient": "El saldo del lote no alcanza para esa cantidad. Revisa el saldo o registra una entrada.",
+    "generic": "No se pudo registrar. Revisa los campos e inténtalo de nuevo.",
+    "nameRequired": "Indica el nombre del producto (al menos 2 letras).",
+    "kindInvalid": "Elige si el producto es insumo o reventa.",
+    "unitInvalid": "Elige la unidad de control del producto.",
+    "costInvalid": "Costo inválido. Usa números, como 850,00.",
+    "minStockInvalid": "Stock mínimo inválido. Usa cero o un número positivo.",
+    "hoursInvalid": "La validez tras abrir debe ser un número entero de horas, como 72.",
+    "lotNumberRequired": "Indica el número de lote, como aparece en el envase.",
+    "expiresRequired": "Indica la fecha de vencimiento del lote.",
+    "noDifference": "El saldo contado es igual al del sistema: no hay nada que ajustar.",
+    "reasonRequired": "Elige el motivo de la pérdida.",
+    "saleOnlyResale": "La venta solo aplica a productos de reventa."
+  },
+  "list": {
+    "title": "Inventario",
+    "description": "Insumos y productos de reventa, con lote, vencimiento y saldo.",
+    "newProduct": "Nuevo producto",
+    "filters": "Filtros del inventario",
+    "filterKind": "Tipo",
+    "filterStatus": "Situación",
+    "kindFilter": {
+      "todos": "Todos",
+      "insumo": "Insumos",
+      "revenda": "Reventa"
+    },
+    "statusFilter": {
+      "todas": "Todas",
+      "alertas": "Solo alertas",
+      "baixo": "Bajo el mínimo",
+      "vencendo": "Por vencer",
+      "vencido": "Vencidos"
+    },
+    "emptyTitle": "Ningún producto registrado",
+    "emptyDescription": "Registra tus insumos: toxina, ácido hialurónico, bioestimulador, agujas y cánulas. Después registra la entrada de cada lote con su vencimiento.",
+    "emptyFilteredTitle": "Nada con este filtro",
+    "emptyFilteredDescription": "Ningún producto en esta situación. Elige otro filtro para ver el resto.",
+    "product": "Producto",
+    "kind": "Tipo",
+    "balance": "Saldo",
+    "minStock": "Mínimo",
+    "nextExpiry": "Próx. vencimiento",
+    "status": "Situación"
+  },
+  "alerts": {
+    "title": "{count, plural, one {# alerta de inventario} other {# alertas de inventario}}",
+    "lowDetail": "Saldo {total}, mínimo {min}",
+    "expiringDetail": "Lote {lot} vence el {date} · {quantity}",
+    "expiredDetail": "Lote {lot} venció el {date} · {quantity} para desechar",
+    "openExpiredDetail": "Lote {lot} pasó su validez tras abrirse · {quantity} para desechar"
+  },
+  "form": {
+    "newTitle": "Nuevo producto",
+    "newDescription": "Después de guardar, registra la entrada del lote con número y vencimiento.",
+    "editTitle": "Editar · {name}",
+    "create": "Registrar producto",
+    "name": "Nombre",
+    "namePlaceholder": "Ej.: Toxina botulínica 100 U",
+    "brand": "Marca",
+    "brandPlaceholder": "Ej.: Botox, Dysport, Restylane",
+    "supplier": "Proveedor",
+    "kind": "Tipo",
+    "kindHint": "El insumo se usa en las atenciones; la reventa se vende a la paciente.",
+    "unit": "Unidad de control",
+    "unitHint": "Cómo lo descuentas en la atención: toxina en U, relleno en mL o jeringa.",
+    "anvisaRegistry": "Registro ANVISA",
+    "anvisaHint": "Está en el envase. La inspección sanitaria lo verifica.",
+    "unitCost": "Costo por unidad (R$)",
+    "unitCostHint": "Se usa para calcular el costo de insumos de cada atención.",
+    "minStock": "Stock mínimo",
+    "minStockHint": "Por debajo de esto el producto aparece en las alertas. Deja 0 para no avisar.",
+    "openShelfLifeHours": "Validez tras abrir (horas)",
+    "openShelfLifePlaceholder": "Ej.: 72",
+    "openShelfLifeHint": "Para toxina reconstituida. Referencia: Botox hasta 72 h, Dysport 24 h, Prosigne 4 h. Revisa el prospecto. Deja en blanco si no aplica.",
+    "active": "Producto activo (desmarca para quitarlo de las alertas)"
+  },
+  "detail": {
+    "back": "Inventario",
+    "edit": "Editar producto",
+    "balanceLine": "Saldo utilizable: {quantity}",
+    "lots": "Lotes",
+    "lotsDescription": "Orden sugerido de uso: frasco abierto primero, después el que vence antes.",
+    "noLotsTitle": "Ningún lote registrado",
+    "noLotsDescription": "Registra la entrada del primer lote con número, vencimiento y cantidad.",
+    "lotNumber": "Lote",
+    "expiresAt": "Vencimiento",
+    "balance": "Saldo",
+    "ofInitial": "de {quantity}",
+    "opened": "Abierto el",
+    "openUntil": "Válido hasta {date}",
+    "markOpened": "Registrar apertura",
+    "status": "Situación",
+    "trace": "Quién lo recibió",
+    "history": "Movimientos",
+    "historyDescription": "Los 100 más recientes, con quién los registró.",
+    "noHistory": "Aún no hay movimientos.",
+    "date": "Fecha",
+    "movement": "Tipo",
+    "quantity": "Cantidad",
+    "lot": "Lote",
+    "patient": "Paciente",
+    "patientHidden": "Paciente",
+    "user": "Registrado por",
+    "receiveTitle": "Entrada de lote",
+    "receiveDescription": "Número y vencimiento como aparecen en el envase.",
+    "quantityIn": "Cantidad ({unit})",
+    "unitCost": "Costo por unidad (R$)",
+    "supplier": "Proveedor",
+    "notes": "Observación",
+    "receive": "Registrar entrada",
+    "countTitle": "Ajuste de inventario",
+    "countDescription": "¿Contaste y el saldo no coincide? Indica el saldo real del lote.",
+    "counted": "Saldo contado",
+    "countReason": "Observación (opcional)",
+    "saveCount": "Guardar ajuste",
+    "countSaved": "Ajuste registrado.",
+    "outTitle": "Pérdida o venta",
+    "outTitleLoss": "Pérdida",
+    "outDescription": "Registra lo que se desechó: vencido, sobrante del frasco o rotura.",
+    "outDescriptionResale": "Registra la venta a la paciente o lo que se desechó.",
+    "outKind": "Tipo de salida",
+    "quantityOut": "Cantidad",
+    "reason": "Motivo de la pérdida",
+    "reasonSale": "No aplica (venta)",
+    "reasonPick": "Elige el motivo",
+    "saveOut": "Registrar salida",
+    "lossSaved": "Pérdida registrada.",
+    "saleSaved": "Venta registrada.",
+    "lotOption": "{lot} · vence {date} · {quantity}",
+    "infoTitle": "Registro",
+    "anvisaRegistry": "Registro ANVISA",
+    "minStock": "Stock mínimo",
+    "openShelfLife": "Validez tras abrir",
+    "hours": "{count, plural, one {# hora} other {# horas}}",
+    "notInformed": "No informado",
+    "notApplicable": "No aplica"
+  },
+  "lot": {
+    "title": "Lote {lot} · quién lo recibió",
+    "description": "Trazabilidad del lote: a quién se aplicó, cuándo y cuánto. Úsala ante un retiro del mercado, una complicación o una inspección.",
+    "product": "Producto",
+    "anvisa": "ANVISA {registry}",
+    "expiresAt": "Vencimiento",
+    "opened": "Abierto el {opened}",
+    "openedUntil": "Abierto el {opened}, válido hasta {until}",
+    "balance": "Saldo",
+    "received": "Entrada de {quantity} el {date}",
+    "patients": "Pacientes",
+    "used": "{quantity} aplicados",
+    "usesTitle": "Aplicaciones de este lote",
+    "usesDescription": "Cada uso registrado en la atención, con la paciente y la sesión.",
+    "restricted": "Los nombres de pacientes solo los ve el equipo clínico (confidencialidad y LGPD).",
+    "usesCount": "{count, plural, one {# aplicación} other {# aplicaciones}} en {patients, plural, one {# paciente} other {# pacientes}}.",
+    "noUsesTitle": "Ninguna aplicación registrada",
+    "noUsesDescription": "Cuando este lote se use en una atención, la paciente y la sesión aparecerán aquí.",
+    "patient": "Paciente",
+    "date": "Registrado el",
+    "session": "Sesión",
+    "quantity": "Cantidad",
+    "noPatient": "Sin paciente",
+    "openSession": "Abrir sesión",
+    "summaryTitle": "Resumen del lote"
+  },
+  "dashboard": {
+    "title": "{count, plural, one {Inventario · # alerta} other {Inventario · # alertas}}",
+    "low": "{count, plural, other {# bajo el mínimo}}",
+    "expiring": "{count, plural, one {# lote por vencer en 30 días} other {# lotes por vencer en 30 días}}",
+    "expired": "{count, plural, one {# lote vencido o abierto vencido} other {# lotes vencidos o abiertos vencidos}}",
+    "open": "Ver inventario"
+  }
+}

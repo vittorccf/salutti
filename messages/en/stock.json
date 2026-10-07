@@ -1,1 +1,237 @@
-{}
+{
+  "status": {
+    "ok": "Up to date",
+    "baixo": "Below minimum",
+    "vencendo": "Expiring",
+    "vencido": "Expired",
+    "aberto_vencido": "Expired after opening",
+    "inativo": "Inactive",
+    "esgotado": "Used up"
+  },
+  "kinds": {
+    "insumo": "Supply",
+    "revenda": "Retail"
+  },
+  "units": {
+    "U": {
+      "one": "U",
+      "other": "U"
+    },
+    "mL": {
+      "one": "mL",
+      "other": "mL"
+    },
+    "seringa": {
+      "one": "syringe",
+      "other": "syringes"
+    },
+    "frasco": {
+      "one": "vial",
+      "other": "vials"
+    },
+    "un": {
+      "one": "pc",
+      "other": "pcs"
+    },
+    "g": {
+      "one": "g",
+      "other": "g"
+    }
+  },
+  "unitNames": {
+    "U": "U (toxin units)",
+    "mL": "mL",
+    "seringa": "Syringe",
+    "frasco": "Vial",
+    "un": "Piece (needle, cannula, box...)",
+    "g": "g"
+  },
+  "movementKinds": {
+    "entrada": "Received",
+    "uso": "Used in appointment",
+    "ajuste": "Inventory adjustment",
+    "perda": "Loss",
+    "venda": "Sale"
+  },
+  "reasons": {
+    "vencido": "Expired",
+    "sobra_frasco": "Leftover in vial",
+    "quebra": "Broken",
+    "outro": "Other"
+  },
+  "errors": {
+    "quantity": "Enter a quantity greater than zero. Fractions are allowed, like 0.5.",
+    "product": "Product not found in this practice.",
+    "lot": "Lot not found in this practice.",
+    "expired": "This lot is expired (or past its shelf life after opening) and can't be used.",
+    "insufficient": "The lot balance isn't enough for this quantity. Check the balance or record a new lot.",
+    "generic": "Couldn't save. Check the fields and try again.",
+    "nameRequired": "Enter the product name (at least 2 letters).",
+    "kindInvalid": "Choose whether the product is a supply or retail.",
+    "unitInvalid": "Choose the product's tracking unit.",
+    "costInvalid": "Invalid cost. Use numbers, like 850.00.",
+    "minStockInvalid": "Invalid minimum stock. Use zero or a positive number.",
+    "hoursInvalid": "Shelf life after opening must be a whole number of hours, like 72.",
+    "lotNumberRequired": "Enter the lot number as printed on the package.",
+    "expiresRequired": "Enter the lot's expiration date.",
+    "noDifference": "The counted balance matches the system balance: nothing to adjust.",
+    "reasonRequired": "Choose the reason for the loss.",
+    "saleOnlyResale": "Sales only apply to retail products."
+  },
+  "list": {
+    "title": "Inventory",
+    "description": "Supplies and retail products, with lot, expiration date and balance.",
+    "newProduct": "New product",
+    "filters": "Inventory filters",
+    "filterKind": "Type",
+    "filterStatus": "Status",
+    "kindFilter": {
+      "todos": "All",
+      "insumo": "Supplies",
+      "revenda": "Retail"
+    },
+    "statusFilter": {
+      "todas": "All",
+      "alertas": "Alerts only",
+      "baixo": "Below minimum",
+      "vencendo": "Expiring",
+      "vencido": "Expired"
+    },
+    "emptyTitle": "No products yet",
+    "emptyDescription": "Add your supplies: toxin, hyaluronic acid, biostimulator, needles and cannulas. Then record each lot with its expiration date.",
+    "emptyFilteredTitle": "Nothing with this filter",
+    "emptyFilteredDescription": "No products in this status. Pick another filter to see the rest.",
+    "product": "Product",
+    "kind": "Type",
+    "balance": "Balance",
+    "minStock": "Minimum",
+    "nextExpiry": "Next expiry",
+    "status": "Status"
+  },
+  "alerts": {
+    "title": "{count, plural, one {# inventory alert} other {# inventory alerts}}",
+    "lowDetail": "Balance {total}, minimum {min}",
+    "expiringDetail": "Lot {lot} expires on {date} · {quantity}",
+    "expiredDetail": "Lot {lot} expired on {date} · {quantity} to discard",
+    "openExpiredDetail": "Lot {lot} is past its shelf life after opening · {quantity} to discard"
+  },
+  "form": {
+    "newTitle": "New product",
+    "newDescription": "After saving, record the lot with its number and expiration date.",
+    "editTitle": "Edit · {name}",
+    "create": "Add product",
+    "name": "Name",
+    "namePlaceholder": "E.g. Botulinum toxin 100 U",
+    "brand": "Brand",
+    "brandPlaceholder": "E.g. Botox, Dysport, Restylane",
+    "supplier": "Supplier",
+    "kind": "Type",
+    "kindHint": "Supplies are used in appointments; retail is sold to the patient.",
+    "unit": "Tracking unit",
+    "unitHint": "How you deduct it in the appointment: toxin in U, filler in mL or syringes.",
+    "anvisaRegistry": "ANVISA registration",
+    "anvisaHint": "Printed on the package. Health inspectors check it.",
+    "unitCost": "Cost per unit (R$)",
+    "unitCostHint": "Used to calculate the supply cost of each appointment.",
+    "minStock": "Minimum stock",
+    "minStockHint": "Below this the product shows up in alerts. Leave 0 for no alert.",
+    "openShelfLifeHours": "Shelf life after opening (hours)",
+    "openShelfLifePlaceholder": "E.g. 72",
+    "openShelfLifeHint": "For reconstituted toxin. Reference: Botox up to 72 h, Dysport 24 h, Prosigne 4 h. Check the package insert. Leave blank if it doesn't apply.",
+    "active": "Active product (uncheck to remove it from alerts)"
+  },
+  "detail": {
+    "back": "Inventory",
+    "edit": "Edit product",
+    "balanceLine": "Usable balance: {quantity}",
+    "lots": "Lots",
+    "lotsDescription": "Suggested order of use: opened vial first, then the one expiring soonest.",
+    "noLotsTitle": "No lots recorded",
+    "noLotsDescription": "Record the first lot with its number, expiration date and quantity.",
+    "lotNumber": "Lot",
+    "expiresAt": "Expires",
+    "balance": "Balance",
+    "ofInitial": "of {quantity}",
+    "opened": "Opened",
+    "openUntil": "Good until {date}",
+    "markOpened": "Mark as opened",
+    "status": "Status",
+    "trace": "Who received it",
+    "history": "Movements",
+    "historyDescription": "The 100 most recent, with who recorded them.",
+    "noHistory": "No movements yet.",
+    "date": "Date",
+    "movement": "Type",
+    "quantity": "Quantity",
+    "lot": "Lot",
+    "patient": "Patient",
+    "patientHidden": "Patient",
+    "user": "Recorded by",
+    "receiveTitle": "Receive lot",
+    "receiveDescription": "Number and expiration date as printed on the package.",
+    "quantityIn": "Quantity ({unit})",
+    "unitCost": "Cost per unit (R$)",
+    "supplier": "Supplier",
+    "notes": "Note",
+    "receive": "Record lot",
+    "countTitle": "Inventory adjustment",
+    "countDescription": "Counted and the balance doesn't match? Enter the actual lot balance.",
+    "counted": "Counted balance",
+    "countReason": "Note (optional)",
+    "saveCount": "Save adjustment",
+    "countSaved": "Adjustment recorded.",
+    "outTitle": "Loss or sale",
+    "outTitleLoss": "Loss",
+    "outDescription": "Record what was discarded: expired, leftover in vial or broken.",
+    "outDescriptionResale": "Record a sale to the patient or what was discarded.",
+    "outKind": "Type",
+    "quantityOut": "Quantity",
+    "reason": "Reason for loss",
+    "reasonSale": "Not applicable (sale)",
+    "reasonPick": "Choose the reason",
+    "saveOut": "Record",
+    "lossSaved": "Loss recorded.",
+    "saleSaved": "Sale recorded.",
+    "lotOption": "{lot} · expires {date} · {quantity}",
+    "infoTitle": "Details",
+    "anvisaRegistry": "ANVISA registration",
+    "minStock": "Minimum stock",
+    "openShelfLife": "Shelf life after opening",
+    "hours": "{count, plural, one {# hour} other {# hours}}",
+    "notInformed": "Not provided",
+    "notApplicable": "Doesn't apply"
+  },
+  "lot": {
+    "title": "Lot {lot} · who received it",
+    "description": "Lot traceability: who it was applied to, when and how much. Use it for recalls, adverse events or inspections.",
+    "product": "Product",
+    "anvisa": "ANVISA {registry}",
+    "expiresAt": "Expires",
+    "opened": "Opened {opened}",
+    "openedUntil": "Opened {opened}, good until {until}",
+    "balance": "Balance",
+    "received": "{quantity} received on {date}",
+    "patients": "Patients",
+    "used": "{quantity} applied",
+    "usesTitle": "Applications of this lot",
+    "usesDescription": "Each use recorded in an appointment, with the patient and session.",
+    "restricted": "Patient names are visible only to clinical staff (confidentiality and LGPD).",
+    "usesCount": "{count, plural, one {# application} other {# applications}} in {patients, plural, one {# patient} other {# patients}}.",
+    "noUsesTitle": "No applications recorded",
+    "noUsesDescription": "When this lot is used in an appointment, the patient and session show up here.",
+    "patient": "Patient",
+    "date": "Recorded",
+    "session": "Session",
+    "quantity": "Quantity",
+    "noPatient": "No patient",
+    "openSession": "Open session",
+    "summaryTitle": "Lot summary"
+  },
+  "dashboard": {
+    "title": "{count, plural, one {Inventory · # alert} other {Inventory · # alerts}}",
+    "low": "{count, plural, other {# below minimum}}",
+    "expiring": "{count, plural, one {# lot expiring within 30 days} other {# lots expiring within 30 days}}",
+    "expired": "{count, plural, one {# lot expired or expired after opening} other {# lots expired or expired after opening}}",
+    "open": "View inventory"
+  }
+}

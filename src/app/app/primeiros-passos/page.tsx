@@ -6,7 +6,8 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { onboardingProgress } from "@/lib/onboarding";
-import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
+import { libraryFor } from "@/lib/anamnesis-library";
+import { ALL_COUNCILS, ALL_PROFESSIONAL_TYPES, AREAS, areaOf, professionalDefaults } from "@/lib/areas";
 import { UFS } from "@/lib/labels";
 import { getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
@@ -21,17 +22,10 @@ import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-// Tipo de profissional e conselho sugeridos pelo tipo de atendimento do cadastro.
-const professionalDefaults = (segment: string) => {
-  if (segment === "solo_psicanalista") return { type: "psicanalista", council: "sem_registro" };
-  if (segment === "odonto" || segment === "ubs") return { type: "dentista", council: "CRO" };
-  return { type: "psicologo", council: "CRP" };
-};
-
 const professionalSchema = z.object({
   fullName: z.string().trim().min(2),
-  professionalType: z.enum(["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"]),
-  councilType: z.enum(["CRP", "CRM", "CRO", "sem_registro"]),
+  professionalType: z.enum(ALL_PROFESSIONAL_TYPES),
+  councilType: z.enum(ALL_COUNCILS),
   councilNumber: z.string().trim().optional(),
   councilUF: z.string().regex(/^\d{2}$/).optional().or(z.literal("")),
 });
@@ -78,6 +72,8 @@ export default async function OnboardingPage() {
   ]);
   const done = Object.fromEntries(progress.steps.map((s) => [s.key, s.done]));
   const defaults = professionalDefaults(ctx.workspace.segment);
+  const area = areaOf(ctx.workspace.area);
+  const { professionalTypes, councils } = AREAS[area];
   const added = new Set(templates.map((t) => t.name));
   const t = await getTranslations("dashboard.onboarding");
   const label = labeler(await getTranslations("common.labels"));
@@ -153,7 +149,7 @@ export default async function OnboardingPage() {
             <div className="space-y-1">
               <Label htmlFor="professionalType">{t("profession")}</Label>
               <Select id="professionalType" name="professionalType" defaultValue={defaults.type}>
-                {["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"].map((p) => (
+                {professionalTypes.map((p) => (
                   <option key={p} value={p}>
                     {label("professionalType", p)}
                   </option>
@@ -163,10 +159,11 @@ export default async function OnboardingPage() {
             <div className="space-y-1">
               <Label htmlFor="councilType">{t("council")}</Label>
               <Select id="councilType" name="councilType" defaultValue={defaults.council}>
-                <option value="CRP">CRP</option>
-                <option value="CRM">CRM</option>
-                <option value="CRO">CRO</option>
-                <option value="sem_registro">{t("noCouncil")}</option>
+                {councils.map((c) => (
+                  <option key={c} value={c}>
+                    {c === "sem_registro" ? t("noCouncil") : c}
+                  </option>
+                ))}
               </Select>
             </div>
             <div className="space-y-1">
@@ -194,7 +191,7 @@ export default async function OnboardingPage() {
       <Step n={3} done={done.anamnese} title={t("step3")} labels={stepLabels} icon={<ClipboardList className="h-5 w-5" />}>
         <form action={addLibraryTemplatesAction} className="space-y-3">
           <div className="grid gap-2 sm:grid-cols-2">
-            {ANAMNESIS_LIBRARY.map((lib) => {
+            {libraryFor(area).map((lib) => {
               const isAdded = added.has(lib.name);
               return (
                 <label

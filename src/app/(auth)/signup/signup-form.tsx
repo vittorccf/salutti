@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { ACCOUNT_TYPES, SEGMENTS, type AccountType } from "@/lib/account";
+import { ACCOUNT_TYPES, type AccountType } from "@/lib/account";
+import { segmentsFor, type Area } from "@/lib/areas";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/i18n/client";
 import { signupAction } from "./_actions";
@@ -19,13 +20,15 @@ const ICONS: Record<AccountType, typeof UserRound> = { autonomo: UserRound, clin
 const segmentKey = (type: AccountType, value: string) => (type === "clinica" && value === "odonto" ? "odonto_clinica" : value);
 
 // Cadastro em duas partes: primeiro o tipo de conta (autônomo ou clínica), depois os campos que valem para ele.
-export function SignupForm() {
-  const [type, setType] = useState<AccountType | null>(null);
+// Na Salutti Estética o foco é a profissional autônoma: o tipo já vem escolhido (dá para trocar para clínica).
+export function SignupForm({ area = "mental" }: { area?: Area }) {
+  const [type, setType] = useState<AccountType | null>(area === "estetica" ? "autonomo" : null);
   const t = useTranslations("auth.signup.form");
   const labels = useTranslations("common.labels");
 
   return (
     <ActionForm action={signupAction} className="space-y-4">
+      <input type="hidden" name="area" value={area} />
       <fieldset className="space-y-2">
         <legend className="mb-2 text-sm font-medium">{t("accountTypeLegend")}</legend>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -95,10 +98,10 @@ export function SignupForm() {
           ) : null}
           <div className="space-y-2">
             <Label htmlFor="segment">{t("segment")}</Label>
-            <Select id="segment" name="segment" key={type} defaultValue={SEGMENTS[type][0].value}>
-              {SEGMENTS[type].map((s) => (
-                <option key={s.value} value={s.value}>
-                  {labels(`segmentOption.${segmentKey(type, s.value)}`)}
+            <Select id="segment" name="segment" key={type} defaultValue={segmentsFor(area, type)[0]}>
+              {segmentsFor(area, type).map((s) => (
+                <option key={s} value={s}>
+                  {labels(`segmentOption.${segmentKey(type, s)}`)}
                 </option>
               ))}
             </Select>
