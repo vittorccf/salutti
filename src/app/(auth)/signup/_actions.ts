@@ -12,11 +12,13 @@ import { isAccountType, segmentAllowed } from "@/lib/account";
 import { isArea } from "@/lib/areas";
 import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
 import { parseDateOnly } from "@/lib/dates";
+import { termsAcceptance } from "@/lib/legal";
+import { auditTermsAcceptance } from "@/lib/legal-acceptance";
 import { ContactError, validEmail } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
 
 // Erros de validação: o campo com problema vira a chave em auth.signup.errors (texto longo demais e demais casos: "invalid").
-const FIELD_ERRORS = ["accountType", "name", "password"] as const;
+const FIELD_ERRORS = ["accountType", "name", "password", "acceptTerms"] as const;
 
 const schema = z.object({
   accountType: z.string().refine(isAccountType),
@@ -27,6 +29,7 @@ const schema = z.object({
   area: z.string().refine(isArea).optional(),
   cnpj: z.string().trim().max(20).optional(),
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  acceptTerms: z.literal("on"),
 });
 
 export async function signupAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
@@ -71,7 +74,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
 
   const { user, workspace } = await db.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email, name: d.name, passwordHash: await hashPassword(d.password), birthDate },
+      data: { email, name: d.name, passwordHash: await hashPassword(d.password), birthDate, ...termsAcceptance() },
     });
     const workspace = await tx.workspace.create({
       data: {
@@ -99,6 +102,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
     entityId: workspace.id,
     metadata: { accountType, area, segment: d.segment },
   });
+  await auditTermsAcceptance(workspace.id, user.id, "signup");
 
   await createSession({ userId: user.id, email: user.email, name: user.name });
   setActiveWorkspaceCookie(workspace.id);

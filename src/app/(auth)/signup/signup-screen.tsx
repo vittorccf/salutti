@@ -2,6 +2,7 @@ import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { AreaTheme } from "@/components/brand/area-theme";
 import Link from "next/link";
+import { LegalLinks } from "@/components/legal/legal-page";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTranslations } from "@/i18n/server";
@@ -34,6 +35,7 @@ export async function SignupScreen({ area = "mental" }: { area?: Area }) {
           <p className="mt-2 text-center text-xs text-muted-foreground">
             {t("help")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
           </p>
+          <LegalLinks className="mt-2 text-center text-xs text-muted-foreground" />
         </CardContent>
       </Card>
     </main>

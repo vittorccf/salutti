@@ -3,6 +3,7 @@ import { PasswordInput } from "@/components/forms/password-input";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { AreaTheme } from "@/components/brand/area-theme";
 import Link from "next/link";
+import { LegalLinks } from "@/components/legal/legal-page";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -106,6 +107,7 @@ export async function LoginScreen({ area = "mental", searchParams }: { area?: Ar
           <p className="mt-2 text-center text-xs text-muted-foreground">
             {t("help")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
           </p>
+          <LegalLinks className="mt-2 text-center text-xs text-muted-foreground" />
         </CardContent>
       </Card>
     </main>

@@ -10,6 +10,7 @@ test("conta nova: cadastro → primeiros passos até 'Tudo pronto'", async ({ pa
   await page.locator("#passwordConfirm").fill("senha-segura-123");
   await page.locator("#workspaceName").fill("Espaço Marina");
   await page.locator("#segment").selectOption("solo_psicanalista");
+  await page.locator("#acceptTerms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
 
   // Cai direto nos primeiros passos, com o modelo do tipo de atendimento já criado.

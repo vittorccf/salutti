@@ -141,5 +141,13 @@
     "footer": "Salutti Estética · Gestão para profissionais de estética ·",
     "contact": "Fale connosco:",
     "otherArea": "Trabalha em saúde mental? Conheça a Salutti"
+  },
+  "legal": {
+    "home": "Página inicial da Salutti",
+    "updatedAt": "Última atualização: {date} (versão {version})",
+    "ptBrNotice": "Este documento é publicado em português do Brasil, que é a versão válida.",
+    "otherDocs": "Outros documentos",
+    "terms": "Termos de Utilização",
+    "privacy": "Política de Privacidade"
   }
 }

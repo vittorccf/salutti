@@ -1,6 +1,7 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
+import { LegalLinks } from "@/components/legal/legal-page";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -117,6 +118,7 @@ export default async function Home() {
             {t("esteticaLink")}
           </Link>
         </p>
+        <LegalLinks className="mt-2" />
       </footer>
     </main>
   );

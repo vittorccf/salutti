@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LegalLinks } from "@/components/legal/legal-page";
 import { ArrowRight, Banknote, CalendarCheck, Camera, FileSignature, Package, PackageCheck, Repeat, Sparkles } from "lucide-react";
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { AREAS } from "@/lib/areas";
@@ -119,6 +120,7 @@ export default async function EsteticaHome() {
             {t("otherArea")}
           </Link>
         </p>
+        <LegalLinks className="mt-2" />
       </footer>
     </main>
   );

@@ -20,6 +20,7 @@ import { AREAS, areaOf, moduleEnabled, type Module } from "@/lib/areas";
 import { listClientTickets } from "@/lib/support";
 import { TZ } from "@/lib/dates";
 import { getLocale } from "@/i18n/server";
+import { TermsUpdateBanner } from "./_components/legal/terms-update-banner";
 import { SupportWidget, type SupportTicketView } from "./_components/support/support-widget";
 
 // Título da aba pela marca do consultório ativo: "Salutti" ou "Salutti Estética".
@@ -131,6 +132,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <UserMenu name={ctx.user.name} email={ctx.user.email} avatarUrl={avatarUrl} />
           </div>
         </header>
+        <TermsUpdateBanner termsVersion={ctx.user.termsVersion} />
         <div className="p-4 md:p-6">{children}</div>
       </main>
       <SupportWidget tickets={supportTickets} appVersion={process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)} />

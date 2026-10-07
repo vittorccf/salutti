@@ -29,6 +29,9 @@ model User {
   // Idioma da interface: pt-BR | pt-PT | es | en. Nulo = automático (cookie ou idioma do navegador).
   locale        String?
   createdAt     DateTime      @default(now())
+  // Aceite dos Termos de Uso e da Política de Privacidade (src/lib/legal.ts): quando e qual versão.
+  termsAcceptedAt DateTime?
+  termsVersion    String?
   // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
   // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.
   totpSecret         String?

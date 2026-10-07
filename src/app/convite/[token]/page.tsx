@@ -14,10 +14,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { TermsCheckbox, legalLinks } from "@/components/legal/terms-checkbox";
+import { termsAcceptance } from "@/lib/legal";
+import { auditTermsAcceptance } from "@/lib/legal-acceptance";
 
 export const dynamic = "force-dynamic";
 
-const ERRORS = ["dados", "email", "senha"] as const;
+const ERRORS = ["dados", "email", "senha", "termos"] as const;
 
 async function finish(invitationId: string, workspaceId: string, userId: string, role: string) {
   await acceptInvitation(invitationId, userId);
@@ -48,10 +51,17 @@ async function createAccountAction(formData: FormData) {
     .safeParse({ name: formData.get("name"), password: formData.get("password") });
   if (!parsed.success) redirect(`/convite/${token}?erro=dados`);
   if (formData.get("passwordConfirm") !== parsed.data.password) redirect(`/convite/${token}?erro=senha`);
+  if (formData.get("acceptTerms") !== "on") redirect(`/convite/${token}?erro=termos`);
   if (await db.user.findFirst({ where: { email: { equals: inv.email, mode: "insensitive" } } })) redirect(`/convite/${token}`);
   const user = await db.user.create({
-    data: { email: inv.email.toLowerCase(), name: parsed.data.name, passwordHash: await hashPassword(parsed.data.password) },
+    data: {
+      email: inv.email.toLowerCase(),
+      name: parsed.data.name,
+      passwordHash: await hashPassword(parsed.data.password),
+      ...termsAcceptance(),
+    },
   });
+  await auditTermsAcceptance(inv.workspaceId, user.id, "invite");
   await createSession({ userId: user.id, email: user.email, name: user.name });
   await finish(inv.id, inv.workspaceId, user.id, inv.role);
 }
@@ -119,6 +129,7 @@ export default async function InvitePage({
                   <Input id="name" name="name" required autoComplete="name" />
                 </div>
                 <NewPasswordFields label={t("password")} className="sm:grid-cols-1" />
+                <TermsCheckbox label={t.rich("acceptTerms", legalLinks)} />
                 <Button type="submit" className="w-full">{t("createAndJoin")}</Button>
               </form>
             )}
