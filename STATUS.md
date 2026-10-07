@@ -1,6 +1,19 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-07. A seção "Termos de Uso e Política de Privacidade" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-07. A seção "Entrar com Google" é a mais recente; as demais ficam como histórico.
+
+## Entrar com Google (2026-10-07) — branch `feat/login-google` (sobre `feat/termos-privacidade`)
+
+Botão "Continuar com Google" no login, no cadastro (das duas áreas) e no convite. Mesmo cliente OAuth do Meet, outro fluxo:
+`/api/auth/google/iniciar` → Google (`openid email profile`, PKCE, sem token guardado) → `/api/auth/google/retorno`.
+Conta com o `sub` do Google entra direto; conta com o mesmo e-mail **confirmado pelo Google** é vinculada e entra; sem conta,
+a identidade vai para um cookie assinado de 30 min (`salutti_google_pending`) e o cadastro (ou o convite) segue com o e-mail
+fixo, sem senha e com o aceite dos termos. 2FA continua valendo depois do Google. `User.passwordHash` passou a ser opcional;
+`User.googleSub` (único) e `googleEmail` guardam o vínculo. Em Conta → Segurança: vincular e desvincular (só quem tem senha).
+O login não pede o Agenda: o Meet continua sendo a conexão à parte em Ajustes. Credenciais na Vercel (Production) desde
+2026-10-07: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `APP_URL`.
+
+**Ficou para depois:** "definir senha" para conta criada só com Google (hoje ela entra só pelo Google); recuperação de senha.
 
 ## Termos de Uso e Política de Privacidade (2026-10-07) — branch `feat/termos-privacidade`
 

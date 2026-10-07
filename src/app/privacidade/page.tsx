@@ -101,11 +101,21 @@ export default function PrivacyPage() {
 
       <Section id="google" title="5. Dados do Google">
         <p>
-          A conexão com o Google é opcional e feita por cada profissional em Ajustes. Pedimos apenas: identificação
-          básica (<code>openid</code> e <code>email</code>), para mostrar qual conta está conectada, e acesso aos eventos
-          da sua Agenda (<code>calendar.events</code>), para criar, atualizar e apagar o evento com link do Google Meet
-          dos atendimentos que você agendar na Salutti.
+          O uso do Google é opcional e tem duas finalidades separadas:
         </p>
+        <List>
+          <li>
+            <strong>Entrar com Google</strong> (login e cadastro): pedimos só a identificação básica (<code>openid</code>,{" "}
+            <code>email</code> e <code>profile</code>) para reconhecer sua conta e preencher nome e e-mail no cadastro.
+            Guardamos o identificador da conta Google e o e-mail; nenhum token de acesso é guardado.
+          </li>
+          <li>
+            <strong>Google Meet</strong>: a conexão é feita por cada profissional em Ajustes. Pedimos a identificação
+            básica (<code>openid</code> e <code>email</code>), para mostrar qual conta está conectada, e acesso aos eventos
+            da sua Agenda (<code>calendar.events</code>), para criar, atualizar e apagar o evento com link do Google Meet
+            dos atendimentos que você agendar na Salutti.
+          </li>
+        </List>
         <List>
           <li>Não lemos, copiamos nem guardamos os demais eventos da sua agenda.</li>
           <li>A credencial de acesso fica cifrada no banco e é apagada quando você desconecta a conta em Ajustes. Você também pode revogar o acesso em <a href="https://myaccount.google.com/permissions" className="text-brand underline-offset-4 hover:underline" rel="noopener noreferrer" target="_blank">myaccount.google.com/permissions</a>.</li>

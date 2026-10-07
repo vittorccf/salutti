@@ -8,16 +8,18 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { createSession, verifyPassword, getSession, setActiveWorkspaceCookie, startTwoFactor } from "@/lib/auth";
+import { completeLogin, verifyPassword, getSession } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getTranslations } from "@/i18n/server";
 import { AREAS, areaOf, type Area } from "@/lib/areas";
+import { googleOAuthConfigured } from "@/lib/providers/google-login";
+import { GoogleButton, OrDivider } from "@/components/forms/google-button";
 
 // Erros vindos por ?error= (código curto; o texto fica nas mensagens auth.login.errors).
-const ERRORS = ["dados", "credenciais", "expirou"] as const;
+const ERRORS = ["dados", "credenciais", "expirou", "google", "googleEmail"] as const;
 
 const schema = z.object({
   // Aceita email OU nome de usuário (ex.: "admin"). O valor é casado contra a coluna `email`.
@@ -42,19 +44,8 @@ async function loginAction(formData: FormData) {
   if (!user) return redirect(`${loginPath}?error=credenciais`);
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!ok) return redirect(`${loginPath}?error=credenciais`);
-
-  // Com verificação em duas etapas, a sessão só nasce depois do código.
-  if (user.totpEnabledAt) {
-    await startTwoFactor(user.id);
-    redirect("/login/verificar");
-  }
-
-  await createSession({ userId: user.id, email: user.email, name: user.name });
-  const firstWs = user.memberships[0];
-  if (firstWs) setActiveWorkspaceCookie(firstWs.workspaceId);
-  // Volta ao convite que mandou para o login (só caminhos internos de convite, nunca uma URL externa).
-  const next = String(formData.get("next") ?? "");
-  redirect(/^\/convite\/[A-Za-z0-9_-]+$/.test(next) ? next : "/app");
+  // Volta ao convite que mandou para o login.
+  await completeLogin(user, formData.get("next"));
 }
 
 export type LoginSearchParams = Promise<{ error?: string; next?: string }>;
@@ -66,6 +57,8 @@ export async function LoginScreen({ area = "mental", searchParams }: { area?: Ar
   const params = await searchParams;
   const t = await getTranslations("auth.login");
   const error = ERRORS.find((e) => e === params.error);
+  const tg = await getTranslations("auth.google");
+  const googleHref = `/api/auth/google/iniciar?area=${area}${params.next ? `&next=${encodeURIComponent(params.next)}` : ""}`;
 
   return (
     <main data-area={area} className="ds2-glow min-h-screen grid place-items-center p-4">
@@ -80,6 +73,12 @@ export async function LoginScreen({ area = "mental", searchParams }: { area?: Ar
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
+          {googleOAuthConfigured() ? (
+            <div className="mb-4 space-y-4">
+              <GoogleButton href={googleHref} label={tg("continue")} />
+              <OrDivider label={tg("or")} />
+            </div>
+          ) : null}
           <form action={loginAction} className="space-y-4">
             <input type="hidden" name="area" value={area} />
             {params.next ? <input type="hidden" name="next" value={params.next} /> : null}
