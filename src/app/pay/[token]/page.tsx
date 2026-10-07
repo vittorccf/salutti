@@ -47,7 +47,7 @@ export default async function PublicPaymentPage({
   const label = labeler(await getTranslations("common.labels"));
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-accent/20 to-background grid place-items-center p-4">
+    <main className="ds2-glow min-h-screen grid place-items-center p-4">
       <Card className="w-full max-w-[440px]">
         <CardHeader className="text-center">
           <BrandLogo variant="symbol" height={48} className="mx-auto" />
@@ -55,28 +55,28 @@ export default async function PublicPaymentPage({
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-md border bg-card p-4 text-sm">
+          <div className="rounded-md border p-4 text-sm">
             <p>{t.rich("chargeFor", { name: charge.patient.fullName, strong: (chunks) => <strong>{chunks}</strong> })}</p>
             <p>{t("dueDate", { date: f.date(charge.dueDate) })}</p>
-            <p className="text-xl font-bold mt-2 tabular-nums">{f.money(charge.amount)}</p>
+            <p className="text-page-title mt-2 tabular-nums">{f.money(charge.amount)}</p>
             <p className="text-muted-foreground">{t("method", { method: label("paymentMethod", charge.method ?? "pix") })}</p>
           </div>
           {charge.pixCopyPaste ? (
             <div>
               <p className="text-xs text-muted-foreground">{t("pixCopyPaste")}</p>
-              <code className="block break-all rounded-md bg-muted/30 p-2 text-xs">
+              <code className="block break-all rounded-md bg-muted p-2 text-xs">
                 {charge.pixCopyPaste}
               </code>
             </div>
           ) : null}
           {charge.status === "paid" || ok ? (
-            <div className="rounded-md bg-success/10 text-success-strong p-3 text-sm flex items-center gap-2" role="status">
+            <div className="rounded-md bg-success/[.12] p-3 text-sm text-success-strong flex items-center gap-2" role="status">
               <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden /> {t("confirmed")}
             </div>
           ) : (
             <form action={simulatePaymentAction}>
               <input type="hidden" name="token" value={token} />
-              <Button type="submit" className="bg-primary-strong hover:bg-primary-strong/90 w-full">{t("simulate")}</Button>
+              <Button type="submit" className="w-full">{t("simulate")}</Button>
             </form>
           )}
           <p className="text-xs text-muted-foreground text-center">

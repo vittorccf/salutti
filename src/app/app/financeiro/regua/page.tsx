@@ -69,8 +69,8 @@ export default async function DunningPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquareText className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+        <h1 className="text-page-title flex items-center gap-2">
+          <MessageSquareText className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </header>

@@ -168,7 +168,7 @@ export default async function DashboardPage() {
       </header>
 
       {!onboarding.complete ? (
-        <Card className="border-primary/30">
+        <Card className="border-brand/30">
           <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold">
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <CakeSlice className="h-5 w-5 text-primary-strong" aria-hidden /> {tb("title")}
+              <CakeSlice className="h-5 w-5 text-brand" aria-hidden /> {tb("title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
               {birthdays.map((b) => (
                 <li
                   key={`${b.kind}-${b.id}`}
-                  className={`flex items-center justify-between gap-3 rounded-md border p-3 text-sm ${b.daysUntil === 0 ? "border-primary/40 bg-accent/40" : ""}`}
+                  className={`flex items-center justify-between gap-3 rounded-md border p-3 text-sm ${b.daysUntil === 0 ? "border-brand/40 bg-accent/40" : ""}`}
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
                       {b.kind !== "patient" && b.turning > 0 ? ` · ${tb("turning", { age: b.turning })}` : ""}
                     </p>
                   </div>
-                  <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-primary-strong" : "text-muted-foreground"}`}>
+                  <span className={`shrink-0 text-xs font-medium ${b.daysUntil === 0 ? "text-brand" : "text-muted-foreground"}`}>
                     {whenLabel(b.daysUntil)}
                   </span>
                 </li>
@@ -268,12 +268,12 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* IA Insights */}
-      <Card>
+      {/* IA Insights: card do Saluttin com a borda em degradê e o ponto pêssego como indicador */}
+      <Card className="border-saluttin">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-strong" aria-hidden /> {t("insightsTitle")}
+              <Sparkles className="h-5 w-5 text-brand" aria-hidden /> {t("insightsTitle")}
               <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
             </CardTitle>
             <CardDescription>{t("insightsDescription")}</CardDescription>
@@ -299,7 +299,7 @@ export default async function DashboardPage() {
                       ? "bg-destructive/10 text-destructive-strong"
                       : insight.severity === "warn"
                         ? "bg-warning/10 text-warning-strong"
-                        : "bg-primary/10 text-primary-strong"
+                        : "bg-accent text-accent-foreground"
                   }`}
                 >
                   {insight.kind === "revenue_drop" ? (
@@ -322,7 +322,7 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary-strong" aria-hidden /> {t("upcomingTitle")}
+            <Clock className="h-5 w-5 text-brand" aria-hidden /> {t("upcomingTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -383,13 +383,13 @@ const KpiCard = ({
         <p className="text-sm text-muted-foreground">{label}</p>
         <div
           className={`grid h-8 w-8 place-content-center rounded-md ${
-            tone === "warn" ? "bg-warning/10 text-warning-strong" : "bg-primary/10 text-primary-strong"
+            tone === "warn" ? "bg-warning/10 text-warning-strong" : "bg-accent text-accent-foreground"
           }`}
         >
           {icon}
         </div>
       </div>
-      <p className="mt-3 text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
       {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
     </CardContent>
   </Card>

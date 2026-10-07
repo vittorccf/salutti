@@ -78,25 +78,25 @@ export default async function Home() {
 
       <section className="container pb-20 grid gap-4 md:grid-cols-3">
         {features.map((f) => (
-          <Card key={f.key} className="border-primary/10">
+          <Card key={f.key}>
             <CardContent className="p-6">
-              <div className="grid h-10 w-10 place-content-center rounded-lg bg-accent text-accent-foreground">
+              <div className="grid h-10 w-10 place-content-center rounded-md bg-accent text-accent-foreground">
                 {f.icon}
               </div>
-              <h3 className="mt-4 font-semibold">{t(`features.${f.key}.title`)}</h3>
+              <h3 className="text-card-title mt-4">{t(`features.${f.key}.title`)}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{t(`features.${f.key}.desc`)}</p>
             </CardContent>
           </Card>
         ))}
       </section>
 
-      <section className="bg-primary-strong text-primary-foreground py-16">
+      <section className="bg-primary py-16 text-primary-foreground">
         <div className="container grid gap-8 md:grid-cols-3">
           {differentiators.map((d) => (
             <div key={d}>
               <Activity className="h-6 w-6" aria-hidden />
-              <h3 className="mt-3 text-lg font-semibold">{t(`differentiators.${d}.title`)}</h3>
-              <p className="mt-1 text-sm opacity-90">{t(`differentiators.${d}.desc`)}</p>
+              <h3 className="text-card-title mt-3">{t(`differentiators.${d}.title`)}</h3>
+              <p className="mt-1 text-sm opacity-80">{t(`differentiators.${d}.desc`)}</p>
             </div>
           ))}
         </div>
@@ -105,12 +105,12 @@ export default async function Home() {
       <footer className="container py-10 text-sm text-muted-foreground text-center">
         <p>
           {t("footer")}{" "}
-          <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
+          <Link href="/login" className="text-brand underline-offset-4 hover:underline">
             {t("login")}
           </Link>
         </p>
         <p className="mt-2">
-          {t("contact")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
+          {t("contact")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
         </p>
       </footer>
     </main>

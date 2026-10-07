@@ -164,8 +164,8 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Stethoscope className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+        <h1 className="text-page-title flex items-center gap-2">
+          <Stethoscope className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
           {autonomo ? t("introAutonomo") : t("introClinic")}
@@ -302,7 +302,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                 <PhoneInput name="phone" id="phone" />
               </div>
               <div className="rounded-md border p-2 text-sm flex items-center gap-2">
-                <input id="noCouncil" name="noCouncil" type="checkbox" className="h-4 w-4 accent-primary" />
+                <input id="noCouncil" name="noCouncil" type="checkbox" className="h-4 w-4 accent-brand" />
                 <Label htmlFor="noCouncil">{t("noCouncil")}</Label>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">

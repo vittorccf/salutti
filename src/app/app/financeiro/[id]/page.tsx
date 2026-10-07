@@ -159,7 +159,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
     <div className="max-w-3xl space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{t("title", { amount: f.money(charge.amount) })}</h1>
+          <h1 className="text-page-title">{t("title", { amount: f.money(charge.amount) })}</h1>
           <p className="text-sm text-muted-foreground">
             {charge.patient.fullName} · {t("due", { date: f.date(charge.dueDate) })} ·{" "}
             <StatusBadge kind="charge" status={chargeDisplayStatus(charge.status, charge.dueDate)} />
@@ -203,7 +203,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             {charge.appointment ? (
               <p className="text-sm">
                 {t("relatedTo")}{" "}
-                <Link className="text-primary-strong underline-offset-4 hover:underline" href={`/app/agenda/${charge.appointment.id}`}>
+                <Link className="text-brand underline-offset-4 hover:underline" href={`/app/agenda/${charge.appointment.id}`}>
                   {t("sessionOf", { date: f.dateTime(charge.appointment.startsAt) })}
                 </Link>
               </p>
@@ -219,7 +219,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             {charge.paymentLink ? (
               <div>
                 <p className="text-sm font-semibold">{t("paymentLink")}</p>
-                <Link className="break-all text-sm text-primary-strong underline-offset-4 hover:underline" href={`/pay/${charge.paymentLink.token}`} target="_blank">
+                <Link className="break-all text-sm text-brand underline-offset-4 hover:underline" href={`/pay/${charge.paymentLink.token}`} target="_blank">
                   {`/pay/${charge.paymentLink.token}`}
                 </Link>
               </div>
@@ -239,7 +239,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             {charge.receipt ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <ReceiptIcon className="h-4 w-4 text-primary-strong" /> {t("receipt", { number: charge.receipt.receiptNumber })}
+                  <ReceiptIcon className="h-4 w-4 text-brand" /> {t("receipt", { number: charge.receipt.receiptNumber })}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {t("receitaSaude")} <StatusBadge kind="receitaSaude" status={charge.receipt.receitaSaudeStatus} /> · {charge.receipt.receitaSaudeId}
@@ -251,7 +251,7 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
             {charge.invoice ? (
               <div>
                 <p className="font-medium flex items-center gap-2">
-                  <FileSignature className="h-4 w-4 text-primary-strong" /> {t("invoice", { number: charge.invoice.invoiceNumber })}
+                  <FileSignature className="h-4 w-4 text-brand" /> {t("invoice", { number: charge.invoice.invoiceNumber })}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <StatusBadge kind="invoice" status={charge.invoice.issStatus} /> · ISS {charge.invoice.serviceCode}

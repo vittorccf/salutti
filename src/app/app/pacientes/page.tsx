@@ -54,8 +54,8 @@ export default async function PatientsPage({
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+          <h1 className="text-page-title flex items-center gap-2">
+            <Users className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
           </h1>
           <p className="text-muted-foreground text-sm">
             {q ? t("resultsFor", { count: patients.length, query: q }) : tc("patients", { count: patients.length })}

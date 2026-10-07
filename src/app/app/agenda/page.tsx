@@ -47,7 +47,7 @@ export default async function AgendaPage({
     <div className="space-y-6">
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <h1 className="text-page-title">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
             {t("weekOf", { date: weekOfLabel(f.locale, weekStart) })} ·{" "}
             {tc("count.sessions", { count: appointments.length })}
@@ -77,7 +77,7 @@ export default async function AgendaPage({
           const dayAppointments = appointments.filter((a) => isSameDaySP(a.startsAt, day));
           const isToday = isSameDaySP(day, new Date());
           return (
-            <Card key={day.toISOString()} className={isToday ? "border-primary/40" : ""}>
+            <Card key={day.toISOString()} className={isToday ? "border-brand/40" : ""}>
               <CardHeader className="p-3">
                 <CardTitle className="text-sm flex items-center justify-between">
                   <span>{t("dayLabel", dayLabel(f.locale, day))}</span>
@@ -92,7 +92,7 @@ export default async function AgendaPage({
                     <Link
                       key={a.id}
                       href={`/app/agenda/${a.id}`}
-                      className="block rounded-md border bg-card p-2 text-xs hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="block rounded-md border border-brand/25 bg-accent/40 p-2 text-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <p className="font-semibold tabular-nums">{f.time(a.startsAt)}</p>
                       <p className="truncate">{a.patient.fullName}</p>
@@ -100,7 +100,7 @@ export default async function AgendaPage({
                       <div className="mt-1 flex justify-between items-center">
                         <StatusBadge kind="appointment" status={a.status} />
                         {a.modality === "online" ? (
-                          <Video className="h-3.5 w-3.5 text-primary-strong" aria-label={label("modality", "online")} role="img" />
+                          <Video className="h-3.5 w-3.5 text-brand" aria-label={label("modality", "online")} role="img" />
                         ) : null}
                       </div>
                     </Link>

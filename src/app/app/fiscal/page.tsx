@@ -34,8 +34,8 @@ export default async function FiscalPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileSignature className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+        <h1 className="text-page-title flex items-center gap-2">
+          <FileSignature className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </header>
@@ -59,7 +59,7 @@ export default async function FiscalPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <ReceiptIcon className="h-5 w-5 text-primary-strong" aria-hidden /> {t("receipts")}
+                <ReceiptIcon className="h-5 w-5 text-brand" aria-hidden /> {t("receipts")}
               </CardTitle>
               <CardDescription>{t("receiptsDescription")}</CardDescription>
             </div>
@@ -101,7 +101,7 @@ export default async function FiscalPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary-strong" aria-hidden /> {t("nfse")}
+              <Building2 className="h-5 w-5 text-brand" aria-hidden /> {t("nfse")}
             </CardTitle>
             <CardDescription>{t("nfseDescription")}</CardDescription>
           </CardHeader>
@@ -143,7 +143,7 @@ export default async function FiscalPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary-strong" aria-hidden /> {t("certificate")}
+            <ShieldCheck className="h-5 w-5 text-brand" aria-hidden /> {t("certificate")}
           </CardTitle>
           <CardDescription>{t("certificateDescription")}</CardDescription>
         </CardHeader>

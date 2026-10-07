@@ -41,8 +41,8 @@ export default async function SaluttinPage() {
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+          <h1 className="text-page-title flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {t("intro")}
@@ -55,11 +55,14 @@ export default async function SaluttinPage() {
         </form>
       </header>
 
-      <Card>
+      <Card className="border-saluttin">
         <CardContent className="p-4 text-sm flex items-start gap-3">
-          <Brain className="h-5 w-5 shrink-0 text-primary-strong mt-0.5" aria-hidden />
+          <Brain className="h-5 w-5 shrink-0 text-brand mt-0.5" aria-hidden />
           <div>
-            <p className="font-semibold">{t("watchTitle")}</p>
+            <p className="flex items-center gap-2 font-semibold">
+              {t("watchTitle")}
+              <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
+            </p>
             <ul className="mt-1 list-disc pl-4 text-muted-foreground">
               <li>{t.rich("watchRevenue", { strong })}</li>
               <li>{t.rich("watchOverdue", { strong })}</li>

@@ -64,8 +64,8 @@ export default async function FinancialPage() {
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Banknote className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+          <h1 className="text-page-title flex items-center gap-2">
+            <Banknote className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>

@@ -77,7 +77,7 @@ export default async function VerifyTwoFactorPage({ searchParams }: { searchPara
   const message = code ? t(`errors.${code}`, { minutes: LOCK_MINUTES }) : null;
 
   return (
-    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-accent/30 to-background p-4">
+    <main className="min-h-screen ds2-glow grid place-items-center p-4">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <BrandLogo variant="symbol" height={48} className="mx-auto" />
@@ -110,7 +110,7 @@ export default async function VerifyTwoFactorPage({ searchParams }: { searchPara
           </form>
           <p className="mt-4 text-center text-xs text-muted-foreground">
             {t("noPhone")}{" "}
-            <Link href="/login" className="text-primary-strong underline-offset-4 hover:underline">
+            <Link href="/login" className="text-brand underline-offset-4 hover:underline">
               {t("back")}
             </Link>
           </p>

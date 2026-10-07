@@ -126,8 +126,8 @@ export default async function LgpdPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-primary-strong" aria-hidden /> {t("title")}
+        <h1 className="text-page-title flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6 text-brand" aria-hidden /> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
           {t("intro")}
@@ -138,7 +138,7 @@ export default async function LgpdPage() {
         <CardHeader>
           <CardTitle>{t("rightsTitle")}</CardTitle>
           <CardDescription>
-            {t("rightsDescription")} {t("platformContact")} <a href={supportMailto()} className="text-primary-strong underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
+            {t("rightsDescription")} {t("platformContact")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 md:grid-cols-3 text-sm">

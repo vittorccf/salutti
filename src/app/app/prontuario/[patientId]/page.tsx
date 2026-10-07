@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
 import { FilePlus2, FileSignature, Sparkles, ShieldCheck } from "lucide-react";
@@ -35,7 +36,7 @@ export default async function ProntuarioPatientPage({
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{t("title", { name: patient.fullName })}</h1>
+          <h1 className="text-page-title">{t("title", { name: patient.fullName })}</h1>
           <p className="text-sm text-muted-foreground">{t("subtitle", { count: patient.clinicalNotes.length })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -54,13 +55,11 @@ export default async function ProntuarioPatientPage({
 
       <div className="space-y-4">
         {patient.clinicalNotes.length === 0 ? (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Sparkles className="mx-auto h-6 w-6 text-primary-strong" aria-hidden />
-              <p className="mt-3 font-semibold">{t("emptyTitle")}</p>
-              <p className="text-sm text-muted-foreground">{t("emptyDescription")}</p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<Sparkles className="h-6 w-6" aria-hidden />}
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+          />
         ) : (
           patient.clinicalNotes.map((n) => (
             <Card key={n.id}>
@@ -84,7 +83,7 @@ export default async function ProntuarioPatientPage({
                 </article>
                 {n.aiSummary ? (
                   <div className="rounded-md border bg-accent/20 p-3 text-sm">
-                    <p className="font-semibold flex items-center gap-2 text-primary-strong">
+                    <p className="font-semibold flex items-center gap-2 text-brand">
                       <Sparkles className="h-4 w-4" aria-hidden /> {t("aiSummary")}
                     </p>
                     <pre className="mt-2 whitespace-pre-wrap font-sans text-sm">{n.aiSummary}</pre>
@@ -98,7 +97,7 @@ export default async function ProntuarioPatientPage({
                   </div>
                 ) : null}
                 <div className="rounded-md border-dashed border bg-muted/30 p-3 text-xs flex items-start gap-2">
-                  <ShieldCheck className="h-4 w-4 text-primary-strong shrink-0 mt-0.5" />
+                  <ShieldCheck className="h-4 w-4 text-brand shrink-0 mt-0.5" />
                   <p className="text-muted-foreground">
                     {t.rich("security", { hash: n.signedHash ?? "-", code: (chunks) => <code>{chunks}</code> })}
                   </p>

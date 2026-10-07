@@ -45,11 +45,12 @@ export const SidebarNav = ({ clinical = true }: { clinical?: boolean }) => {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              active && "bg-accent font-medium text-accent-foreground",
+              "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              // Item ativo: fundo accent, texto e ícone na cor de identidade (brand).
+              active && "bg-accent font-medium text-brand hover:text-brand",
             )}
           >
-            <Icon className={cn("h-4 w-4", active ? "text-accent-foreground" : "text-muted-foreground")} />
+            <Icon className={cn("h-5 w-5 shrink-0", active ? "text-brand" : "text-muted-foreground")} />
             {t(item.label)}
           </Link>
         );
