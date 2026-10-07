@@ -1,4 +1,5 @@
 "use client";
+import { NewPasswordFields } from "@/components/forms/password-input";
 import { useState } from "react";
 import { Building2, UserRound } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
@@ -72,15 +73,10 @@ export function SignupForm() {
               <EmailInput id="email" name="email" required />
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="password">{t("password")}</Label>
-              <Input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" placeholder={t("passwordPlaceholder")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="birthDate">{t("birthDate")}</Label>
-              <Input id="birthDate" name="birthDate" type="date" />
-            </div>
+          <NewPasswordFields label={t("password")} placeholder={t("passwordPlaceholder")} />
+          <div className="space-y-2">
+            <Label htmlFor="birthDate">{t("birthDate")}</Label>
+            <Input id="birthDate" name="birthDate" type="date" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="workspaceName">{type === "clinica" ? t("clinicName") : t("officeName")}</Label>

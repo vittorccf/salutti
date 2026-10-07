@@ -7,7 +7,14 @@
     "newSession": "Nova sessão",
     "today": "Hoje",
     "empty": "Sem sessões",
-    "dayLabel": "{weekday}, {day}"
+    "dayLabel": "{weekday}, {day}",
+    "viewLabel": "Visualização da agenda",
+    "viewWeek": "Semana",
+    "viewMonth": "Mês",
+    "previousMonth": "Mês anterior",
+    "nextMonth": "Mês seguinte",
+    "more": "+{count} {count, plural, one {sessão} other {sessões}}",
+    "openWeekOf": "Ver a semana de {date}"
   },
   "form": {
     "noProfessionalTitle": "Nenhum profissional registado",

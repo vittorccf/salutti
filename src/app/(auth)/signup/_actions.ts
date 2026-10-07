@@ -36,6 +36,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
     return { erro: t(`errors.${field ?? "invalid"}`) };
   }
   const d = parsed.data;
+  if (formData.get("passwordConfirm") !== d.password) return { erro: (await getTranslations("common.password"))("mismatch") };
   const accountType = d.accountType as "autonomo" | "clinica";
   if (!segmentAllowed(accountType, d.segment)) return { erro: t("errors.segment") };
 

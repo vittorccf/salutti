@@ -9,6 +9,7 @@ async function signup(page: Page, email: string) {
   await page.locator("#name").fill("Conta 2FA");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill(PASSWORD);
+  await page.locator("#passwordConfirm").fill(PASSWORD);
   await page.locator("#workspaceName").fill("Consultório 2FA");
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/primeiros-passos/);

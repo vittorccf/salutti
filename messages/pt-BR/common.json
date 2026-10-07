@@ -244,5 +244,11 @@
     "label": "Idioma",
     "auto": "Automático (idioma do navegador)",
     "hint": "Vale para todo o sistema. Valores continuam em reais (R$)."
+  },
+  "password": {
+    "show": "Mostrar senha",
+    "hide": "Ocultar senha",
+    "confirm": "Confirme a senha",
+    "mismatch": "As senhas não conferem."
   }
 }

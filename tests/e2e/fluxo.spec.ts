@@ -37,6 +37,11 @@ test("profissional → paciente → sessão online com Meet → cobrança paga",
   await page.goto("/app/agenda?week=2026-11-09");
   await expect(page.getByText("Terça, 10")).toBeVisible();
   await expect(page.getByRole("link", { name: /15:00.*Paciente Fluxo E2E/ })).toBeVisible();
+
+  // Visão mensal: a mesma sessão no dia 10 de novembro (primeiro nome na grade).
+  await page.getByRole("link", { name: "Mês" }).click();
+  await expect(page).toHaveURL(/view=month&month=2026-11/);
+  await expect(page.getByRole("link", { name: /15:00 Paciente/ })).toBeVisible();
 });
 
 test("sessão online sem link: gerar link do Zoom depois", async ({ page }) => {

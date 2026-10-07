@@ -244,5 +244,11 @@
     "label": "Idioma",
     "auto": "Automático (idioma del navegador)",
     "hint": "Se aplica a todo el sistema. Los valores siguen en reales (R$)."
+  },
+  "password": {
+    "show": "Mostrar contraseña",
+    "hide": "Ocultar contraseña",
+    "confirm": "Confirma la contraseña",
+    "mismatch": "Las contraseñas no coinciden."
   }
 }
