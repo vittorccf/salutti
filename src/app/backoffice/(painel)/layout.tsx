@@ -6,6 +6,7 @@ import { destroyBackofficeSession, recordBackofficeAudit, requireBackoffice } fr
 import { backofficeRoleLabel } from "@/lib/backoffice/labels";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Separator } from "@/components/ui/separator";
+import { APP_VERSION_FULL } from "@/lib/version";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/app/app/_components/mobile-nav";
 import { BackofficeNav } from "../_components/backoffice-nav";
@@ -52,6 +53,7 @@ export default async function BackofficeLayout({ children }: { children: React.R
             </Button>
           </form>
         </div>
+        <p className="text-[11px] text-muted-foreground/80">Versão {APP_VERSION_FULL}</p>
       </div>
     </>
   );

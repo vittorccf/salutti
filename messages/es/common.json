@@ -27,6 +27,7 @@
     "closeMenu": "Cerrar menú",
     "menu": "Menú",
     "workspace": "Consultorio activo",
+    "version": "Versión {version}",
     "terms": {
       "label": "Términos de Uso y Política de Privacidad",
       "first": "Publicamos los <terms>Términos de Uso</terms> y la <privacy>Política de Privacidad</privacy> de Salutti. Léelos y confirma para registrar tu aceptación.",
