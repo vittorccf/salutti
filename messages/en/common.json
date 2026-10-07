@@ -27,6 +27,7 @@
     "closeMenu": "Close menu",
     "menu": "Menu",
     "workspace": "Active practice",
+    "version": "Version {version}",
     "terms": {
       "label": "Terms of Service and Privacy Policy",
       "first": "We have published Salutti's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>. Please read them and confirm to record your acceptance.",

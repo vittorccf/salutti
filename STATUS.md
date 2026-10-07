@@ -2,6 +2,13 @@
 
 > Última atualização deste arquivo: 2026-10-08. A seção "Cobrança pelo Stripe com o catálogo" é a mais recente; as demais ficam como histórico.
 
+## Versão do app (2026-10-07) — branch `feat/versao-app`
+
+- Esquema de calendário **AAAA.MM.DD** (ex.: `2026.10.07`), pela data do commit publicado no fuso de São Paulo. Redeploy do mesmo código mantém a versão; o commit curto acompanha para diferenciar duas publicações no mesmo dia.
+- Fora da produção: sufixo `-previa` (deploy de prévia da Vercel) ou `-dev` (local). Sem git no build, usa a data do build.
+- Calculada no build em `scripts/app-version.mjs` (chamado pelo `next.config.mjs`, que expõe `NEXT_PUBLIC_APP_VERSION`/`NEXT_PUBLIC_APP_COMMIT`); lida em `src/lib/version.ts`.
+- Aparece no rodapé do menu do app (commit no tooltip), no menu do backoffice, nos chamados de suporte ("2026.10.07 (0ffb679)") e em `GET /api/versao`.
+
 ## Cobrança pelo Stripe com o catálogo (2026-10-08) — branch `feat/stripe-catalogo`
 
 O dono escolheu o Stripe (conta própria, CPF) em vez do Mercado Pago: a integração já existia e o portal do cliente evita

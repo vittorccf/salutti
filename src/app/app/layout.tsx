@@ -22,6 +22,7 @@ import { TZ } from "@/lib/dates";
 import { getLocale } from "@/i18n/server";
 import { TermsUpdateBanner } from "./_components/legal/terms-update-banner";
 import { SupportWidget, type SupportTicketView } from "./_components/support/support-widget";
+import { APP_COMMIT, APP_VERSION, APP_VERSION_FULL } from "@/lib/version";
 
 // Título da aba pela marca do consultório ativo: "Salutti" ou "Salutti Estética".
 export async function generateMetadata(): Promise<Metadata> {
@@ -106,6 +107,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </>
       ) : null}
+      <p className="px-5 pb-3 pt-1 text-[11px] text-muted-foreground/80" title={APP_COMMIT || undefined}>
+        {t("version", { version: APP_VERSION })}
+      </p>
     </>
   );
 
@@ -135,7 +139,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <TermsUpdateBanner termsVersion={ctx.user.termsVersion} />
         <div className="p-4 md:p-6">{children}</div>
       </main>
-      <SupportWidget tickets={supportTickets} appVersion={process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)} />
+      <SupportWidget tickets={supportTickets} appVersion={APP_VERSION_FULL} />
     </div>
   );
 }
