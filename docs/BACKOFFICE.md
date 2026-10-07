@@ -5,7 +5,7 @@ Painel interno da equipe Salutti em **`/backoffice`** (ex.: https://salutti.verc
 ## Acesso
 
 - Login próprio em `/backoffice/login`. Os usuários ficam na tabela `BackofficeUser`, separada de `User` (que é dos consultórios).
-- Acesso inicial **`admin` / `admin`**, criado pela migration `20261007200000_backoffice_suporte_planos`. A troca de senha é
+- Acesso inicial: usuário **`admin`** com a senha combinada com o dono (só o hash está no repositório), criado pela migration `20261007200000_backoffice_suporte_planos`. A troca de senha é
   obrigatória no primeiro login (`mustChangePassword`): até trocar, toda tela redireciona para `/backoffice/senha`.
 - Sessão: cookie `salutti_bo` (httpOnly, `path=/backoffice`), JWT com audiência `salutti-backoffice`, validade de 12 h.
   A sessão do app recusa qualquer token com audiência, então um não vale no lugar do outro.
@@ -78,7 +78,7 @@ reabre chamado resolvido, fechado ou aguardando.
 - Login com mensagem única (não revela quais usuários existem) e incremento atômico de tentativas. O bloqueio é por
   usuário: alguém pode manter o `admin` bloqueado de propósito; se acontecer, trocar o nome de usuário ou bloquear também por IP.
 - Abrir chamado ou ficha de cliente fica na auditoria (`ticket.view`, `workspace.view`).
-- **Depois do deploy, entre logo com `admin`/`admin`, troque a senha e confira na Auditoria que o primeiro login foi seu.**
+- **Depois do deploy, entre logo com o usuário `admin` e a senha inicial, troque a senha e confira na Auditoria que o primeiro login foi seu.**
 
 ## Ficou para depois
 

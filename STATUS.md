@@ -5,7 +5,7 @@
 ## Backoffice (2026-10-07) — branch `feat/backoffice`
 
 Painel interno em `/backoffice` (guia completo em `docs/BACKOFFICE.md`): login próprio (`BackofficeUser`, cookie `salutti_bo`,
-12 h, bloqueio após 5 erros), acesso inicial `admin`/`admin` semeado pela migration com troca obrigatória no primeiro login,
+12 h, bloqueio após 5 erros), acesso inicial `admin` (senha combinada com o dono, só o hash no repositório) semeado pela migration com troca obrigatória no primeiro login,
 papéis admin/suporte, auditoria. Telas: visão geral, **chamados** (fila, conversa, resposta, nota interna, situação,
 prioridade, responsável, contexto técnico), clientes, usuários, planos e equipe. Planos `PlatformPlan`: Teste grátis 15 dias,
 Básico R$ 49,90/mês, Essencial R$ 89,90/mês, Anual R$ 749,90/ano.

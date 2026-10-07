@@ -4,9 +4,11 @@ import { login } from "./helpers";
 // O segundo teste usa a senha definida no primeiro.
 test.describe.configure({ mode: "serial" });
 
+// Senha inicial do admin no banco dos testes (scripts/e2e-server.mjs); a de produção não está no repositório.
+const INITIAL_PASSWORD = "senha-inicial-e2e";
 const NEW_PASSWORD = "backoffice-seguro-123";
 
-test("backoffice: admin/admin entra, troca a senha provisória e vê planos, clientes e chamados", async ({ page, context }) => {
+test("backoffice: admin entra com a senha inicial, troca a senha provisória e vê planos, clientes e chamados", async ({ page, context }) => {
   // Sem sessão, qualquer tela manda para o login do backoffice.
   await page.goto("/backoffice/chamados");
   await expect(page).toHaveURL(/\/backoffice\/login$/);
@@ -17,14 +19,14 @@ test("backoffice: admin/admin entra, troca a senha provisória e vê planos, cli
   await expect(page.getByText("Usuário ou senha incorretos.")).toBeVisible();
 
   await page.locator("#username").fill("admin");
-  await page.locator("#password").fill("admin");
+  await page.locator("#password").fill(INITIAL_PASSWORD);
   await page.getByRole("button", { name: "Entrar" }).click();
 
   // Senha provisória: troca obrigatória antes de qualquer outra tela.
   await expect(page).toHaveURL(/\/backoffice\/senha$/);
   await page.goto("/backoffice/clientes");
   await expect(page).toHaveURL(/\/backoffice\/senha$/);
-  await page.locator("#current").fill("admin");
+  await page.locator("#current").fill(INITIAL_PASSWORD);
   await page.locator("#password").fill(NEW_PASSWORD);
   await page.locator("#confirm").fill(NEW_PASSWORD);
   await page.getByRole("button", { name: "Salvar senha" }).click();

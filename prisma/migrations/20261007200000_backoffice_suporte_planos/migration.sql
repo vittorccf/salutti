@@ -144,7 +144,7 @@ INSERT INTO "PlatformPlan" ("id", "code", "name", "priceCents", "interval", "tri
   ('plan_anual', 'anual', 'Anual', 74990, 'anual', NULL, 'Plano anual', 3, CURRENT_TIMESTAMP)
 ON CONFLICT ("code") DO NOTHING;
 
--- Acesso inicial ao backoffice: admin / admin, com troca de senha obrigatória no primeiro login.
+-- Acesso inicial ao backoffice: usuário admin, senha combinada com o dono (só o hash fica aqui); troca obrigatória no primeiro login.
 INSERT INTO "BackofficeUser" ("id", "username", "name", "passwordHash", "role", "mustChangePassword") VALUES
-  ('bo_admin', 'admin', 'Administrador', '$2a$10$2QtZupr5b3eYZPAW07x5PuJ1ZFUhuLG3WTJ9XUNQZcItHoLQhaoCy', 'admin', true)
+  ('bo_admin', 'admin', 'Administrador', '$2a$10$KZojx0qB0GhvqAuTYqW1RuhpwYHGshfqovaCHBDPymSY0biP/YIxC', 'admin', true)
 ON CONFLICT ("username") DO NOTHING;
