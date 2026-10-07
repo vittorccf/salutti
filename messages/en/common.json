@@ -82,7 +82,10 @@
       "trial": "Free trial",
       "starter": "Starter",
       "pro": "Pro",
-      "enterprise": "Clinic"
+      "enterprise": "Clinic",
+      "basico": "Basic",
+      "essencial": "Essential",
+      "anual": "Annual"
     },
     "segment": {
       "solo_psicologo": "Psychology",

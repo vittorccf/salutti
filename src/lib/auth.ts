@@ -12,7 +12,7 @@ import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 // obrigatório: o padrão está no repositório público e permitiria forjar sessões.
 const DEV_SECRET = "dev-secret-salutti-prototype";
 const isProduction = process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview";
-const secretKey = () => {
+export const secretKey = () => {
   const secret = process.env.AUTH_SECRET;
   if (!secret && isProduction) {
     throw new Error("AUTH_SECRET não definido. Configure a variável de ambiente (32+ caracteres aleatórios).");
@@ -71,8 +71,8 @@ export const getSession = async (): Promise<SessionPayload | null> => {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secretKey());
-    // O token da etapa de 2FA usa a mesma chave: nunca pode valer como sessão.
-    if (payload.aud === TWO_FACTOR_AUDIENCE) return null;
+    // Tokens com audiência (etapa de 2FA, backoffice) usam a mesma chave: nunca podem valer como sessão do app.
+    if (payload.aud) return null;
     return payload as unknown as SessionPayload;
   } catch {
     return null;

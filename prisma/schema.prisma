@@ -15,49 +15,51 @@ datasource db {
 // ----------------------- IDENTIDADE / TENANT ------------------------
 
 model User {
-  id            String        @id @default(cuid())
-  email         String        @unique
-  name          String
-  passwordHash  String
-  avatarUrl     String? // legado, sem uso (a foto de perfil é avatarId)
+  id                   String                  @id @default(cuid())
+  email                String                  @unique
+  name                 String
+  passwordHash         String
+  avatarUrl            String? // legado, sem uso (a foto de perfil é avatarId)
   // Foto de perfil enviada pelo usuário (MediaFile).
-  avatarId      String?
+  avatarId             String?
   // Aniversário do próprio usuário (lembrete no painel). Só dia e mês importam para o lembrete.
-  birthDate     DateTime?
+  birthDate            DateTime?
   // Lembrete de aniversário de pacientes no painel (cada profissional decide; equipe e o próprio sempre aparecem).
-  showPatientBirthdays Boolean @default(true)
+  showPatientBirthdays Boolean                 @default(true)
   // Idioma da interface: pt-BR | pt-PT | es | en. Nulo = automático (cookie ou idioma do navegador).
-  locale        String?
-  createdAt     DateTime      @default(now())
+  locale               String?
+  createdAt            DateTime                @default(now())
   // Verificação em duas etapas (TOTP). Segredo cifrado (AES-256-GCM, ver src/lib/totp.ts);
   // ativo só quando totpEnabledAt está preenchido. Códigos de recuperação: JSON de hashes SHA-256.
-  totpSecret         String?
-  totpEnabledAt      DateTime?
-  totpRecoveryHashes String?
-  totpFailedAttempts Int       @default(0)
-  totpLockedUntil    DateTime?
-  memberships   Membership[]
-  auditEvents   AuditLog[]    @relation("AuditUser")
-  connections   IntegrationConnection[]
-  invitesSent   Invitation[]  @relation("InviteSentBy")
+  totpSecret           String?
+  totpEnabledAt        DateTime?
+  totpRecoveryHashes   String?
+  totpFailedAttempts   Int                     @default(0)
+  totpLockedUntil      DateTime?
+  memberships          Membership[]
+  auditEvents          AuditLog[]              @relation("AuditUser")
+  connections          IntegrationConnection[]
+  invitesSent          Invitation[]            @relation("InviteSentBy")
+  supportTickets       SupportTicket[]
+  supportMessages      SupportMessage[]
 }
 
 model Workspace {
-  id              String         @id @default(cuid())
-  name            String
-  slug            String         @unique
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
   // Tipo de conta, escolhido no cadastro e trocável em Ajustes: autonomo (um profissional) | clinica (equipe).
   // Área de atuação (marca): mental (Salutti) | estetica (Salutti Estética). Ver src/lib/areas.ts.
-  area            String         @default("mental")
-  accountType     String         @default("autonomo")
+  area          String    @default("mental")
+  accountType   String    @default("autonomo")
   // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
-  brandDisplay    String         @default("salutti")
-  bannerId        String?
+  brandDisplay  String    @default("salutti")
+  bannerId      String?
   // área de atendimento: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
-  segment         String         @default("solo_psicologo")
-  cnpj            String?
+  segment       String    @default("solo_psicologo")
+  cnpj          String?
   // CNES do estabelecimento (TISS); sem CNES as guias usam 9999999, como manda a ANS.
-  cnes            String?
+  cnes          String?
   // Endereço do consultório (CEP preenche rua, bairro, cidade e UF).
   cep           String?
   street        String?
@@ -66,47 +68,48 @@ model Workspace {
   district      String?
   city          String?
   state         String?
-  legalRepName    String?
-  trialEndsAt     DateTime?
-  planTier        String         @default("trial") // trial | starter | pro | enterprise
-  createdAt       DateTime       @default(now())
+  legalRepName  String?
+  trialEndsAt   DateTime?
+  planTier      String    @default("trial") // trial | basico | essencial | anual (PlatformPlan.code); legados: starter | pro | enterprise
+  createdAt     DateTime  @default(now())
 
-  memberships     Membership[]
-  patients        Patient[]
-  professionals   Professional[]
-  appointments    Appointment[]
-  clinicalNotes   ClinicalNote[]
+  memberships        Membership[]
+  patients           Patient[]
+  professionals      Professional[]
+  appointments       Appointment[]
+  clinicalNotes      ClinicalNote[]
   anamnesisTemplates AnamnesisTemplate[]
-  receipts        Receipt[]
-  invoices        Invoice[]
-  paymentLinks    PaymentLink[]
-  subscriptions   Subscription[]
-  charges         Charge[]
-  consentRecords  ConsentRecord[]
-  auditLogs       AuditLog[]
-  aiInsights      AiInsight[]
-  dailyCards      DailyCard[]
-  notifications   NotificationLog[]
-  insurancePlans  InsurancePlan[]
-  tissBatches     TissBatch[]
-  tissGuides      TissGuide[]
-  invitations     Invitation[]
-  procedures      Procedure[]
-  products        Product[]
-  stockLots       StockLot[]
-  stockMovements  StockMovement[]
-  clinicalPhotos  ClinicalPhoto[]
+  receipts           Receipt[]
+  invoices           Invoice[]
+  paymentLinks       PaymentLink[]
+  subscriptions      Subscription[]
+  charges            Charge[]
+  consentRecords     ConsentRecord[]
+  auditLogs          AuditLog[]
+  aiInsights         AiInsight[]
+  dailyCards         DailyCard[]
+  notifications      NotificationLog[]
+  insurancePlans     InsurancePlan[]
+  tissBatches        TissBatch[]
+  tissGuides         TissGuide[]
+  invitations        Invitation[]
+  procedures         Procedure[]
+  products           Product[]
+  stockLots          StockLot[]
+  stockMovements     StockMovement[]
+  clinicalPhotos     ClinicalPhoto[]
+  supportTickets     SupportTicket[]
 }
 
 model Membership {
-  id           String     @id @default(cuid())
-  userId       String
-  workspaceId  String
-  role         String     @default("owner") // owner | admin | professional | financial | receptionist
-  createdAt    DateTime   @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        String   @default("owner") // owner | admin | professional | financial | receptionist
+  createdAt   DateTime @default(now())
 
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace    Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
   @@index([workspaceId])
@@ -115,28 +118,28 @@ model Membership {
 // ----------------------- ATORES CLÍNICOS ----------------------------
 
 model Professional {
-  id            String        @id @default(cuid())
-  workspaceId   String
-  fullName      String
-  email         String?
-  phone         String?
+  id               String    @id @default(cuid())
+  workspaceId      String
+  fullName         String
+  email            String?
+  phone            String?
   // psicologo, psicanalista, terapeuta, psiquiatra, dentista, medico
-  professionalType String     @default("psicologo")
+  professionalType String    @default("psicologo")
   // CRP, CRM, CRO, "sem_registro" (psicanalistas/terapeutas)
-  councilType   String        @default("CRP")
-  councilNumber String?       // pode ser nulo p/ "sem_registro"
+  councilType      String    @default("CRP")
+  councilNumber    String? // pode ser nulo p/ "sem_registro"
   // Usuário da Salutti que é este profissional (o Meet nasce na conta Google dele). Nulo para quem não acessa o sistema.
-  userId        String?
-  councilUF     String?       // UF do conselho, código IBGE (TISS Tabela 59), ex.: "52" = GO
-  noCouncil     Boolean       @default(false) // flag explícita - oceano azul "Sem CRP"
-  specialty     String?
-  bio           String?
-  hourlyRate    Float?
-  birthDate     DateTime?
-  active        Boolean       @default(true)
-  createdAt     DateTime      @default(now())
+  userId           String?
+  councilUF        String? // UF do conselho, código IBGE (TISS Tabela 59), ex.: "52" = GO
+  noCouncil        Boolean   @default(false) // flag explícita - oceano azul "Sem CRP"
+  specialty        String?
+  bio              String?
+  hourlyRate       Float?
+  birthDate        DateTime?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
 
-  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   appointments  Appointment[]
   clinicalNotes ClinicalNote[]
 
@@ -144,47 +147,47 @@ model Professional {
 }
 
 model Patient {
-  id            String        @id @default(cuid())
-  workspaceId   String
-  fullName      String
-  email         String?
-  phone         String?
-  cpf           String?
-  birthDate     DateTime?
-  pronouns      String?
-  responsibleName String?
-  emergencyContact String?
-  address       String?
+  id                  String    @id @default(cuid())
+  workspaceId         String
+  fullName            String
+  email               String?
+  phone               String?
+  cpf                 String?
+  birthDate           DateTime?
+  pronouns            String?
+  responsibleName     String?
+  emergencyContact    String?
+  address             String?
   // Endereço estruturado (CEP preenche rua, bairro, cidade e UF). "address" fica para dados antigos.
-  cep           String?
-  street        String?
-  addressNumber String?
-  complement    String?
-  district      String?
-  city          String?
-  state         String?
-  notes         String?       // observações não-clínicas (campo "livre" não-sensível)
-  active        Boolean       @default(true)
+  cep                 String?
+  street              String?
+  addressNumber       String?
+  complement          String?
+  district            String?
+  city                String?
+  state               String?
+  notes               String? // observações não-clínicas (campo "livre" não-sensível)
+  active              Boolean   @default(true)
   // Soft delete LGPD
-  deletedAt     DateTime?
-  anonymized    Boolean       @default(false)
+  deletedAt           DateTime?
+  anonymized          Boolean   @default(false)
   // Foto do paciente (opcional, MediaFile). Sai na anonimização.
-  photoId       String?
+  photoId             String?
   // Convênio (TISS)
   insurancePlanId     String?
-  insuranceCardNumber String?   // número da carteirinha
-  createdAt     DateTime      @default(now())
+  insuranceCardNumber String? // número da carteirinha
+  createdAt           DateTime  @default(now())
 
-  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  insurancePlan InsurancePlan? @relation(fields: [insurancePlanId], references: [id], onDelete: SetNull)
-  appointments  Appointment[]
-  clinicalNotes ClinicalNote[]
-  receipts      Receipt[]
-  invoices      Invoice[]
-  charges       Charge[]
+  workspace      Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  insurancePlan  InsurancePlan?       @relation(fields: [insurancePlanId], references: [id], onDelete: SetNull)
+  appointments   Appointment[]
+  clinicalNotes  ClinicalNote[]
+  receipts       Receipt[]
+  invoices       Invoice[]
+  charges        Charge[]
   consentRecords ConsentRecord[]
-  dailyCards    DailyCard[]
-  portalAccess  PatientPortalAccess?
+  dailyCards     DailyCard[]
+  portalAccess   PatientPortalAccess?
 
   @@index([workspaceId])
   @@index([workspaceId, fullName])
@@ -192,52 +195,52 @@ model Patient {
 
 // Token para acesso do paciente ao portal (App do Paciente)
 model PatientPortalAccess {
-  id          String   @id @default(cuid())
-  patientId   String   @unique
-  token       String   @unique
-  pinHash     String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  patientId String   @unique
+  token     String   @unique
+  pinHash   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 
-  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 // ----------------------- AGENDA -------------------------------------
 
 model Appointment {
-  id              String        @id @default(cuid())
-  workspaceId     String
-  patientId       String
-  professionalId  String
-  startsAt        DateTime
-  endsAt          DateTime
-  modality        String        @default("presencial") // presencial | online
-  meetingUrl      String?
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  patientId             String
+  professionalId        String
+  startsAt              DateTime
+  endsAt                DateTime
+  modality              String    @default("presencial") // presencial | online
+  meetingUrl            String?
   // Evento do Google Agenda que contém o Meet, e de quem é a agenda (para apagar ao cancelar a sessão).
-  meetingEventId String?
-  meetingOwnerId String?
+  meetingEventId        String?
+  meetingOwnerId        String?
   // Procedimento do catálogo (Salutti Estética): sugere duração e valor; o registro da aplicação baixa o estoque.
-  procedureId    String?
+  procedureId           String?
   // Registro do procedimento (baixa de estoque): marca dentro da transação para impedir registro em dobro;
   // o estorno limpa a marca. Ficha técnica: diluição, pontos/unidades por região; intercorrência, se houver.
   procedureRecordedAt   DateTime?
   procedureDetails      String?
   procedureAdverseEvent String?
-  status          String        @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
-  price           Float
-  notes           String?
-  reminderSentAt  DateTime?
+  status                String    @default("scheduled") // scheduled | confirmed | done | no_show | cancelled
+  price                 Float
+  notes                 String?
+  reminderSentAt        DateTime?
   // Sessão faturada por convênio (sem cobrança particular); vira guia TISS depois de realizada.
-  insurancePlanId String?
-  createdAt       DateTime      @default(now())
+  insurancePlanId       String?
+  createdAt             DateTime  @default(now())
 
-  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient         Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  professional    Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  insurancePlan   InsurancePlan? @relation(fields: [insurancePlanId], references: [id], onDelete: SetNull)
-  clinicalNote    ClinicalNote?
-  charge          Charge?
-  tissGuide       TissGuide?
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional  Professional   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  insurancePlan InsurancePlan? @relation(fields: [insurancePlanId], references: [id], onDelete: SetNull)
+  clinicalNote  ClinicalNote?
+  charge        Charge?
+  tissGuide     TissGuide?
 
   @@index([workspaceId, startsAt])
 }
@@ -245,39 +248,39 @@ model Appointment {
 // ----------------------- PRONTUÁRIO / ANAMNESE ----------------------
 
 model AnamnesisTemplate {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  name         String
-  specialty    String?  // psicologia | psicanalise | psiquiatria | odonto
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  specialty   String? // psicologia | psicanalise | psiquiatria | odonto
   // schema JSON: array de seções com perguntas/typing.
-  schemaJson   String   // JSON serializado (SQLite)
-  isDefault    Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  schemaJson  String // JSON serializado (SQLite)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model ClinicalNote {
-  id              String       @id @default(cuid())
+  id              String    @id @default(cuid())
   workspaceId     String
   patientId       String
   professionalId  String
-  appointmentId   String?      @unique
-  noteType        String       @default("evolucao") // anamnese | evolucao | plano_terapeutico | alta
+  appointmentId   String?   @unique
+  noteType        String    @default("evolucao") // anamnese | evolucao | plano_terapeutico | alta
   // Conteúdo criptografado em produção; aqui texto puro p/ protótipo
   contentMarkdown String
   // Sumário gerado pela IA TOBI
   aiSummary       String?
-  aiTopics        String?      // CSV de temas detectados
+  aiTopics        String? // CSV de temas detectados
   signedAt        DateTime?
-  signedHash      String?      // hash de assinatura digital (placeholder ICP-Brasil)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  signedHash      String? // hash de assinatura digital (placeholder ICP-Brasil)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient         Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  professional    Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
 
   @@index([workspaceId, patientId])
 }
@@ -285,96 +288,96 @@ model ClinicalNote {
 // ----------------------- FINANCEIRO ---------------------------------
 
 model Charge {
-  id              String      @id @default(cuid())
-  workspaceId     String
-  patientId       String
-  appointmentId   String?     @unique
-  amount          Float
-  status          String      @default("pending") // pending | paid | overdue | cancelled | refunded
-  method          String?     // pix | card | boleto | dinheiro
-  dueDate         DateTime
-  paidAt          DateTime?
-  externalId      String?     // id no gateway (Asaas/Stripe)
-  pixCopyPaste    String?     // payload PIX simulado
-  createdAt       DateTime    @default(now())
+  id            String    @id @default(cuid())
+  workspaceId   String
+  patientId     String
+  appointmentId String?   @unique
+  amount        Float
+  status        String    @default("pending") // pending | paid | overdue | cancelled | refunded
+  method        String? // pix | card | boleto | dinheiro
+  dueDate       DateTime
+  paidAt        DateTime?
+  externalId    String? // id no gateway (Asaas/Stripe)
+  pixCopyPaste  String? // payload PIX simulado
+  createdAt     DateTime  @default(now())
 
-  workspace       Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient         Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
-  paymentLink     PaymentLink?
-  invoice         Invoice?
-  receipt         Receipt?
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  paymentLink PaymentLink?
+  invoice     Invoice?
+  receipt     Receipt?
 
   @@index([workspaceId, dueDate])
   @@index([workspaceId, status])
 }
 
 model PaymentLink {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  chargeId     String   @unique
-  url          String   // /pay/<token>
-  token        String   @unique
-  expiresAt    DateTime?
-  createdAt    DateTime @default(now())
+  id          String    @id @default(cuid())
+  workspaceId String
+  chargeId    String    @unique
+  url         String // /pay/<token>
+  token       String    @unique
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  charge       Charge    @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  charge    Charge    @relation(fields: [chargeId], references: [id], onDelete: Cascade)
 }
 
 model Subscription {
-  id            String   @id @default(cuid())
-  workspaceId   String
-  patientId     String?
-  planName      String
-  amount        Float
-  intervalDays  Int      @default(30)
-  active        Boolean  @default(true)
-  nextChargeAt  DateTime
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  workspaceId  String
+  patientId    String?
+  planName     String
+  amount       Float
+  intervalDays Int      @default(30)
+  active       Boolean  @default(true)
+  nextChargeAt DateTime
+  createdAt    DateTime @default(now())
 
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 // ----------------------- FISCAL -------------------------------------
 
 model Receipt {
-  id            String    @id @default(cuid())
-  workspaceId   String
-  patientId     String
-  chargeId      String?   @unique
-  receiptNumber String
-  amount        Float
-  issuedAt      DateTime  @default(now())
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  patientId          String
+  chargeId           String?  @unique
+  receiptNumber      String
+  amount             Float
+  issuedAt           DateTime @default(now())
   // Receita Saúde 2025
-  receitaSaudeId String?   // protocolo após emissão
+  receitaSaudeId     String? // protocolo após emissão
   receitaSaudeStatus String? // queued | sent | confirmed | error
-  pdfUrl        String?
+  pdfUrl             String?
 
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  charge        Charge?   @relation(fields: [chargeId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  charge    Charge?   @relation(fields: [chargeId], references: [id])
 
   @@unique([workspaceId, receiptNumber])
 }
 
 model Invoice {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   workspaceId   String
   patientId     String
-  chargeId      String?   @unique
+  chargeId      String?  @unique
   invoiceNumber String
   amount        Float
-  serviceCode   String    @default("14.01") // Serviços de saúde - código LC 116 padrão
-  issStatus     String    @default("issued") // queued | issued | rejected
-  externalId    String?   // id NFE.io
+  serviceCode   String   @default("14.01") // Serviços de saúde - código LC 116 padrão
+  issStatus     String   @default("issued") // queued | issued | rejected
+  externalId    String? // id NFE.io
   pdfUrl        String?
   xmlUrl        String?
-  issuedAt      DateTime  @default(now())
+  issuedAt      DateTime @default(now())
 
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  charge        Charge?   @relation(fields: [chargeId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  charge    Charge?   @relation(fields: [chargeId], references: [id])
 
   @@unique([workspaceId, invoiceNumber])
 }
@@ -382,35 +385,35 @@ model Invoice {
 // ----------------------- LGPD / AUDITORIA ---------------------------
 
 model ConsentRecord {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   workspaceId  String
   patientId    String
-  purpose      String   // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento | foto_identificacao
-  legalBasis   String   // consentimento | tutela_saude | obrigacao_legal | execucao_contrato
-  granted      Boolean  @default(true)
+  purpose      String // tutela_saude | comunicacao_marketing | telemedicina | compartilhamento | foto_identificacao
+  legalBasis   String // consentimento | tutela_saude | obrigacao_legal | execucao_contrato
+  granted      Boolean   @default(true)
   documentHash String?
   // Assinatura da paciente na tela (PNG em MediaFile, kind consent_signature), quando colhida no consultório.
   signatureId  String?
-  grantedAt    DateTime @default(now())
+  grantedAt    DateTime  @default(now())
   revokedAt    DateTime?
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  userId       String?
-  action       String   // patient.create, charge.update, lgpd.export, ...
-  entity       String   // Patient | Charge | ClinicalNote ...
-  entityId     String?
-  metadata     String?  // JSON serializado
-  ipAddress    String?
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String?
+  action      String // patient.create, charge.update, lgpd.export, ...
+  entity      String // Patient | Charge | ClinicalNote ...
+  entityId    String?
+  metadata    String? // JSON serializado
+  ipAddress   String?
+  createdAt   DateTime @default(now())
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user         User?     @relation("AuditUser", fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User?     @relation("AuditUser", fields: [userId], references: [id])
 
   @@index([workspaceId, createdAt])
 }
@@ -418,17 +421,17 @@ model AuditLog {
 // ----------------------- IA / INSIGHTS -------------------------------
 
 model AiInsight {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  kind         String   // revenue_drop | churn_risk | scheduling_gap | overdue_pattern | clinical_topic
-  severity     String   @default("info") // info | warn | critical
-  title        String
-  body         String
-  payload      String?  // JSON com métricas que sustentam o insight
-  readAt       DateTime?
-  createdAt    DateTime @default(now())
+  id          String    @id @default(cuid())
+  workspaceId String
+  kind        String // revenue_drop | churn_risk | scheduling_gap | overdue_pattern | clinical_topic
+  severity    String    @default("info") // info | warn | critical
+  title       String
+  body        String
+  payload     String? // JSON com métricas que sustentam o insight
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, createdAt])
 }
@@ -436,18 +439,18 @@ model AiInsight {
 // ----------------------- APP DO PACIENTE ----------------------------
 
 model DailyCard {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  patientId    String
-  date         DateTime
-  mood         Int      // 1..5
-  sleepHours   Float?
-  anxiety      Int?     // 1..5
-  notes        String?
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  workspaceId String
+  patientId   String
+  date        DateTime
+  mood        Int // 1..5
+  sleepHours  Float?
+  anxiety     Int? // 1..5
+  notes       String?
+  createdAt   DateTime @default(now())
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@unique([patientId, date])
 }
@@ -455,16 +458,16 @@ model DailyCard {
 // ----------------------- NOTIFICAÇÕES (WhatsApp mock) ---------------
 
 model NotificationLog {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  channel      String   // whatsapp | email | sms
-  recipient    String
-  template     String   // reminder_24h | reminder_2h | charge_due | charge_overdue
-  payload      String   // JSON c/ variáveis
-  status       String   @default("sent") // queued | sent | failed
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  workspaceId String
+  channel     String // whatsapp | email | sms
+  recipient   String
+  template    String // reminder_24h | reminder_2h | charge_due | charge_overdue
+  payload     String // JSON c/ variáveis
+  status      String   @default("sent") // queued | sent | failed
+  createdAt   DateTime @default(now())
 
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 // ----------------------- CONVÊNIOS / TISS ----------------------
@@ -473,9 +476,9 @@ model InsurancePlan {
   id           String   @id @default(cuid())
   workspaceId  String
   name         String
-  ansRegistry  String   // registro ANS da operadora (6 dígitos)
-  providerCode String?  // código do prestador na operadora (senão usa o CNPJ do consultório)
-  sessionPrice Float    // valor contratado por consulta/sessão
+  ansRegistry  String // registro ANS da operadora (6 dígitos)
+  providerCode String? // código do prestador na operadora (senão usa o CNPJ do consultório)
+  sessionPrice Float // valor contratado por consulta/sessão
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
@@ -492,16 +495,16 @@ model TissBatch {
   id              String   @id @default(cuid())
   workspaceId     String
   insurancePlanId String
-  number          Int      // número do lote, sequencial por consultório
-  guideType       String   // consulta | sp_sadt
-  xml             String   // mensagem TISS gerada (versão 4.03.00)
-  hash            String   // hash MD5 do epílogo
+  number          Int // número do lote, sequencial por consultório
+  guideType       String // consulta | sp_sadt
+  xml             String // mensagem TISS gerada (versão 4.03.00)
+  hash            String // hash MD5 do epílogo
   totalAmount     Float
   createdAt       DateTime @default(now())
 
-  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  insurancePlan   InsurancePlan @relation(fields: [insurancePlanId], references: [id], onDelete: Cascade)
-  guides          TissGuide[]
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  insurancePlan InsurancePlan @relation(fields: [insurancePlanId], references: [id], onDelete: Cascade)
+  guides        TissGuide[]
 
   @@unique([workspaceId, number])
 }
@@ -511,14 +514,14 @@ model TissGuide {
   workspaceId   String
   batchId       String
   appointmentId String   @unique
-  guideNumber   String   // numeroGuiaPrestador
-  procedureCode String   // TUSS (tabela 22)
+  guideNumber   String // numeroGuiaPrestador
+  procedureCode String // TUSS (tabela 22)
   amount        Float
   createdAt     DateTime @default(now())
 
-  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  batch         TissBatch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  batch       TissBatch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
 }
@@ -527,7 +530,7 @@ model TissGuide {
 // /api/media/[id] só a quem tem acesso. Já chegam reduzidas pelo navegador (no máximo algumas centenas de KB).
 // Trocar para um storage de objetos (ex.: Vercel Blob privado) muda só src/lib/providers/media.ts.
 model MediaFile {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   // user_avatar | workspace_banner | patient_photo
   kind        String
   // Dono da imagem: usuário (foto de perfil) ou consultório (banner, foto de paciente).
@@ -536,7 +539,7 @@ model MediaFile {
   mime        String
   size        Int
   bytes       Bytes
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 
   @@index([workspaceId])
   @@index([userId])
@@ -547,14 +550,14 @@ model MediaFile {
 model IntegrationConnection {
   id           String   @id @default(cuid())
   userId       String
-  provider     String   // google
+  provider     String // google
   accountEmail String?
   scopes       String
   refreshToken String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
 }
@@ -565,7 +568,7 @@ model Invitation {
   id          String    @id @default(cuid())
   workspaceId String
   email       String
-  role        String    // admin | professional | financial | receptionist
+  role        String // admin | professional | financial | receptionist
   tokenHash   String    @unique
   invitedById String
   expiresAt   DateTime
@@ -573,8 +576,8 @@ model Invitation {
   revokedAt   DateTime?
   createdAt   DateTime  @default(now())
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  invitedBy   User      @relation("InviteSentBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy User      @relation("InviteSentBy", fields: [invitedById], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
 }
@@ -597,21 +600,21 @@ model Procedure {
   active          Boolean  @default(true)
   createdAt       DateTime @default(now())
 
-  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  supplies        ProcedureSupply[]
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  supplies  ProcedureSupply[]
 
   @@index([workspaceId])
 }
 
 // Insumo que o procedimento costuma consumir e quanto (ex.: toxina 50 U); só sugestão no registro.
 model ProcedureSupply {
-  id          String    @id @default(cuid())
+  id          String @id @default(cuid())
   procedureId String
   productId   String
   quantity    Float
 
-  procedure   Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  procedure Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([procedureId, productId])
 }
@@ -623,7 +626,7 @@ model Product {
   name               String
   brand              String?
   kind               String   @default("insumo") // insumo | revenda
-  unit               String   @default("un")     // U | mL | seringa | frasco | un | g
+  unit               String   @default("un") // U | mL | seringa | frasco | un | g
   anvisaRegistry     String?
   supplier           String?
   unitCost           Float?
@@ -633,10 +636,10 @@ model Product {
   active             Boolean  @default(true)
   createdAt          DateTime @default(now())
 
-  workspace          Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  lots               StockLot[]
-  movements          StockMovement[]
-  supplies           ProcedureSupply[]
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lots      StockLot[]
+  movements StockMovement[]
+  supplies  ProcedureSupply[]
 
   @@index([workspaceId])
 }
@@ -657,9 +660,9 @@ model StockLot {
   openedAt        DateTime?
   notes           String?
 
-  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  movements       StockMovement[]
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements StockMovement[]
 
   @@index([workspaceId, productId])
 }
@@ -667,22 +670,22 @@ model StockLot {
 // Toda entrada e saída de estoque. Saída por uso guarda a sessão e a paciente: é a rastreabilidade
 // "qual lote foi aplicado em quem" (recall, intercorrência, fiscalização sanitária).
 model StockMovement {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   workspaceId   String
   productId     String
   lotId         String?
-  kind          String    // entrada | uso | estorno | ajuste | perda | venda
-  quantity      Float     // positivo entra, negativo sai
-  reason        String?   // perda: vencido | sobra_frasco | quebra | outro
+  kind          String // entrada | uso | estorno | ajuste | perda | venda
+  quantity      Float // positivo entra, negativo sai
+  reason        String? // perda: vencido | sobra_frasco | quebra | outro
   appointmentId String?
   patientId     String?
   userId        String?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime @default(now())
 
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   // Restrict: o histórico (rastreabilidade de lote em paciente) não some junto com o produto; produto se desativa.
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
-  lot           StockLot? @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  lot       StockLot? @relation(fields: [lotId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, productId])
   @@index([lotId])
@@ -692,23 +695,134 @@ model StockMovement {
 // Foto clínica (antes, durante, depois) ligada à paciente e, se houver, à sessão. A imagem fica em MediaFile;
 // uso em divulgação exige autorização separada (allowMarketing), além da autorização de uso clínico.
 model ClinicalPhoto {
-  id             String    @id @default(cuid())
-  workspaceId    String
-  patientId      String
-  appointmentId  String?
-  procedureId    String?
-  mediaId        String
-  stage          String    @default("antes") // antes | durante | depois
-  region         String?
-  allowMarketing Boolean   @default(false)
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  patientId          String
+  appointmentId      String?
+  procedureId        String?
+  mediaId            String
+  stage              String    @default("antes") // antes | durante | depois
+  region             String?
+  allowMarketing     Boolean   @default(false)
   // Autorização de divulgação revogada (fica a data; allowMarketing volta a false).
   marketingRevokedAt DateTime?
-  takenAt        DateTime  @default(now())
+  takenAt            DateTime  @default(now())
   // Remoção lógica: some da ficha, mas o registro e a imagem ficam (prontuário). Só a LGPD apaga de vez.
-  removedAt      DateTime?
-  removedReason  String?
+  removedAt          DateTime?
+  removedReason      String?
 
-  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, patientId])
+}
+
+// ---------------------------------------------------------------------------------------------
+// Backoffice da plataforma (/backoffice): equipe da Salutti, não usuários de consultório.
+// Login, sessão e permissões separados do app (src/lib/backoffice/auth.ts). Ver docs/BACKOFFICE.md.
+
+model BackofficeUser {
+  id                 String    @id @default(cuid())
+  username           String    @unique
+  name               String
+  passwordHash       String
+  role               String    @default("suporte") // admin | suporte
+  active             Boolean   @default(true)
+  // Senha criada por outra pessoa (ou a inicial admin/admin): troca obrigatória no primeiro acesso.
+  mustChangePassword Boolean   @default(true)
+  failedAttempts     Int       @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+
+  assignedTickets SupportTicket[]      @relation("TicketAssignee")
+  messages        SupportMessage[]
+  auditEvents     BackofficeAuditLog[]
+}
+
+// Catálogo de planos da plataforma, editável no backoffice. `code` é o valor gravado em Workspace.planTier.
+model PlatformPlan {
+  id          String   @id @default(cuid())
+  code        String   @unique // trial | basico | essencial | anual
+  name        String
+  priceCents  Int      @default(0)
+  interval    String   @default("mensal") // trial | mensal | anual
+  trialDays   Int?
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Chamado aberto pelo cliente no toggle de suporte do app. workspace/usuário ficam opcionais para o chamado
+// sobreviver à exclusão da conta (o histórico de suporte não é dado clínico).
+model SupportTicket {
+  id             String    @id @default(cuid())
+  number         Int       @unique @default(autoincrement())
+  workspaceId    String?
+  userId         String?
+  // Cópia de quem abriu, para o chamado continuar legível se a conta for apagada.
+  requesterName  String
+  requesterEmail String
+  category       String    @default("bug") // bug | duvida | sugestao | financeiro | acesso | outro
+  subject        String
+  status         String    @default("aberto") // aberto | em_andamento | aguardando_cliente | resolvido | fechado
+  priority       String    @default("normal") // baixa | normal | alta | urgente
+  // Contexto técnico capturado pelo toggle (página, navegador, tela, versão do app). Nunca dados de paciente.
+  pageUrl        String?
+  userAgent      String?
+  viewport       String?
+  appVersion     String?
+  locale         String?
+  metadata       Json?
+  assigneeId     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lastActivityAt DateTime  @default(now())
+  // Mensagens do cliente ainda não lidas pela equipe (zera ao abrir o chamado no backoffice).
+  unreadByStaff  Boolean   @default(true)
+  unreadByClient Boolean   @default(false)
+  resolvedAt     DateTime?
+
+  workspace Workspace?       @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignee  BackofficeUser?  @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  messages  SupportMessage[]
+
+  @@index([status, lastActivityAt])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model SupportMessage {
+  id               String   @id @default(cuid())
+  ticketId         String
+  authorType       String // cliente | equipe | sistema
+  userId           String?
+  backofficeUserId String?
+  body             String
+  // Nota interna da equipe: nunca aparece para o cliente.
+  internal         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  ticket         SupportTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  backofficeUser BackofficeUser? @relation(fields: [backofficeUserId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
+}
+
+model BackofficeAuditLog {
+  id               String   @id @default(cuid())
+  backofficeUserId String?
+  action           String // login, ticket.reply, workspace.plan, plan.update, ...
+  entity           String
+  entityId         String?
+  metadata         Json?
+  ipAddress        String?
+  createdAt        DateTime @default(now())
+
+  backofficeUser BackofficeUser? @relation(fields: [backofficeUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }
