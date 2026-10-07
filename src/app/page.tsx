@@ -32,7 +32,7 @@ const differentiators = ["noCrp", "erp", "offline"];
 export default async function Home() {
   const t = await getTranslations("public.home");
   return (
-    <main className="ds2 min-h-screen">
+    <main className="min-h-screen">
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="container flex items-center justify-between gap-3 py-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label="Salutti">

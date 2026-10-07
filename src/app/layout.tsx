@@ -1,13 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Figtree, Sora } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const sora = Sora({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-sora", display: "swap" });
-// Salutti 2.0 (só nas telas de entrada, classe `ds2`): Geist e Instrument Serif itálico, servidas daqui.
+// Design system Salutti 2.0: Geist (interface) e Instrument Serif itálico (acento de marketing), servidas daqui.
 const geist = localFont({
   src: [
     { path: "./fonts/geist-latin-400-normal.woff2", weight: "400", style: "normal" },
@@ -22,7 +20,6 @@ const serif = localFont({
   variable: "--font-serif",
   display: "swap",
 });
-const figtree = Figtree({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-figtree", display: "swap" });
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common.meta");
@@ -36,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = all.settings as Record<string, unknown> | undefined;
   const messages = { common: all.common, auth: all.auth, finance: all.finance, settings: { access: settings?.access } };
   return (
-    <html lang={locale} suppressHydrationWarning className={`${sora.variable} ${figtree.variable} ${geist.variable} ${serif.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>{children}</ThemeProvider>

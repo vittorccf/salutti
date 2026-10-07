@@ -12,12 +12,12 @@ type Props = {
 export const EmptyState = ({ icon, title, description, action, className }: Props) => (
   <div
     className={cn(
-      "flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 p-10 text-center",
+      "flex flex-col items-center justify-center rounded-xl border border-dashed bg-transparent p-10 text-center",
       className,
     )}
   >
-    {icon ? <div className="mb-3 text-muted-foreground">{icon}</div> : null}
-    <h3 className="font-sans text-base font-semibold">{title}</h3>
+    {icon ? <div className="mb-3 text-brand">{icon}</div> : null}
+    <h3 className="font-sans text-[15px] font-semibold leading-[22px]">{title}</h3>
     {description ? <p className="mt-1 max-w-md text-sm text-muted-foreground">{description}</p> : null}
     {action ? <div className="mt-4">{action}</div> : null}
   </div>

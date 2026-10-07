@@ -9,7 +9,7 @@ import { SignupForm } from "./signup-form";
 export default async function SignupPage() {
   const t = await getTranslations("auth.signup");
   return (
-    <main className="ds2 ds2-glow min-h-screen grid place-items-center p-4 py-12">
+    <main className="ds2-glow min-h-screen grid place-items-center p-4 py-12">
       <div className="fixed right-4 top-4">
         <LanguageSwitcher />
       </div>

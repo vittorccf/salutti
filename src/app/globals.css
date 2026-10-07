@@ -2,90 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design system Salutti 2.0 (artifact "Salutti 2.0", tokens.json): Dia (claro) e Noite (escuro).
+   Mesmos nomes de token nos dois temas; mude o tema, nunca a cor no componente. */
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 174 72% 32%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 44%;
-    --accent: 174 72% 95%;
-    --accent-foreground: 174 72% 24%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142 71% 38%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 174 72% 32%;
-    --radius: 0.75rem;
-
-    /* Design system Salutti: cores do logo (fixas nos dois temas) */
-    --brand-teal: 174 72% 32%;
-    --brand-teal-light: 174 51% 50%;
-    --brand-apricot: 27 87% 67%;
-    --brand-ink: 174 45% 13%;
-    --brand-mist: 165 33% 98%;
-
-    /* Variantes para texto com contraste AA */
-    --primary-strong: 175 77% 26%;
-    --success-strong: 142 72% 29%;
-    --warning-strong: 35 92% 33%;
-    --destructive-strong: 0 72% 42%;
-    --highlight: var(--brand-apricot);
-    --highlight-foreground: var(--brand-ink);
-  }
-
-  .dark {
-    --background: 176 35% 9%;
-    --foreground: 169 35% 94%;
-    --card: 174 32% 12%;
-    --card-foreground: 169 35% 94%;
-    --popover: 174 32% 12%;
-    --popover-foreground: 169 35% 94%;
-    --primary: 174 51% 50%;
-    --primary-foreground: 176 35% 9%;
-    --secondary: 175 29% 15%;
-    --secondary-foreground: 169 35% 94%;
-    --muted: 175 29% 15%;
-    --muted-foreground: 170 14% 66%;
-    --accent: 173 44% 16%;
-    --accent-foreground: 170 47% 66%;
-    --destructive: 0 91% 71%;
-    --destructive-foreground: 176 35% 9%;
-    --success: 142 69% 58%;
-    --success-foreground: 176 35% 9%;
-    --warning: 43 96% 56%;
-    --warning-foreground: 176 35% 9%;
-    --border: 174 28% 20%;
-    --input: 171 19% 44%;
-    --ring: 174 51% 50%;
-    --primary-strong: 173 57% 60%;
-    --success-strong: 142 69% 58%;
-    --warning-strong: 46 97% 65%;
-    --destructive-strong: 0 91% 71%;
-  }
-
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
-  h1, h2, h3 { @apply font-display; }
-}
-
-
-/* Design system Salutti 2.0 (artifact "Salutti 2.0", tokens.json), aplicado por enquanto só nas telas de
-   entrada (página inicial, login e cadastro) com a classe `ds2` no elemento raiz da página. O resto do app
-   continua no design atual até a migração completa. */
-@layer base {
-  .ds2 {
     --background: 240 54% 97%;
     --foreground: 228 22% 9%;
     --card: 0 0% 100%;
@@ -94,6 +14,8 @@
     --popover-foreground: 228 22% 9%;
     --primary: 228 22% 9%;
     --primary-foreground: 0 0% 100%;
+    --brand: 234 54% 54%;
+    --brand-foreground: 0 0% 100%;
     --secondary: 240 48% 95%;
     --secondary-foreground: 228 22% 9%;
     --muted: 240 48% 95%;
@@ -112,18 +34,30 @@
     --border: 236 35% 92%;
     --input: 233 16% 59%;
     --ring: 234 54% 54%;
-    --primary-strong: 234 54% 54%;
+    /* Texto de link/ícone de destaque: a cor de identidade (`brand`). */
+    --primary-strong: var(--brand);
+    --highlight: var(--brand-peach);
+    --highlight-foreground: var(--brand-ink);
+    --radius: 10px;
+
+    /* Cores fixas da marca (logo e peças de marca), iguais nos dois temas. */
+    --brand-night: 213 31% 7%;
+    --brand-slate: 212 33% 34%;
+    --brand-mist-blue: 211 30% 65%;
+    --brand-periwinkle: 234 54% 54%;
+    --brand-lavender: 231 58% 86%;
+    --brand-peach: 15 74% 74%;
     --brand-ink: 228 22% 9%;
     --brand-mist: 210 29% 93%;
-    --brand-peach: 15 74% 74%;
-    --highlight: 15 74% 74%;
-    --highlight-foreground: 228 22% 9%;
-    --radius: 12px;
-    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+
+    --gradient-brand: linear-gradient(45deg, #0c1117 0%, #3b5674 45%, #8aa4c0 75%, #eeb59a 100%);
+    --gradient-brand-light: linear-gradient(45deg, #dfe3f7 0%, #c7cdf0 40%, #d9cdef 70%, #f8d6c8 100%);
+    --gradient-glow: radial-gradient(60% 55% at 50% 0%, rgba(199, 205, 240, 0.9) 0%, rgba(245, 245, 252, 0) 100%);
+    --gradient-saluttin: linear-gradient(135deg, #8aa4c0 0%, #eea58c 100%);
+    --shadow-card: 0 1px 2px 0 rgba(18, 20, 28, 0.06);
   }
-  .dark .ds2 {
+
+  .dark {
     --background: 213 31% 7%;
     --foreground: 210 29% 93%;
     --card: 214 31% 10%;
@@ -132,6 +66,8 @@
     --popover-foreground: 210 29% 93%;
     --primary: 210 29% 93%;
     --primary-foreground: 213 31% 7%;
+    --brand: 211 30% 65%;
+    --brand-foreground: 213 31% 7%;
     --secondary: 213 29% 13%;
     --secondary-foreground: 210 29% 93%;
     --muted: 213 29% 13%;
@@ -150,19 +86,28 @@
     --border: 212 26% 18%;
     --input: 214 15% 44%;
     --ring: 211 30% 65%;
-    --primary-strong: 211 30% 65%;
+    --primary-strong: var(--brand);
+    --gradient-glow: radial-gradient(60% 55% at 50% 0%, rgba(74, 106, 143, 0.33) 0%, rgba(12, 17, 23, 0) 100%);
+    --shadow-card: 0 0 0 1px rgba(138, 164, 192, 0.06), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
   }
-  .ds2 h1, .ds2 h2, .ds2 h3 { font-family: inherit; }
-  .ds2 .rounded-xl { border-radius: 18px; }
-  .ds2 .lucide { stroke-width: 1.75; }
+
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
+  h1, h2, h3 { @apply font-display; }
+  /* Ícones Lucide com traço de 1,75px (design system). */
+  .lucide { stroke-width: 1.75; }
 }
 
 @layer components {
-  .ds2 .text-hero { font-size: clamp(36px, 6vw, 52px); line-height: 1.08; font-weight: 500; letter-spacing: -0.035em; }
-  .ds2 .text-display { font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.03em; }
-  .ds2 .text-page-title { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; }
-  .ds2 .text-accent-serif { font-family: var(--font-serif), ui-serif, Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; }
-  /* Um degradê por tela: brilho no topo (Dia lavanda, Noite ardósia). */
-  .ds2-glow { background-image: radial-gradient(60% 55% at 50% 0%, rgba(199, 205, 240, 0.9) 0%, rgba(245, 245, 252, 0) 100%); }
-  .dark .ds2-glow { background-image: radial-gradient(60% 55% at 50% 0%, rgba(74, 106, 143, 0.33) 0%, rgba(12, 17, 23, 0) 100%); }
+  /* Estilos de texto do DS (letter-spacing negativo nos títulos). */
+  .text-display { font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.03em; }
+  .text-page-title { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .text-card-title { font-size: 16px; line-height: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .text-overline { font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+  .text-hero { font-size: 52px; line-height: 56px; font-weight: 500; letter-spacing: -0.035em; }
+  .text-accent-serif { font-family: var(--font-serif), ui-serif, Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; }
+  /* Borda de 1px no degradê do Saluttin (card da IA): no máximo um elemento com degradê por tela. */
+  /* Brilho suave no topo da tela (Dia lavanda, Noite ardósia): no máximo um degradê por tela. */
+  .ds2-glow { background-image: var(--gradient-glow); }
+  .border-saluttin { border: 1px solid transparent; background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box, var(--gradient-saluttin) border-box; }
 }

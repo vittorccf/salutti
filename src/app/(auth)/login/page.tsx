@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const error = ERRORS.find((e) => e === params.error);
 
   return (
-    <main className="ds2 ds2-glow min-h-screen grid place-items-center p-4">
+    <main className="ds2-glow min-h-screen grid place-items-center p-4">
       <div className="fixed right-4 top-4">
         <LanguageSwitcher />
       </div>
