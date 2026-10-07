@@ -7,6 +7,7 @@ test("conta nova: cadastro → primeiros passos até 'Tudo pronto'", async ({ pa
   await page.locator("#name").fill("Marina Teste");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");
+  await page.locator("#passwordConfirm").fill("senha-segura-123");
   await page.locator("#workspaceName").fill("Espaço Marina");
   await page.locator("#segment").selectOption("solo_psicanalista");
   await page.getByRole("button", { name: "Criar conta" }).click();

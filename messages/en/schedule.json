@@ -7,7 +7,14 @@
     "newSession": "New session",
     "today": "Today",
     "empty": "No sessions",
-    "dayLabel": "{weekday}, {day}"
+    "dayLabel": "{weekday}, {day}",
+    "viewLabel": "Schedule view",
+    "viewWeek": "Week",
+    "viewMonth": "Month",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "more": "+{count} more",
+    "openWeekOf": "Open the week of {date}"
   },
   "form": {
     "noProfessionalTitle": "No professionals yet",

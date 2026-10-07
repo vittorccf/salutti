@@ -1,4 +1,5 @@
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { NewPasswordFields } from "@/components/forms/password-input";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -16,7 +17,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 
 export const dynamic = "force-dynamic";
 
-const ERRORS = ["dados", "email"] as const;
+const ERRORS = ["dados", "email", "senha"] as const;
 
 async function finish(invitationId: string, workspaceId: string, userId: string, role: string) {
   await acceptInvitation(invitationId, userId);
@@ -46,6 +47,7 @@ async function createAccountAction(formData: FormData) {
     .object({ name: z.string().trim().min(2).max(120), password: z.string().min(8).max(200) })
     .safeParse({ name: formData.get("name"), password: formData.get("password") });
   if (!parsed.success) redirect(`/convite/${token}?erro=dados`);
+  if (formData.get("passwordConfirm") !== parsed.data.password) redirect(`/convite/${token}?erro=senha`);
   if (await db.user.findFirst({ where: { email: { equals: inv.email, mode: "insensitive" } } })) redirect(`/convite/${token}`);
   const user = await db.user.create({
     data: { email: inv.email.toLowerCase(), name: parsed.data.name, passwordHash: await hashPassword(parsed.data.password) },
@@ -116,10 +118,7 @@ export default async function InvitePage({
                   <Label htmlFor="name">{t("name")}</Label>
                   <Input id="name" name="name" required autoComplete="name" />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="password">{t("password")}</Label>
-                  <Input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" />
-                </div>
+                <NewPasswordFields label={t("password")} className="sm:grid-cols-1" />
                 <Button type="submit" className="w-full">{t("createAndJoin")}</Button>
               </form>
             )}

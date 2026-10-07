@@ -18,6 +18,7 @@ test("convite da clínica para a recepção: link, conta nova e acesso sem pront
   await expect(guest.getByText("Você foi convidado como Recepção")).toBeVisible();
   await guest.locator("#name").fill("Rosa Recepção");
   await guest.locator("#password").fill("senha-segura-123");
+  await guest.locator("#passwordConfirm").fill("senha-segura-123");
   await guest.getByRole("button", { name: "Criar conta e entrar na equipe" }).click();
   await expect(guest).toHaveURL(/\/app$/);
   await expect(guest.getByRole("link", { name: "Pacientes" }).first()).toBeVisible();

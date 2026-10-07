@@ -9,6 +9,7 @@ test("trocar o idioma em Ajustes (en, es, pt-PT) e manter no próximo login", as
   await page.locator("#name").fill("Lia Idiomas");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");
+  await page.locator("#passwordConfirm").fill("senha-segura-123");
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/primeiros-passos/);
 

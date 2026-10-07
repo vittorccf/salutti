@@ -244,5 +244,11 @@
     "label": "Language",
     "auto": "Automatic (browser language)",
     "hint": "Applies to the whole system. Amounts stay in Brazilian reais (R$)."
+  },
+  "password": {
+    "show": "Show password",
+    "hide": "Hide password",
+    "confirm": "Confirm password",
+    "mismatch": "Passwords don't match."
   }
 }

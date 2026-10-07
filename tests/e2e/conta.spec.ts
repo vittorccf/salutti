@@ -17,6 +17,7 @@ test("clínica no cadastro → equipe → vira autônomo só com um profissional
   await page.locator("#name").fill("Rita Gestora");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");
+  await page.locator("#passwordConfirm").fill("senha-segura-123");
   await page.locator("#birthDate").fill(todayIn(1988));
   await page.locator("#workspaceName").fill("Clínica Ponte E2E");
   await page.locator("#cnpj").fill("11.222.333/0001-82");
@@ -87,6 +88,7 @@ test("perfil e dados do consultório em Ajustes (CEP preenche o endereço)", asy
   await page.locator("#name").fill("Davi Autônomo");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");
+  await page.locator("#passwordConfirm").fill("senha-segura-123");
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/app\/primeiros-passos$/);
 

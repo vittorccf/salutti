@@ -1,4 +1,5 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
+import { PasswordInput } from "@/components/forms/password-input";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -78,7 +79,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("password")}</Label>
-              <Input id="password" name="password" type="password" required />
+              <PasswordInput id="password" name="password" required autoComplete="current-password" />
             </div>
             {error ? (
               <p className="text-sm text-destructive-strong" role="alert">{t(`errors.${error}`)}</p>
