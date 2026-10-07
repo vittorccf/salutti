@@ -270,5 +270,10 @@
     "hide": "Ocultar senha",
     "confirm": "Confirme a senha",
     "mismatch": "As senhas não conferem."
+  },
+  "signature": {
+    "clear": "Limpar",
+    "hint": "A paciente assina com o dedo ou a caneta na tela. Opcional.",
+    "signed": "Assinatura colhida. Para refazer, limpe e assine de novo."
   }
 }

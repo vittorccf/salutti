@@ -9,6 +9,8 @@ import { fefoOrder } from "@/lib/stock";
 import { isProcedureCategory, quantityInput, returnDate, returnStartsAtLocal, sessionMargin, suppliesCost } from "@/lib/procedures";
 import { getFormat, getLocale, getTranslations } from "@/i18n/server";
 import { ActionForm } from "@/components/forms/action-form";
+import { SignaturePad } from "@/components/forms/signature-pad";
+import { mediaUrl } from "@/lib/media";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -110,13 +112,25 @@ export async function SessionProcedure({ appt, recorded, reversed }: { appt: App
                 <p className="mt-2 whitespace-pre-wrap text-muted-foreground">{procedure.consentText}</p>
               </details>
               {consent ? (
-                <p className="flex items-center gap-2 text-sm text-success-strong">
-                  <CheckCircle2 className="h-4 w-4" aria-hidden /> {t("consentAccepted", { date: f.dateTime(consent.grantedAt) })}
-                </p>
+                <div className="space-y-2">
+                  <p className="flex items-center gap-2 text-sm text-success-strong">
+                    <CheckCircle2 className="h-4 w-4" aria-hidden />{" "}
+                    {t(consent.signatureId ? "consentSigned" : "consentAccepted", { date: f.dateTime(consent.grantedAt) })}
+                  </p>
+                  {consent.signatureId ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- assinatura privada servida por /api/media
+                    <img
+                      src={mediaUrl(consent.signatureId) ?? ""}
+                      alt={t("signatureAlt")}
+                      className="h-20 w-auto rounded-md border bg-white p-1"
+                    />
+                  ) : null}
+                </div>
               ) : (
-                <form action={acceptConsentAction} className="flex flex-wrap items-center gap-3">
+                <form action={acceptConsentAction} className="space-y-3">
                   <input type="hidden" name="appointmentId" value={appt.id} />
                   <p className="text-sm text-muted-foreground">{t("consentPending")}</p>
+                  <SignaturePad name="signature" label={t("signatureLabel")} />
                   <Button type="submit" variant="outline" size="sm">
                     <ClipboardCheck className="h-4 w-4" aria-hidden /> {t("consentAccept")}
                   </Button>

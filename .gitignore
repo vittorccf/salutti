@@ -20,3 +20,8 @@ playwright-report
 # Vercel CLI (vercel link / env pull)
 .vercel
 .env*.local
+
+# Skills de agentes instaladas localmente (Neon etc.), não fazem parte do app
+.agents
+.claude/skills
+skills-lock.json

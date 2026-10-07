@@ -80,7 +80,9 @@
     "saleOnlyResale": "Sales only apply to retail products.",
     "alreadyRecorded": "This session already has the procedure recorded.",
     "notRecorded": "This session has no record to reverse.",
-    "reversalReason": "Enter the reason for the reversal."
+    "reversalReason": "Enter the reason for the reversal.",
+    "openedAtInvalid": "Enter the opening date and time, or mark the vial as not opened.",
+    "openedAtRange": "The opening must be after the lot was received and cannot be in the future."
   },
   "list": {
     "title": "Inventory",
@@ -229,7 +231,13 @@
     "quantity": "Quantity",
     "noPatient": "No patient",
     "openSession": "Open session",
-    "summaryTitle": "Lot summary"
+    "summaryTitle": "Lot summary",
+    "correctOpened": "Correct vial opening",
+    "openedAtLabel": "Opened at",
+    "notOpened": "The vial was not opened",
+    "correctOpenedSubmit": "Save correction",
+    "correctOpenedHint": "This changes the after-opening expiry. The correction is kept in the audit log with the previous value.",
+    "openedCorrected": "Opening corrected."
   },
   "dashboard": {
     "title": "{count, plural, one {Inventory · # alert} other {Inventory · # alerts}}",

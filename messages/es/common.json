@@ -270,5 +270,10 @@
     "hide": "Ocultar contraseña",
     "confirm": "Confirma la contraseña",
     "mismatch": "Las contraseñas no coinciden."
+  },
+  "signature": {
+    "clear": "Borrar",
+    "hint": "La paciente firma con el dedo o el lápiz en la pantalla. Opcional.",
+    "signed": "Firma registrada. Para rehacerla, borre y firme de nuevo."
   }
 }

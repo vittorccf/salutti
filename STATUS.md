@@ -1,6 +1,25 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-06. A seção "Pacote de melhorias" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-07. A seção "Salutti Estética" é a mais recente; as demais ficam como histórico.
+
+## Salutti Estética (2026-10-07) — PRs #28, #29 e o pacote seguinte
+
+Nova área (white label por `Workspace.area`, tudo em `src/lib/areas.ts`; guia em `docs/ESTETICA.md`): páginas
+`/estetica`, `/estetica/cadastro`, `/estetica/login`; módulos Procedimentos (catálogo, kit de insumos, termo com hash e
+assinatura na tela, retorno sugerido), Estoque (lote, validade, validade após aberto, FEFO, alertas, perda/venda/ajuste,
+rastreabilidade "quem recebeu", baixa atômica, estorno com motivo) e Fotos clínicas (antes/durante/depois, ligadas à
+sessão, divulgação com autorização separada e revogável, remoção lógica). Convênios desligado (404 também por URL).
+Revisores: `esteta` (novo, `.claude/agents/esteta.md`), `advogado-do-diabo`, `qualidade`.
+
+- **Design system "Salutti Estética"** (artifact https://claude.ai/artifact/HN4V2a1R9uevDrbXAuPfDs): o 2.0 em lilás
+  (#d8c8ee), Cormorant Garamond na saudação/hero e selo "estética" no logo. Aplicado via `data-area="estetica"`
+  (`globals.css`, `AreaTheme`) e `public/brand/estetica/`. Selo legível a partir de 32 px de altura.
+- **Primeira usuária:** Vitória Franceschet, farmacêutica esteta (CRF-MT 588273), login `vitoria_franceschet` em produção.
+- Link de pagamento usa `APP_URL` ou o host do pedido (`src/lib/app-url.ts`), não mais `salutti.app`.
+
+**Ficou para depois:** modelos de anamnese só em pt-BR (conteúdo, ver `docs/I18N.md`); `Float` em quantidades e
+valores (arredondados a 3/2 casas; migrar para `Decimal` se surgir divergência); ícone/PWA próprios da Estética
+(o manifest é único); a imagem do termo não é um PDF assinado com certificado (é aceite + hash + assinatura na tela).
 
 ## Equipe: convites e acesso clínico (2026-10-06)
 

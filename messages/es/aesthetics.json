@@ -149,7 +149,10 @@
     "reverseTitle": "Revertir registro (error de carga)",
     "reverseHint": "Los insumos vuelven a los mismos lotes y la reversión queda en el historial con el motivo. Luego, regístrelo de nuevo.",
     "reverseReason": "Motivo de la reversión",
-    "reverseSubmit": "Revertir y devolver al stock"
+    "reverseSubmit": "Revertir y devolver al stock",
+    "consentSigned": "Consentimiento aceptado y firmado el {date}.",
+    "signatureLabel": "Firma de la paciente",
+    "signatureAlt": "Firma de la paciente en el consentimiento"
   },
   "patient": {
     "historyTitle": "Historial de procedimientos",
@@ -182,6 +185,8 @@
     "revokeMarketing": "Revocar divulgación",
     "removeReason": "Motivo de la eliminación",
     "removeConfirm": "Quitar",
-    "removeHint": "La foto sale de la ficha, pero el registro queda guardado en la historia clínica."
+    "removeHint": "La foto sale de la ficha, pero el registro queda guardado en la historia clínica.",
+    "session": "Sesión (opcional)",
+    "noSession": "Sin sesión"
   }
 }

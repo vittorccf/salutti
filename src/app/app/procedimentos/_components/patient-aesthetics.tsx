@@ -224,6 +224,17 @@ export async function PatientAesthetics({ workspaceId, patientId, uploaded }: { 
                     ))}
                 </Select>
               </div>
+              <div className="space-y-1 sm:col-span-2">
+                <Label htmlFor="photo-session">{t("session")}</Label>
+                <Select id="photo-session" name="appointmentId" defaultValue="">
+                  <option value="">{t("noSession")}</option>
+                  {sessions.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {f.dateTime(a.startsAt)} · {procedureName.get(a.procedureId ?? "") ?? "-"}
+                    </option>
+                  ))}
+                </Select>
+              </div>
               <div className="space-y-1">
                 <Label htmlFor="photo-region">{t("region")}</Label>
                 <Input id="photo-region" name="region" maxLength={80} placeholder={t("regionPlaceholder")} />

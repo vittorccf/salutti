@@ -20,6 +20,15 @@ const serif = localFont({
   variable: "--font-serif",
   display: "swap",
 });
+// Voz delicada da Salutti Estética (variável 300–700, normal e itálico): saudação, hero e selo.
+const cormorant = localFont({
+  src: [
+    { path: "./fonts/cormorant-garamond-latin-normal.woff2", weight: "300 700", style: "normal" },
+    { path: "./fonts/cormorant-garamond-latin-italic.woff2", weight: "300 700", style: "italic" },
+  ],
+  variable: "--font-cormorant",
+  display: "swap",
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common.meta");
@@ -41,7 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     aesthetics: { form: aesthetics?.form, categories: aesthetics?.categories, schedule: aesthetics?.schedule },
   };
   return (
-    <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable} ${cormorant.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>{children}</ThemeProvider>

@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { media } from "@/lib/providers/media";
 import { canSeeClinical } from "@/lib/permissions";
 
+// Margem para o JSON dos demais dados dentro dos 4,5 MB de resposta de uma função da Vercel.
+const IMAGE_BUDGET = 3_500_000;
+
 export const GET = async (req: Request) => {
   const ctx = await getCurrentContext();
   if (!ctx) return NextResponse.json({ error: "unauth" }, { status: 401 });
@@ -29,15 +32,38 @@ export const GET = async (req: Request) => {
 
   const photoFile = patient.photoId ? await media.read(patient.photoId) : null;
   const photo = photoFile ? { mime: photoFile.mime, dataUrl: `data:${photoFile.mime};base64,${Buffer.from(photoFile.bytes).toString("base64")}` } : null;
-  // Fotos clínicas (Salutti Estética) também são dados da pessoa: vão na exportação com a imagem.
-  const clinicalPhotos = await Promise.all(
-    (await db.clinicalPhoto.findMany({ where: { workspaceId: ctx.workspace.id, patientId: patient.id } })).map(async (cp) => {
-      const file = await media.read(cp.mediaId);
-      return { ...cp, dataUrl: file ? `data:${file.mime};base64,${Buffer.from(file.bytes).toString("base64")}` : null };
-    }),
-  );
+  // Fotos clínicas e assinaturas (Salutti Estética) também são dados da pessoa: vão com a imagem enquanto o
+  // arquivo couber no limite de resposta da Vercel (4,5 MB). O que passar fica listado com o id, para baixar à parte.
+  let budget = IMAGE_BUDGET - (photo?.dataUrl.length ?? 0);
+  const embed = async (mediaId: string) => {
+    const file = await media.read(mediaId);
+    if (!file) return { dataUrl: null, omitted: false };
+    const dataUrl = `data:${file.mime};base64,${Buffer.from(file.bytes).toString("base64")}`;
+    if (dataUrl.length > budget) return { dataUrl: null, omitted: true };
+    budget -= dataUrl.length;
+    return { dataUrl, omitted: false };
+  };
+  const clinicalPhotos = [];
+  for (const cp of await db.clinicalPhoto.findMany({ where: { workspaceId: ctx.workspace.id, patientId: patient.id }, orderBy: { takenAt: "asc" } })) {
+    clinicalPhotos.push({ ...cp, ...(await embed(cp.mediaId)) });
+  }
+  const signatures = [];
+  for (const c of patient.consentRecords.filter((c) => c.signatureId)) {
+    signatures.push({ consentRecordId: c.id, mediaId: c.signatureId, ...(await embed(c.signatureId!)) });
+  }
+  const omitted = [...clinicalPhotos, ...signatures].filter((x) => x.omitted).length;
   const filename = `salutti-portabilidade-${patient.fullName.replaceAll(" ", "_")}.json`;
-  return new NextResponse(JSON.stringify({ ...patient, photo, clinicalPhotos }, null, 2), {
+  return new NextResponse(JSON.stringify(
+      {
+        ...patient,
+        photo,
+        clinicalPhotos,
+        signatures,
+        ...(omitted ? { note: `${omitted} imagem(ns) acima do limite do arquivo: peça a exportação das imagens ao consultório.` } : {}),
+      },
+      null,
+      2,
+    ), {
     headers: {
       "content-type": "application/json",
       "content-disposition": `attachment; filename="${filename}"`,

@@ -2,8 +2,10 @@
 // Para um storage de objetos (ex.: Vercel Blob privado), só o corpo destas funções muda.
 import { db } from "@/lib/db";
 
-// clinical_photo: foto clínica (antes/durante/depois) da Salutti Estética; só papéis clínicos acessam.
-export type MediaKind = "user_avatar" | "workspace_banner" | "patient_photo" | "clinical_photo";
+// clinical_photo: foto clínica (antes/durante/depois) da Salutti Estética; consent_signature: assinatura da
+// paciente no termo. As duas são dado de saúde: só papéis clínicos acessam.
+export type MediaKind = "user_avatar" | "workspace_banner" | "patient_photo" | "clinical_photo" | "consent_signature";
+export const CLINICAL_MEDIA: MediaKind[] = ["clinical_photo", "consent_signature"];
 export type MediaOwner = { userId?: string; workspaceId?: string };
 
 export const media = {

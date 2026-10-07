@@ -1,10 +1,10 @@
 "use server";
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
+import { appOrigin } from "@/lib/app-url";
 import { emailSchema } from "@/lib/email";
 import { createInvitation, isInviteRole, rolesFor } from "@/lib/invitations";
 import type { FormResult } from "@/components/forms/action-form";
@@ -16,12 +16,7 @@ async function managerContext() {
   return ctx;
 }
 
-const origin = () => {
-  const h = headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
-  return process.env.APP_URL || `${proto}://${host}`;
-};
+const origin = appOrigin;
 
 export async function inviteMemberAction(_prev: FormResult, formData: FormData): Promise<FormResult & { link?: string }> {
   const t = await getTranslations("settings.access");

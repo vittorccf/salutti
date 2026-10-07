@@ -149,7 +149,10 @@
     "reverseTitle": "Estornar registo (lançamento errado)",
     "reverseHint": "Os insumos voltam aos mesmos lotes e o estorno fica no histórico com o motivo. Depois, registe de novo.",
     "reverseReason": "Motivo do estorno",
-    "reverseSubmit": "Estornar e devolver ao stock"
+    "reverseSubmit": "Estornar e devolver ao stock",
+    "consentSigned": "Termo aceite e assinado em {date}.",
+    "signatureLabel": "Assinatura da paciente",
+    "signatureAlt": "Assinatura da paciente no termo"
   },
   "patient": {
     "historyTitle": "Histórico de procedimentos",
@@ -182,6 +185,8 @@
     "revokeMarketing": "Revogar divulgação",
     "removeReason": "Motivo da remoção",
     "removeConfirm": "Remover",
-    "removeHint": "A fotografia sai da ficha, mas o registo fica guardado no processo clínico."
+    "removeHint": "A fotografia sai da ficha, mas o registo fica guardado no processo clínico.",
+    "session": "Sessão (opcional)",
+    "noSession": "Sem sessão"
   }
 }

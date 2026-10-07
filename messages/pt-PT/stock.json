@@ -80,7 +80,9 @@
     "saleOnlyResale": "A venda só se aplica a produtos de revenda.",
     "alreadyRecorded": "Esta sessão já tem o procedimento registado.",
     "notRecorded": "Esta sessão não tem registo para estornar.",
-    "reversalReason": "Indique o motivo do estorno."
+    "reversalReason": "Indique o motivo do estorno.",
+    "openedAtInvalid": "Indique a data e a hora da abertura, ou marque que o frasco não foi aberto.",
+    "openedAtRange": "A abertura tem de ser depois da entrada do lote e não pode estar no futuro."
   },
   "list": {
     "title": "Stock",
@@ -229,7 +231,13 @@
     "quantity": "Quantidade",
     "noPatient": "Sem paciente",
     "openSession": "Abrir sessão",
-    "summaryTitle": "Resumo do lote"
+    "summaryTitle": "Resumo do lote",
+    "correctOpened": "Corrigir abertura do frasco",
+    "openedAtLabel": "Aberto em",
+    "notOpened": "O frasco não foi aberto",
+    "correctOpenedSubmit": "Guardar correção",
+    "correctOpenedHint": "Altera a validade depois de aberto. A correção fica registada na auditoria com o valor anterior.",
+    "openedCorrected": "Abertura corrigida."
   },
   "dashboard": {
     "title": "{count, plural, one {Stock · # alerta} other {Stock · # alertas}}",

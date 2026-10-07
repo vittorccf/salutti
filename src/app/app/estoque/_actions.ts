@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { ensureAffected } from "@/lib/tenant";
-import { parseDateOnly } from "@/lib/dates";
+import { parseDateOnly, parseDateTimeLocal } from "@/lib/dates";
 import { adjustLot, openLot, parseDecimal, receiveLot, roundQty, StockError } from "@/lib/stock";
 import { getTranslations } from "@/i18n/server";
 import type { FormResult } from "@/components/forms/action-form";
@@ -183,4 +183,33 @@ export async function openLotAction(fd: FormData) {
   } catch (e) {
     if (!(e instanceof StockError)) throw e;
   }
+}
+
+// Correção da abertura do frasco (marcada na hora errada ou sem querer): nova data/hora ou "não aberto".
+// Fica na auditoria com o valor anterior, porque muda a validade depois de aberto.
+export async function correctOpenedAtAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
+  const ctx = await requireStock("manage");
+  const t = await getTranslations("stock.errors");
+  const lot = await db.stockLot.findFirst({ where: { id: str(fd, "lotId"), workspaceId: ctx.workspace.id } });
+  if (!lot) return { erro: t("lot") };
+  const raw = str(fd, "openedAt");
+  const clear = fd.get("notOpened") === "on";
+  let openedAt: Date | null = null;
+  if (!clear) {
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) return { erro: t("openedAtInvalid") };
+    openedAt = parseDateTimeLocal(raw);
+    if (openedAt.getTime() > Date.now() || openedAt < lot.receivedAt) return { erro: t("openedAtRange") };
+  }
+  await db.stockLot.update({ where: { id: lot.id }, data: { openedAt } });
+  await recordAudit({
+    workspaceId: ctx.workspace.id,
+    userId: ctx.user.id,
+    action: "stock_lot.correct_opened",
+    entity: "StockLot",
+    entityId: lot.id,
+    metadata: { from: lot.openedAt?.toISOString() ?? null, to: openedAt?.toISOString() ?? null },
+  });
+  revalidatePath(`/app/estoque/lote/${lot.id}`);
+  revalidatePath(`/app/estoque/${lot.productId}`);
+  return { ok: (await getTranslations("stock.lot"))("openedCorrected") };
 }

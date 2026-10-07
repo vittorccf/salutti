@@ -1,4 +1,5 @@
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { AreaTheme } from "@/components/brand/area-theme";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentContext } from "@/lib/auth";
@@ -54,7 +55,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <span className="min-w-0 font-semibold leading-tight">{ctx.user.name}</span>
             </span>
           ) : (
-            <BrandLogo height={28} area={area} />
+            <BrandLogo height={area === "mental" ? 28 : 36} area={area} />
           )}
           {AREAS[area].brandTag && customBrand ? (
             <span className="block text-xs font-medium text-brand">{AREAS[area].name}</span>
@@ -90,7 +91,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[260px_minmax(0,1fr)]">
+    <div data-area={area} className="min-h-screen md:grid md:grid-cols-[260px_minmax(0,1fr)]">
+      <AreaTheme area={area} />
       <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:flex-col border-r bg-card">{sidebar}</aside>
 
       <main className="bg-background min-h-screen min-w-0">
@@ -99,7 +101,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="flex min-w-0 items-center gap-3">
               <MobileNav>{sidebar}</MobileNav>
               <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t("home")}>
-                <BrandLogo variant="symbol" height={28} />
+                <BrandLogo variant="symbol" height={28} area={area} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
                 {label("accountType", ctx.workspace.accountType)} · {label("segment", ctx.workspace.segment)}
