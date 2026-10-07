@@ -1,0 +1,82 @@
+{
+  "button": {
+    "open": "Contact support",
+    "close": "Close support",
+    "unread": "New reply from support"
+  },
+  "title": "Salutti support",
+  "tabs": {
+    "new": "New request",
+    "mine": "My requests"
+  },
+  "form": {
+    "topic": "What is it about?",
+    "topicPlaceholder": "Choose a topic",
+    "subject": "Subject",
+    "subjectPlaceholder": "A short summary",
+    "message": "Message",
+    "send": "Send",
+    "sending": "Sending…",
+    "privacy": "To protect your patients, don’t include names, ID numbers or clinical information: describe the situation in general terms. The Salutti team reads your request and automatically sees the page you were on, your browser and screen size, only to understand the problem."
+  },
+  "topics": {
+    "bug": {
+      "label": "Something isn’t working",
+      "help": "Tell us what you tried to do, what happened and what you expected. E.g.: “When saving the session in the Schedule, the screen froze.”"
+    },
+    "acesso": {
+      "label": "Sign-in and access",
+      "help": "Tell us what happens when you sign in (password, 2FA code, team invite). Never send your password."
+    },
+    "duvida": {
+      "label": "How-to question",
+      "help": "Tell us which screen you’re on and what you want to do."
+    },
+    "financeiro": {
+      "label": "Plan and billing",
+      "help": "Salutti subscription, billing or plan change."
+    },
+    "privacidade": {
+      "label": "Privacy and data protection",
+      "help": "Data subject request, data export or deletion, consent form."
+    },
+    "sugestao": {
+      "label": "Suggestion",
+      "help": "What improvement would help your routine? Tell us the problem it solves."
+    },
+    "outro": {
+      "label": "Something else",
+      "help": "Write in your own words, we’ll route it."
+    }
+  },
+  "sent": {
+    "title": "We received request #{number}",
+    "body": "We’ll reply here. When there’s a reply, the support button shows a dot.",
+    "mine": "See my requests",
+    "another": "Open another request"
+  },
+  "errors": {
+    "invalid": "Choose a topic, write a subject (3+ letters) and describe what happened.",
+    "limit": "Too many messages in a short time. Try again in an hour.",
+    "notFound": "Request not found.",
+    "empty": "Write your message."
+  },
+  "mine": {
+    "empty": "You haven’t opened any requests yet.",
+    "back": "Back",
+    "you": "You",
+    "team": "Salutti team",
+    "reply": "Reply",
+    "replyPlaceholder": "Write your reply…",
+    "replied": "Message sent.",
+    "newReply": "New reply",
+    "updated": "Updated {date}"
+  },
+  "status": {
+    "aberto": "Open",
+    "em_andamento": "In progress",
+    "aguardando_cliente": "Waiting for you",
+    "resolvido": "Resolved",
+    "fechado": "Closed"
+  }
+}

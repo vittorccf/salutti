@@ -40,6 +40,8 @@ model User {
   auditEvents   AuditLog[]    @relation("AuditUser")
   connections   IntegrationConnection[]
   invitesSent   Invitation[]  @relation("InviteSentBy")
+  supportTickets  SupportTicket[]
+  supportMessages SupportMessage[]
 }
 
 model Workspace {
@@ -68,7 +70,7 @@ model Workspace {
   state         String?
   legalRepName    String?
   trialEndsAt     DateTime?
-  planTier        String         @default("trial") // trial | starter | pro | enterprise
+  planTier        String         @default("trial") // trial | basico | essencial | anual (PlatformPlan.code); legados: starter | pro | enterprise
   createdAt       DateTime       @default(now())
 
   memberships     Membership[]
@@ -96,6 +98,7 @@ model Workspace {
   stockLots       StockLot[]
   stockMovements  StockMovement[]
   clinicalPhotos  ClinicalPhoto[]
+  supportTickets  SupportTicket[]
 }
 
 model Membership {
@@ -711,4 +714,117 @@ model ClinicalPhoto {
   workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, patientId])
+}
+
+// ---------------------------------------------------------------------------------------------
+// Backoffice da plataforma (/backoffice): equipe da Salutti, não usuários de consultório.
+// Login, sessão e permissões separados do app (src/lib/backoffice/auth.ts). Ver docs/BACKOFFICE.md.
+
+model BackofficeUser {
+  id                 String    @id @default(cuid())
+  username           String    @unique
+  name               String
+  passwordHash       String
+  role               String    @default("suporte") // admin | suporte
+  active             Boolean   @default(true)
+  // Senha criada por outra pessoa (ou a inicial admin/admin): troca obrigatória no primeiro acesso.
+  mustChangePassword Boolean   @default(true)
+  failedAttempts     Int       @default(0)
+  lockedUntil        DateTime?
+  // Sessões emitidas antes da última troca de senha deixam de valer.
+  passwordChangedAt  DateTime  @default(now())
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+
+  assignedTickets SupportTicket[]      @relation("TicketAssignee")
+  messages        SupportMessage[]
+  auditEvents     BackofficeAuditLog[]
+}
+
+// Catálogo de planos da plataforma, editável no backoffice. `code` é o valor gravado em Workspace.planTier.
+model PlatformPlan {
+  id          String   @id @default(cuid())
+  code        String   @unique // trial | basico | essencial | anual
+  name        String
+  priceCents  Int      @default(0)
+  interval    String   @default("mensal") // trial | mensal | anual
+  trialDays   Int?
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Chamado aberto pelo cliente no toggle de suporte do app. workspace/usuário ficam opcionais para o chamado
+// sobreviver à exclusão da conta (o histórico de suporte não é dado clínico).
+model SupportTicket {
+  id             String    @id @default(cuid())
+  number         Int       @unique @default(autoincrement())
+  workspaceId    String?
+  userId         String?
+  // Cópia de quem abriu, para o chamado continuar legível se a conta for apagada.
+  requesterName  String
+  requesterEmail String
+  category       String    @default("bug") // bug | duvida | sugestao | financeiro | acesso | outro
+  subject        String
+  status         String    @default("aberto") // aberto | em_andamento | aguardando_cliente | resolvido | fechado
+  priority       String    @default("normal") // baixa | normal | alta | urgente
+  // Contexto técnico capturado pelo toggle (página, navegador, tela, versão do app). Nunca dados de paciente.
+  pageUrl        String?
+  userAgent      String?
+  viewport       String?
+  appVersion     String?
+  locale         String?
+  metadata       Json?
+  assigneeId     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lastActivityAt DateTime  @default(now())
+  // Mensagens do cliente ainda não lidas pela equipe (zera ao abrir o chamado no backoffice).
+  unreadByStaff  Boolean   @default(true)
+  unreadByClient Boolean   @default(false)
+  resolvedAt     DateTime?
+
+  workspace Workspace?       @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignee  BackofficeUser?  @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  messages  SupportMessage[]
+
+  @@index([status, lastActivityAt])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model SupportMessage {
+  id               String   @id @default(cuid())
+  ticketId         String
+  authorType       String // cliente | equipe | sistema
+  userId           String?
+  backofficeUserId String?
+  body             String
+  // Nota interna da equipe: nunca aparece para o cliente.
+  internal         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  ticket         SupportTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  backofficeUser BackofficeUser? @relation(fields: [backofficeUserId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
+}
+
+model BackofficeAuditLog {
+  id               String   @id @default(cuid())
+  backofficeUserId String?
+  action           String // login, ticket.reply, workspace.plan, plan.update, ...
+  entity           String
+  entityId         String?
+  metadata         Json?
+  ipAddress        String?
+  createdAt        DateTime @default(now())
+
+  backofficeUser BackofficeUser? @relation(fields: [backofficeUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }

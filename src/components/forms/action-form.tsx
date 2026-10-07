@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { useFormState } from "react-dom";
 import { FormError } from "./form-error";
 
@@ -12,15 +13,22 @@ export function ActionForm({
   className,
   id,
   children,
+  resetOnSuccess = false,
 }: {
   action: FormAction;
   className?: string;
   id?: string;
   children: React.ReactNode;
+  // Limpa os campos depois de um envio bem-sucedido (ex.: caixa de mensagem, para não reenviar o mesmo texto).
+  resetOnSuccess?: boolean;
 }) {
   const [state, formAction] = useFormState(action, null);
+  const ref = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (resetOnSuccess && state?.ok) ref.current?.reset();
+  }, [state, resetOnSuccess]);
   return (
-    <form action={formAction} className={className} id={id}>
+    <form ref={ref} action={formAction} className={className} id={id}>
       <FormError message={state?.erro} />
       {state?.ok ? (
         <p role="status" className="rounded-md bg-success/10 p-3 text-sm text-success-strong">

@@ -1,0 +1,82 @@
+{
+  "button": {
+    "open": "Falar com o suporte",
+    "close": "Fechar suporte",
+    "unread": "Há resposta nova do suporte"
+  },
+  "title": "Suporte Salutti",
+  "tabs": {
+    "new": "Novo chamado",
+    "mine": "Meus chamados"
+  },
+  "form": {
+    "topic": "Sobre o que é?",
+    "topicPlaceholder": "Escolha um tópico",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Resumo em poucas palavras",
+    "message": "Mensagem",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "privacy": "Para proteger seus pacientes, não escreva nomes, CPF nem informações clínicas: descreva a situação de forma geral. A equipe Salutti lê seu chamado e vê automaticamente a página em que você estava, seu navegador e o tamanho da tela, só para entender o problema."
+  },
+  "topics": {
+    "bug": {
+      "label": "Algo não funciona",
+      "help": "Conte o que você tentou fazer, o que aconteceu e o que esperava. Ex.: “Ao salvar a sessão na Agenda, a tela travou.”"
+    },
+    "acesso": {
+      "label": "Login e acesso",
+      "help": "Diga o que acontece ao entrar (senha, código 2FA, convite da equipe). Nunca envie sua senha."
+    },
+    "duvida": {
+      "label": "Dúvida de uso",
+      "help": "Diga em qual tela está e o que quer fazer. Ex.: “Como lanço um pagamento parcial no Financeiro?”"
+    },
+    "financeiro": {
+      "label": "Plano e cobrança",
+      "help": "Assinatura, cobrança ou troca de plano da Salutti. Para o financeiro do seu consultório, use “Dúvida de uso”."
+    },
+    "privacidade": {
+      "label": "Privacidade e LGPD",
+      "help": "Pedido de titular, exportação ou exclusão de dados, termo de consentimento."
+    },
+    "sugestao": {
+      "label": "Sugestão",
+      "help": "Que melhoria ajudaria sua rotina? Conte o problema que ela resolve."
+    },
+    "outro": {
+      "label": "Outro assunto",
+      "help": "Escreva com suas palavras, nós encaminhamos."
+    }
+  },
+  "sent": {
+    "title": "Recebemos seu chamado nº {number}",
+    "body": "Vamos responder por aqui. Quando houver resposta, o botão de suporte mostra um ponto.",
+    "mine": "Ver meus chamados",
+    "another": "Abrir outro chamado"
+  },
+  "errors": {
+    "invalid": "Escolha o tópico, escreva um assunto (3 letras ou mais) e descreva o que aconteceu.",
+    "limit": "Muitas mensagens em pouco tempo. Tente de novo em uma hora.",
+    "notFound": "Chamado não encontrado.",
+    "empty": "Escreva a mensagem."
+  },
+  "mine": {
+    "empty": "Você ainda não abriu chamados.",
+    "back": "Voltar",
+    "you": "Você",
+    "team": "Equipe Salutti",
+    "reply": "Responder",
+    "replyPlaceholder": "Escreva sua resposta…",
+    "replied": "Mensagem enviada.",
+    "newReply": "Resposta nova",
+    "updated": "Atualizado em {date}"
+  },
+  "status": {
+    "aberto": "Aberto",
+    "em_andamento": "Em andamento",
+    "aguardando_cliente": "Aguardando você",
+    "resolvido": "Resolvido",
+    "fechado": "Fechado"
+  }
+}
