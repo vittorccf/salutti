@@ -14,7 +14,9 @@
     "communication": "Communication",
     "team": "Professionals",
     "lgpd": "LGPD",
-    "settings": "Settings"
+    "settings": "Settings",
+    "procedures": "Procedures",
+    "stock": "Inventory"
   },
   "layout": {
     "home": "Home",
@@ -87,7 +89,14 @@
       "solo_psicanalista": "Psychoanalysis or therapy",
       "clinica": "Multidisciplinary",
       "ubs": "Public health unit (UBS)",
-      "odonto": "Dentistry"
+      "odonto": "Dentistry",
+      "estetica_farmacia": "Aesthetic pharmacy",
+      "estetica_biomedicina": "Aesthetic biomedicine",
+      "estetica_esteticista": "Aesthetics",
+      "estetica_enfermagem": "Aesthetic nursing",
+      "estetica_hof": "Orofacial harmonization",
+      "estetica_medicina": "Aesthetic medicine",
+      "estetica_clinica": "Aesthetics clinic"
     },
     "segmentOption": {
       "solo_psicologo": "Psychology (licensed)",
@@ -95,7 +104,14 @@
       "odonto": "Dentistry",
       "clinica": "Multidisciplinary clinic",
       "ubs": "Public health unit (UBS) or public service",
-      "odonto_clinica": "Dental clinic"
+      "odonto_clinica": "Dental clinic",
+      "estetica_farmacia": "Aesthetic pharmacy (CRF)",
+      "estetica_biomedicina": "Aesthetic biomedicine (CRBM)",
+      "estetica_esteticista": "Aesthetician (Law 13.643/2018, no licensing board)",
+      "estetica_enfermagem": "Aesthetic nursing (COREN)",
+      "estetica_hof": "Orofacial harmonization (CRO)",
+      "estetica_medicina": "Aesthetic medicine and dermatology (CRM)",
+      "estetica_clinica": "Aesthetics clinic"
     },
     "accountType": {
       "autonomo": "Independent professional",
@@ -111,7 +127,11 @@
       "terapeuta": "Therapist",
       "psiquiatra": "Psychiatrist",
       "dentista": "Dentist",
-      "medico": "Physician"
+      "medico": "Physician",
+      "farmaceutico": "Pharmacist",
+      "biomedico": "Biomedical scientist",
+      "esteticista": "Aesthetician",
+      "enfermeiro": "Nurse"
     },
     "guideType": {
       "consulta": "Consultation form",

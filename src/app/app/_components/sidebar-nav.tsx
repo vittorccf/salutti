@@ -9,34 +9,46 @@ import {
   Handshake,
   LayoutDashboard,
   MessageSquareText,
+  Package,
   ShieldCheck,
   Sparkles,
   Stethoscope,
+  Syringe,
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { AREAS, type Module } from "@/lib/areas";
 
-const nav = [
+// `module`: item que só aparece quando o módulo está ligado na área do consultório (src/lib/areas.ts).
+const nav: { href: string; label: string; icon: typeof Users; module?: Module }[] = [
   { href: "/app", label: "dashboard", icon: LayoutDashboard },
   { href: "/app/pacientes", label: "patients", icon: Users },
   { href: "/app/agenda", label: "schedule", icon: CalendarDays },
-  { href: "/app/prontuario", label: "records", icon: ClipboardList },
+  { href: "/app/procedimentos", label: "procedures", icon: Syringe, module: "procedimentos" },
+  { href: "/app/estoque", label: "stock", icon: Package, module: "estoque" },
+  { href: "/app/prontuario", label: "records", icon: ClipboardList, module: "prontuario" },
   { href: "/app/financeiro", label: "finance", icon: Banknote },
-  { href: "/app/convenios", label: "insurance", icon: Handshake },
+  { href: "/app/convenios", label: "insurance", icon: Handshake, module: "convenios" },
   { href: "/app/fiscal", label: "tax", icon: FileSignature },
   { href: "/app/saluttin", label: "saluttin", icon: Sparkles },
   { href: "/app/comunicacao", label: "communication", icon: MessageSquareText },
   { href: "/app/equipe", label: "team", icon: Stethoscope },
   { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck },
-] as const;
+];
 
-export const SidebarNav = ({ clinical = true }: { clinical?: boolean }) => {
+// `modules`: módulos ligados na área do consultório ativo. Sem a lista, vale o menu da Salutti.
+const MENTAL_MODULES = (Object.keys(AREAS.mental.modules) as Module[]).filter((m) => AREAS.mental.modules[m]);
+
+export const SidebarNav = ({ clinical = true, modules = MENTAL_MODULES }: { clinical?: boolean; modules?: Module[] }) => {
   const pathname = usePathname();
   const t = useTranslations("common.nav");
   return (
     <nav className="space-y-1">
-      {nav.filter((item) => clinical || item.href !== "/app/prontuario").map((item) => {
+      {nav
+        .filter((item) => !item.module || modules.includes(item.module))
+        .filter((item) => clinical || item.href !== "/app/prontuario")
+        .map((item) => {
         const Icon = item.icon;
         const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(`${item.href}/`));
         return (

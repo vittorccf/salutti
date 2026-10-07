@@ -252,7 +252,191 @@ export const ANAMNESIS_LIBRARY: LibraryTemplate[] = [
       ],
     },
   },
+  // Salutti Estética: avaliação antes de procedimentos. Sem campo de "resultado prometido" (Res. CFF 658/2018).
+  {
+    slug: "estetica-facial",
+    name: "Anamnese estética facial",
+    specialty: "estetica",
+    description: "Pele, rotina de cuidados, fototipo e contraindicações antes de procedimentos faciais.",
+    defaultFor: [
+      "estetica_farmacia",
+      "estetica_biomedicina",
+      "estetica_esteticista",
+      "estetica_enfermagem",
+      "estetica_hof",
+      "estetica_medicina",
+      "estetica_clinica",
+    ],
+    schema: {
+      sections: [
+        {
+          title: "Queixa e expectativa",
+          questions: [
+            { key: "queixa_principal", label: "Queixa principal", type: "textarea" },
+            { key: "expectativas", label: "Expectativas com o tratamento", type: "textarea" },
+          ],
+        },
+        {
+          title: "Pele",
+          questions: [
+            { key: "fototipo", label: "Fototipo (Fitzpatrick)", type: "select", options: ["I", "II", "III", "IV", "V", "VI"] },
+            { key: "tipo_pele", label: "Tipo de pele", type: "select", options: ["Normal", "Seca", "Oleosa", "Mista", "Sensível"] },
+            { key: "rotina_cuidados", label: "Rotina de cuidados (produtos e frequência)", type: "textarea" },
+            {
+              key: "exposicao_solar",
+              label: "Exposição solar",
+              type: "select",
+              options: ["Baixa, usa protetor", "Frequente, usa protetor", "Frequente, sem protetor"],
+            },
+          ],
+        },
+        {
+          title: "Saúde e contraindicações",
+          questions: [
+            { key: "alergias", label: "Alergias (medicamentos, cosméticos, anestésicos)", type: "text" },
+            {
+              key: "medicamentos",
+              label: "Medicamentos em uso (inclusive isotretinoína, anticoagulantes, ácidos tópicos)",
+              type: "textarea",
+            },
+            {
+              key: "gestacao",
+              label: "Gestação ou amamentação",
+              type: "select",
+              options: ["Não", "Gestante", "Amamentando", "Tentando engravidar"],
+            },
+            { key: "autoimunes", label: "Doenças autoimunes", type: "text" },
+            { key: "herpes", label: "Herpes recorrente?", type: "select", options: ["Sim", "Não", "Não sabe"] },
+            { key: "queloide", label: "Tendência a quelóide?", type: "select", options: ["Sim", "Não", "Não sabe"] },
+          ],
+        },
+        {
+          title: "Histórico estético",
+          questions: [
+            { key: "procedimentos_anteriores", label: "Procedimentos estéticos anteriores (quais e quando)", type: "textarea" },
+            { key: "intercorrencias", label: "Intercorrências em procedimentos anteriores", type: "textarea" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    slug: "estetica-injetaveis",
+    name: "Avaliação para injetáveis (toxina, preenchimento, bioestimulador)",
+    specialty: "estetica",
+    description: "Contraindicações, produtos já aplicados e consentimento antes de injetáveis.",
+    defaultFor: [
+      "estetica_farmacia",
+      "estetica_biomedicina",
+      "estetica_enfermagem",
+      "estetica_hof",
+      "estetica_medicina",
+      "estetica_clinica",
+    ],
+    schema: {
+      sections: [
+        {
+          title: "Indicação",
+          questions: [
+            { key: "queixa_principal", label: "Queixa e região de interesse", type: "textarea" },
+            { key: "expectativa", label: "Expectativa da paciente", type: "textarea" },
+          ],
+        },
+        {
+          title: "Contraindicações",
+          questions: [
+            { key: "gestacao", label: "Gestação ou amamentação", type: "select", options: ["Não", "Gestante", "Amamentando"] },
+            {
+              key: "neuromusculares",
+              label: "Doença neuromuscular (miastenia gravis, Eaton-Lambert, ELA)",
+              type: "select",
+              options: ["Não", "Sim"],
+            },
+            { key: "anticoagulantes", label: "Uso de anticoagulantes, AAS ou anti-inflamatórios (AINEs)", type: "text" },
+            {
+              key: "aminoglicosideos",
+              label: "Uso de aminoglicosídeos (gentamicina, amicacina) ou outros que potencializam a toxina",
+              type: "select",
+              options: ["Não", "Sim"],
+            },
+            { key: "alergia_componentes", label: "Alergia a componentes (albumina, ácido hialurônico, lidocaína)", type: "text" },
+            { key: "infeccao_local", label: "Infecção, inflamação ou herpes ativo na região", type: "select", options: ["Não", "Sim"] },
+            { key: "autoimunes", label: "Doenças autoimunes ou uso de imunossupressores", type: "text" },
+          ],
+        },
+        {
+          title: "Procedimentos prévios",
+          questions: [
+            { key: "ultima_toxina", label: "Data da última aplicação de toxina botulínica (e região)", type: "text" },
+            { key: "procedimentos_previos", label: "Procedimentos prévios (data e região)", type: "textarea" },
+            { key: "produtos_usados", label: "Produtos usados (marca e lote, se souber)", type: "textarea" },
+            {
+              key: "preenchedor_permanente",
+              label: "Já recebeu preenchedor permanente (PMMA, silicone)?",
+              type: "select",
+              options: ["Não", "Sim", "Não sabe"],
+            },
+            { key: "intercorrencias", label: "Intercorrências anteriores", type: "textarea" },
+          ],
+        },
+        {
+          title: "Consentimento",
+          questions: [
+            {
+              key: "consentimento",
+              label: "Riscos, cuidados e alternativas explicados; termo do procedimento assinado",
+              type: "select",
+              options: ["Sim", "Não"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    slug: "estetica-corporal",
+    name: "Anamnese corporal",
+    specialty: "estetica",
+    description: "Queixa corporal, hábitos e contraindicações para procedimentos corporais.",
+    defaultFor: ["estetica_esteticista", "estetica_clinica"],
+    schema: {
+      sections: [
+        {
+          title: "Queixa",
+          questions: [
+            { key: "queixa_principal", label: "Queixa principal e regiões", type: "textarea" },
+            { key: "expectativas", label: "Expectativas com o tratamento", type: "textarea" },
+          ],
+        },
+        {
+          title: "Hábitos",
+          questions: [
+            { key: "atividade_fisica", label: "Atividade física (tipo e frequência)", type: "text" },
+            { key: "alimentacao", label: "Alimentação e ingestão de água", type: "textarea" },
+            { key: "intestino", label: "Funcionamento intestinal", type: "select", options: ["Regular", "Irregular"] },
+            { key: "fumante", label: "Fumante?", type: "select", options: ["Sim", "Não", "Ex-fumante"] },
+            sono,
+          ],
+        },
+        {
+          title: "Saúde e contraindicações",
+          questions: [
+            { key: "gestacao", label: "Gestação ou amamentação", type: "select", options: ["Não", "Gestante", "Amamentando"] },
+            { key: "condicoes", label: "Diabetes, hipertensão, cardiopatia, trombose ou varizes", type: "textarea" },
+            { key: "implantes", label: "Marca-passo, implantes metálicos ou próteses", type: "text" },
+            { key: "medicamentos", label: "Medicamentos em uso (inclusive anticoagulantes e hormônios)", type: "text" },
+            { key: "alergias", label: "Alergias", type: "text" },
+            { key: "cirurgias", label: "Cirurgias e procedimentos corporais anteriores", type: "textarea" },
+          ],
+        },
+      ],
+    },
+  },
 ];
+
+// Modelos oferecidos a um consultório: os de estética na Salutti Estética, os demais na Salutti.
+export const libraryFor = (area: string) =>
+  ANAMNESIS_LIBRARY.filter((t) => (t.specialty === "estetica") === (area === "estetica"));
 
 export const libraryTemplate = (slug: string) => ANAMNESIS_LIBRARY.find((t) => t.slug === slug);
 

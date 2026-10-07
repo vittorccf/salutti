@@ -26,14 +26,15 @@ import { InviteForm } from "./_components/invite-form";
 import { changeRoleAction, removeMemberAction, revokeInviteAction } from "../_actions/team";
 import { rolesFor } from "@/lib/invitations";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
+import { ALL_COUNCILS, ALL_PROFESSIONAL_TYPES, AREAS, areaOf, professionalDefaults } from "@/lib/areas";
 
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
   fullName: z.string().min(2),
-  professionalType: z.enum(["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"]),
+  professionalType: z.enum(ALL_PROFESSIONAL_TYPES),
   noCouncil: z.string().optional(),
-  councilType: z.string().optional(),
+  councilType: z.enum(ALL_COUNCILS).optional().or(z.literal("")),
   councilNumber: z.string().optional(),
   councilUF: z.string().regex(/^\d{2}$/).optional().or(z.literal("")),
   specialty: z.string().optional(),
@@ -43,7 +44,6 @@ const schema = z.object({
 });
 
 const canManage = (role: string) => role === "owner" || role === "admin";
-const PROFESSIONAL_TYPES = ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"];
 
 const activeCount = (workspaceId: string) => db.professional.count({ where: { workspaceId, active: true } });
 
@@ -81,7 +81,7 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
       phone,
       professionalType: data.professionalType,
       noCouncil,
-      councilType: noCouncil ? "sem_registro" : data.councilType || "CRP",
+      councilType: noCouncil ? "sem_registro" : data.councilType || professionalDefaults(ctx.workspace.segment).council,
       councilNumber: noCouncil ? null : data.councilNumber || null,
       councilUF: noCouncil ? null : data.councilUF || null,
       specialty: data.specialty || null,
@@ -160,6 +160,9 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
       ])
     : [[], []];
   const roles = rolesFor(ctx.workspace.accountType);
+  // Profissões e conselhos oferecidos pela área do consultório (Salutti ou Salutti Estética).
+  const { professionalTypes, councils } = AREAS[areaOf(ctx.workspace.area)];
+  const defaults = professionalDefaults(ctx.workspace.segment);
 
   return (
     <div className="space-y-6">
@@ -268,8 +271,8 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
                   <Label htmlFor="professionalType">{t("type")}</Label>
-                  <Select name="professionalType" id="professionalType" defaultValue="psicologo">
-                    {PROFESSIONAL_TYPES.map((p) => (
+                  <Select name="professionalType" id="professionalType" defaultValue={defaults.type}>
+                    {professionalTypes.map((p) => (
                       <option key={p} value={p}>
                         {label("professionalType", p)}
                       </option>
@@ -308,11 +311,12 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
                   <Label htmlFor="councilType">{t("councilType")}</Label>
-                  <Select name="councilType" id="councilType" defaultValue="CRP">
-                    <option value="CRP">CRP</option>
-                    <option value="CRM">CRM</option>
-                    <option value="CRO">CRO</option>
-                    <option value="sem_registro">{t("noCouncilBadge")}</option>
+                  <Select name="councilType" id="councilType" defaultValue={defaults.council}>
+                    {councils.map((c) => (
+                      <option key={c} value={c}>
+                        {c === "sem_registro" ? t("noCouncilBadge") : c}
+                      </option>
+                    ))}
                   </Select>
                 </div>
                 <div className="space-y-1">

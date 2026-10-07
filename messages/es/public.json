@@ -49,7 +49,8 @@
       }
     },
     "footer": "Salutti · ERP para quienes cuidan la salud mental ·",
-    "contact": "Escríbenos:"
+    "contact": "Escríbenos:",
+    "esteticaLink": "¿Trabajas en estética? Conoce Salutti Estética"
   },
   "pay": {
     "title": "Pago · {workspace}",
@@ -85,5 +86,60 @@
     "save": "Guardar tarjeta",
     "saved": "Tarjeta registrada",
     "anxietyValue": "Ansiedad {value}/5"
+  },
+  "estetica": {
+    "metaDescription": "Agenda, historia clínica, fotos con consentimiento, inventario con lote y vencimiento y finanzas para profesionales de estética.",
+    "login": "Entrar",
+    "tryFree": "Probar gratis",
+    "badge": "Para la profesional de estética independiente",
+    "headline": "Tu consultorio de estética, <hl>organizado</hl>.",
+    "subtitle": "Agenda, historia clínica y fotos con consentimiento, inventario con lote y vencimiento rastreados por paciente y finanzas en un solo lugar.",
+    "ctaCreate": "Crear mi cuenta",
+    "ctaLogin": "Ya tengo cuenta",
+    "fineprint": "15 días gratis · Sin tarjeta · Cancela cuando quieras",
+    "features": {
+      "stock": {
+        "title": "Inventario con trazabilidad",
+        "desc": "Entrada por lote y vencimiento, descuento automático en la atención y la respuesta a “quién recibió el lote X”."
+      },
+      "consent": {
+        "title": "Consentimiento por procedimiento",
+        "desc": "Cada procedimiento tiene su propio consentimiento informado, con la aceptación de la paciente registrada antes de la atención."
+      },
+      "followUp": {
+        "title": "Recordatorio de retorno",
+        "desc": "El intervalo de retorno de cada procedimiento sugiere la próxima sesión, como el retoque de la toxina."
+      },
+      "schedule": {
+        "title": "Agenda y WhatsApp",
+        "desc": "Sesiones, confirmación y recordatorios por WhatsApp, con el historial de cada paciente a mano."
+      },
+      "records": {
+        "title": "Historia clínica y fotos con consentimiento",
+        "desc": "Anamnesis, evolución y fotos de antes y después. Difusión solo con autorización separada de la paciente."
+      },
+      "finance": {
+        "title": "Finanzas",
+        "desc": "Cobros por Pix, recibos, costo de insumos y margen de cada atención."
+      }
+    },
+    "differentiators": {
+      "trace": {
+        "title": "Lote vinculado a la paciente",
+        "desc": "Producto, lote, vencimiento y cantidad aplicada quedan registrados en la sesión, para la trazabilidad que orienta la ANVISA."
+      },
+      "fefo": {
+        "title": "Descuento automático",
+        "desc": "Al registrar la atención, el sistema sugiere el lote que vence primero y lo descuenta del inventario."
+      },
+      "alerts": {
+        "title": "Alertas que evitan pérdidas",
+        "desc": "Inventario mínimo, vencimiento próximo y frasco abierto vencido aparecen antes de ser un problema."
+      }
+    },
+    "disclaimer": "Salutti Estética organiza agenda, registros e inventario. No promete resultados de procedimientos: la indicación sigue siendo tuya.",
+    "footer": "Salutti Estética · Gestión para profesionales de estética ·",
+    "contact": "Habla con nosotros:",
+    "otherArea": "¿Atiendes salud mental? Conoce Salutti"
   }
 }

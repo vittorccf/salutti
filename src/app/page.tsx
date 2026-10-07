@@ -112,6 +112,11 @@ export default async function Home() {
         <p className="mt-2">
           {t("contact")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
         </p>
+        <p className="mt-2">
+          <Link href="/estetica" className="text-brand underline-offset-4 hover:underline">
+            {t("esteticaLink")}
+          </Link>
+        </p>
       </footer>
     </main>
   );

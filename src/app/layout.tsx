@@ -31,7 +31,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Só o que os componentes do cliente usam vai para o navegador (o resto é renderizado no servidor).
   const all = await getMessages();
   const settings = all.settings as Record<string, unknown> | undefined;
-  const messages = { common: all.common, auth: all.auth, finance: all.finance, settings: { access: settings?.access } };
+  const aesthetics = all.aesthetics as Record<string, unknown> | undefined;
+  const messages = {
+    common: all.common,
+    auth: all.auth,
+    finance: all.finance,
+    settings: { access: settings?.access },
+    // Formulário de procedimento e campo "Procedimento" da nova sessão (Salutti Estética).
+    aesthetics: { form: aesthetics?.form, categories: aesthetics?.categories, schedule: aesthetics?.schedule },
+  };
   return (
     <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable}`}>
       <body>

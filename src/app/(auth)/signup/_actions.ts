@@ -9,6 +9,7 @@ import { slugify } from "@/lib/utils";
 import { recordAudit } from "@/lib/audit";
 import { defaultTemplateFor } from "@/lib/anamnesis-library";
 import { isAccountType, segmentAllowed } from "@/lib/account";
+import { isArea } from "@/lib/areas";
 import { formatCnpj, isValidCnpj } from "@/lib/cnpj";
 import { parseDateOnly } from "@/lib/dates";
 import { ContactError, validEmail } from "@/lib/contact-validation";
@@ -23,6 +24,7 @@ const schema = z.object({
   password: z.string().min(8).max(200),
   workspaceName: z.string().trim().max(120).optional(),
   segment: z.string(),
+  area: z.string().refine(isArea).optional(),
   cnpj: z.string().trim().max(20).optional(),
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
@@ -38,7 +40,8 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
   const d = parsed.data;
   if (formData.get("passwordConfirm") !== d.password) return { erro: (await getTranslations("common.password"))("mismatch") };
   const accountType = d.accountType as "autonomo" | "clinica";
-  if (!segmentAllowed(accountType, d.segment)) return { erro: t("errors.segment") };
+  const area = d.area && isArea(d.area) ? d.area : "mental";
+  if (!segmentAllowed(accountType, d.segment, area)) return { erro: t("errors.segment") };
 
   // Clínica precisa de nome próprio; autônomo pode deixar em branco (vira "Consultório de <nome>").
   const workspaceName = d.workspaceName || (accountType === "autonomo" ? `Consultório de ${d.name.split(" ")[0]}` : "");
@@ -75,6 +78,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
         name: workspaceName,
         slug,
         accountType,
+        area,
         segment: d.segment,
         cnpj: accountType === "clinica" && d.cnpj ? formatCnpj(d.cnpj) : null,
         trialEndsAt: trial,
@@ -93,7 +97,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
     action: "workspace.create",
     entity: "Workspace",
     entityId: workspace.id,
-    metadata: { accountType, segment: d.segment },
+    metadata: { accountType, area, segment: d.segment },
   });
 
   await createSession({ userId: user.id, email: user.email, name: user.name });

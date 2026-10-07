@@ -18,6 +18,9 @@ import { cancelSessionMeeting, createSessionMeeting, isMeetIssue, MEET_ISSUE_KEY
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
+import { moduleEnabled } from "@/lib/areas";
+import { canSeeClinical } from "@/lib/permissions";
+import { SessionProcedure } from "@/app/app/procedimentos/_components/session-procedure";
 
 export const dynamic = "force-dynamic";
 
@@ -125,7 +128,7 @@ export default async function AppointmentDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aviso?: string }>;
+  searchParams: Promise<{ aviso?: string; registrado?: string; estornado?: string }>;
 }) {
   const ctx = await requireContext();
   const t = await getTranslations("schedule.session");
@@ -133,7 +136,7 @@ export default async function AppointmentDetailPage({
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));
   const { id } = await params;
-  const { aviso } = await searchParams;
+  const { aviso, registrado, estornado } = await searchParams;
   const appt = await db.appointment.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
     include: { patient: true, professional: true, clinicalNote: true, charge: true },
@@ -256,6 +259,11 @@ export default async function AppointmentDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Salutti Estética: procedimento, termo, insumos aplicados, margem e retorno (só equipe clínica). */}
+      {moduleEnabled(ctx.workspace.area, "procedimentos") && canSeeClinical(ctx.role) && appt.procedureId ? (
+        <SessionProcedure appt={appt} recorded={registrado === "1"} reversed={estornado === "1"} />
+      ) : null}
     </div>
   );
 }

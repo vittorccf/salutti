@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { Download } from "lucide-react";
-import { requireContext } from "@/lib/auth";
+import { requireModule } from "@/lib/modules";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { eligibleSessions, generateBatches, TissError } from "@/lib/tiss-service";
@@ -34,7 +34,7 @@ const tissKey = (text: string) => (TISS_KEYS.has(text) ? text : Object.hasOwn(TI
 
 async function generateAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireModule("convenios");
   const planId = String(formData.get("planId"));
   const ids = formData.getAll("appointmentId").map(String);
   let created: Awaited<ReturnType<typeof generateBatches>>;
@@ -64,7 +64,7 @@ export default async function InsurancePlanPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ erro?: string; gerado?: string }>;
 }) {
-  const ctx = await requireContext();
+  const ctx = await requireModule("convenios");
   const t = await getTranslations("finance.plan");
   const tt = await getTranslations("finance.tiss");
   const tc = await getTranslations("common");

@@ -14,7 +14,9 @@
     "communication": "Comunicação",
     "team": "Profissionais",
     "lgpd": "LGPD",
-    "settings": "Definições"
+    "settings": "Definições",
+    "procedures": "Procedimentos",
+    "stock": "Stock"
   },
   "layout": {
     "home": "Início",
@@ -87,7 +89,14 @@
       "solo_psicanalista": "Psicanálise ou terapia",
       "clinica": "Multiprofissional",
       "ubs": "Centro de saúde (UBS)",
-      "odonto": "Medicina dentária"
+      "odonto": "Medicina dentária",
+      "estetica_farmacia": "Farmácia estética",
+      "estetica_biomedicina": "Biomedicina estética",
+      "estetica_esteticista": "Estética",
+      "estetica_enfermagem": "Enfermagem estética",
+      "estetica_hof": "Harmonização orofacial",
+      "estetica_medicina": "Medicina estética",
+      "estetica_clinica": "Clínica de estética"
     },
     "segmentOption": {
       "solo_psicologo": "Psicologia (com cédula profissional)",
@@ -95,7 +104,14 @@
       "odonto": "Medicina dentária",
       "clinica": "Clínica multiprofissional",
       "ubs": "Centro de saúde (UBS) ou serviço público",
-      "odonto_clinica": "Clínica dentária"
+      "odonto_clinica": "Clínica dentária",
+      "estetica_farmacia": "Farmácia estética (CRF)",
+      "estetica_biomedicina": "Biomedicina estética (CRBM)",
+      "estetica_esteticista": "Esteticista (Lei 13.643/2018, sem ordem profissional)",
+      "estetica_enfermagem": "Enfermagem estética (COREN)",
+      "estetica_hof": "Harmonização orofacial (CRO)",
+      "estetica_medicina": "Medicina estética e dermatologia (CRM)",
+      "estetica_clinica": "Clínica de estética"
     },
     "accountType": {
       "autonomo": "Profissional independente",
@@ -111,7 +127,11 @@
       "terapeuta": "Terapeuta",
       "psiquiatra": "Psiquiatra",
       "dentista": "Médico dentista",
-      "medico": "Médico"
+      "medico": "Médico",
+      "farmaceutico": "Farmacêutico(a)",
+      "biomedico": "Biomédico(a)",
+      "esteticista": "Esteticista",
+      "enfermeiro": "Enfermeiro(a)"
     },
     "guideType": {
       "consulta": "Guia de consulta",

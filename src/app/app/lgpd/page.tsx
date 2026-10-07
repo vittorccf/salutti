@@ -35,6 +35,13 @@ async function exportDataAction(formData: FormData) {
   redirect(`/api/lgpd/export?patientId=${patientId}`);
 }
 
+// Fotos clínicas (antes/depois) também identificam a pessoa: saem junto com os demais dados.
+async function removeClinicalPhotos(workspaceId: string, patientId: string) {
+  const photos = await db.clinicalPhoto.findMany({ where: { workspaceId, patientId }, select: { mediaId: true } });
+  for (const p of photos) await media.remove(p.mediaId);
+  await db.clinicalPhoto.deleteMany({ where: { workspaceId, patientId } });
+}
+
 async function anonymizeAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
@@ -67,6 +74,7 @@ async function anonymizeAction(formData: FormData) {
   });
   ensureAffected(anonymized);
   await media.remove(before?.photoId);
+  await removeClinicalPhotos(ctx.workspace.id, patientId);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -89,6 +97,7 @@ async function softDeleteAction(formData: FormData) {
     }),
   );
   await media.remove(before?.photoId);
+  await removeClinicalPhotos(ctx.workspace.id, patientId);
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,

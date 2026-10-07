@@ -49,7 +49,8 @@
       }
     },
     "footer": "Salutti · ERP for mental health professionals ·",
-    "contact": "Get in touch:"
+    "contact": "Get in touch:",
+    "esteticaLink": "Work in aesthetics? Meet Salutti Estética"
   },
   "pay": {
     "title": "Payment · {workspace}",
@@ -85,5 +86,60 @@
     "save": "Save card",
     "saved": "Card saved",
     "anxietyValue": "Anxiety {value}/5"
+  },
+  "estetica": {
+    "metaDescription": "Scheduling, records, photos with consent, inventory with lot and expiry tracking, and finance for aesthetics professionals.",
+    "login": "Sign in",
+    "tryFree": "Try for free",
+    "badge": "For independent aesthetics professionals",
+    "headline": "Your aesthetics practice, <hl>organized</hl>.",
+    "subtitle": "Scheduling, records and photos with consent, inventory with lot and expiry traced to each patient, and finance in one place.",
+    "ctaCreate": "Create my account",
+    "ctaLogin": "I have an account",
+    "fineprint": "15 days free · No card · Cancel anytime",
+    "features": {
+      "stock": {
+        "title": "Inventory with traceability",
+        "desc": "Receive stock by lot and expiry, deduct it automatically at each visit, and answer “who received lot X”."
+      },
+      "consent": {
+        "title": "Consent form per procedure",
+        "desc": "Each procedure has its own consent form, with the patient's acceptance recorded before the visit."
+      },
+      "followUp": {
+        "title": "Follow-up reminder",
+        "desc": "Each procedure's follow-up interval suggests the next session, like a toxin touch-up."
+      },
+      "schedule": {
+        "title": "Schedule and WhatsApp",
+        "desc": "Sessions, confirmations and reminders over WhatsApp, with each patient's history at hand."
+      },
+      "records": {
+        "title": "Records and photos with consent",
+        "desc": "Intake, progress notes and before-and-after photos. Sharing only with the patient's separate permission."
+      },
+      "finance": {
+        "title": "Finance",
+        "desc": "Pix payments, receipts, supply cost and margin for every visit."
+      }
+    },
+    "differentiators": {
+      "trace": {
+        "title": "Lot linked to the patient",
+        "desc": "Product, lot, expiry and amount used are recorded in the session, supporting ANVISA traceability."
+      },
+      "fefo": {
+        "title": "Automatic deduction",
+        "desc": "When you log a visit, the system suggests the lot that expires first and deducts it from inventory."
+      },
+      "alerts": {
+        "title": "Alerts that prevent waste",
+        "desc": "Low stock, upcoming expiry and expired open vials show up before they become a problem."
+      }
+    },
+    "disclaimer": "Salutti Estética organizes your schedule, records and inventory. It does not promise procedure results: the clinical call stays with you.",
+    "footer": "Salutti Estética · Practice management for aesthetics professionals ·",
+    "contact": "Talk to us:",
+    "otherArea": "Work in mental health? Meet Salutti"
   }
 }

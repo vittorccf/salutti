@@ -21,6 +21,8 @@ import { PhoneText } from "@/components/ui/phone";
 import { formatAddress } from "@/lib/address";
 import { mediaUrl } from "@/lib/media";
 import { Avatar } from "@/components/ui/avatar";
+import { moduleEnabled } from "@/lib/areas";
+import { PatientAesthetics } from "@/app/app/procedimentos/_components/patient-aesthetics";
 
 export const dynamic = "force-dynamic";
 
@@ -46,11 +48,20 @@ async function updateInsuranceAction(formData: FormData) {
   redirect(`/app/pacientes/${patientId}`);
 }
 
-export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PatientPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ foto?: string }>;
+}) {
   const ctx = await requireContext();
   // Recepção e financeiro veem cadastro, sessões e cobranças, mas não conteúdo clínico (src/lib/permissions.ts).
   const clinical = canSeeClinical(ctx.role);
   const { id } = await params;
+  const { foto } = await searchParams;
+  // Salutti Estética: histórico de procedimentos e fotos clínicas (só equipe clínica).
+  const aesthetic = moduleEnabled(ctx.workspace.area, "procedimentos");
   const patient = await db.patient.findFirst({
     where: { id, workspaceId: ctx.workspace.id, deletedAt: null },
     include: {
@@ -72,13 +83,16 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
     .filter((c) => c.status === "pending" || c.status === "overdue")
     .reduce((s, c) => s + c.amount, 0);
   const age = patient.birthDate ? differenceInYears(new Date(), patient.birthDate) : null;
-  const [t, tActions, tLabels, f] = await Promise.all([
+  const [t, tActions, tLabels, f, tPurpose] = await Promise.all([
     getTranslations("patients.detail"),
     getTranslations("common.actions"),
     getTranslations("common.labels"),
     getFormat(),
+    getTranslations("aesthetics.consentPurposes"),
   ]);
   const label = labeler(tLabels);
+  // Finalidades da área estética (termo do procedimento, fotos clínicas) têm texto em aesthetics.consentPurposes.
+  const purposeLabel = (purpose: string) => (tPurpose.has(purpose) ? tPurpose(purpose) : label("consentPurpose", purpose));
 
   return (
     <div className="space-y-6">
@@ -311,6 +325,8 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         </Card>
       </div>
 
+      {aesthetic && clinical ? <PatientAesthetics workspaceId={ctx.workspace.id} patientId={patient.id} uploaded={foto === "1"} /> : null}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -324,7 +340,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
             ) : (
               patient.consentRecords.map((r) => (
                 <div key={r.id} className="rounded-md border p-3 text-sm">
-                  <p className="font-medium">{label("consentPurpose", r.purpose)}</p>
+                  <p className="font-medium">{purposeLabel(r.purpose)}</p>
                   <p className="text-xs text-muted-foreground">
                     {t("consentRecord", {
                       basis: label("legalBasis", r.legalBasis),

@@ -14,7 +14,9 @@
     "communication": "Comunicación",
     "team": "Profesionales",
     "lgpd": "LGPD",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "procedures": "Procedimientos",
+    "stock": "Inventario"
   },
   "layout": {
     "home": "Inicio",
@@ -87,7 +89,14 @@
       "solo_psicanalista": "Psicoanálisis o terapia",
       "clinica": "Multiprofesional",
       "ubs": "Centro de salud (UBS)",
-      "odonto": "Odontología"
+      "odonto": "Odontología",
+      "estetica_farmacia": "Farmacia estética",
+      "estetica_biomedicina": "Biomedicina estética",
+      "estetica_esteticista": "Estética",
+      "estetica_enfermagem": "Enfermería estética",
+      "estetica_hof": "Armonización orofacial",
+      "estetica_medicina": "Medicina estética",
+      "estetica_clinica": "Clínica de estética"
     },
     "segmentOption": {
       "solo_psicologo": "Psicología (colegiado/a)",
@@ -95,7 +104,14 @@
       "odonto": "Odontología",
       "clinica": "Clínica multiprofesional",
       "ubs": "Centro de salud (UBS) o servicio público",
-      "odonto_clinica": "Clínica odontológica"
+      "odonto_clinica": "Clínica odontológica",
+      "estetica_farmacia": "Farmacia estética (CRF)",
+      "estetica_biomedicina": "Biomedicina estética (CRBM)",
+      "estetica_esteticista": "Esteticista (Ley 13.643/2018, sin colegio profesional)",
+      "estetica_enfermagem": "Enfermería estética (COREN)",
+      "estetica_hof": "Armonización orofacial (CRO)",
+      "estetica_medicina": "Medicina estética y dermatología (CRM)",
+      "estetica_clinica": "Clínica de estética"
     },
     "accountType": {
       "autonomo": "Profesional independiente",
@@ -111,7 +127,11 @@
       "terapeuta": "Terapeuta",
       "psiquiatra": "Psiquiatra",
       "dentista": "Dentista",
-      "medico": "Médico"
+      "medico": "Médico",
+      "farmaceutico": "Farmacéutico(a)",
+      "biomedico": "Biomédico(a)",
+      "esteticista": "Esteticista",
+      "enfermeiro": "Enfermero(a)"
     },
     "guideType": {
       "consulta": "Guía de consulta",
