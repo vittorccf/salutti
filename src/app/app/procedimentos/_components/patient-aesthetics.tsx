@@ -172,7 +172,7 @@ export async function PatientAesthetics({ workspaceId, patientId, uploaded }: { 
 
           <ActionForm action={uploadClinicalPhotoAction} className="space-y-3 rounded-xl border p-4">
             <input type="hidden" name="patientId" value={patientId} />
-            <ImageUpload name="photo" label={t("photo")} shape="square" hint={t("photoHint")} consentLabel={t("clinicalConsent")} />
+            <ImageUpload name="photo" label={t("photo")} shape="clinical" hint={t("photoHint")} consentLabel={t("clinicalConsent")} />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label htmlFor="photo-stage">{t("stage")}</Label>

@@ -26,8 +26,15 @@ export const GET = async (req: Request) => {
 
   const photoFile = patient.photoId ? await media.read(patient.photoId) : null;
   const photo = photoFile ? { mime: photoFile.mime, dataUrl: `data:${photoFile.mime};base64,${Buffer.from(photoFile.bytes).toString("base64")}` } : null;
+  // Fotos clínicas (Salutti Estética) também são dados da pessoa: vão na exportação com a imagem.
+  const clinicalPhotos = await Promise.all(
+    (await db.clinicalPhoto.findMany({ where: { workspaceId: ctx.workspace.id, patientId: patient.id } })).map(async (cp) => {
+      const file = await media.read(cp.mediaId);
+      return { ...cp, dataUrl: file ? `data:${file.mime};base64,${Buffer.from(file.bytes).toString("base64")}` : null };
+    }),
+  );
   const filename = `salutti-portabilidade-${patient.fullName.replaceAll(" ", "_")}.json`;
-  return new NextResponse(JSON.stringify({ ...patient, photo }, null, 2), {
+  return new NextResponse(JSON.stringify({ ...patient, photo, clinicalPhotos }, null, 2), {
     headers: {
       "content-type": "application/json",
       "content-disposition": `attachment; filename="${filename}"`,

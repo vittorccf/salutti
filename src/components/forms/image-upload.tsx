@@ -8,15 +8,16 @@ import { useTranslations } from "next-intl";
 type Props = {
   name: string;
   label: string;
-  /** square = foto (recorte central 320×320); banner = imagem larga (até 1200×400, sem recorte) */
-  shape: "square" | "banner";
+  /** square = foto de perfil (recorte central 320×320); banner = imagem larga (até 1200×400, sem recorte);
+   *  clinical = foto clínica (até 1600 px no lado maior, sem recorte, para comparar antes e depois) */
+  shape: "square" | "banner" | "clinical";
   currentUrl?: string | null;
   hint?: string;
   /** exige marcar a autorização ao escolher uma imagem nova (ex.: foto de paciente) */
   consentLabel?: string;
 };
 
-const SIZES = { square: { w: 320, h: 320 }, banner: { w: 1200, h: 400 } };
+const SIZES = { square: { w: 320, h: 320 }, banner: { w: 1200, h: 400 }, clinical: { w: 1600, h: 1600 } };
 
 // Reduz e converte no navegador antes de enviar: a foto do celular (vários MB) vira um WebP de poucas
 // dezenas de KB, e os metadados da câmera (EXIF, inclusive localização) ficam para trás.
@@ -92,7 +93,7 @@ export function ImageUpload({ name, label, shape, currentUrl, hint, consentLabel
         <div
           className={cn(
             "grid shrink-0 place-content-center overflow-hidden border bg-muted text-muted-foreground",
-            shape === "square" ? "h-16 w-16 rounded-full" : "h-16 w-48 rounded-md",
+            shape === "square" ? "h-16 w-16 rounded-full" : shape === "clinical" ? "h-24 w-24 rounded-md" : "h-16 w-48 rounded-md",
           )}
         >
           {preview && !remove ? (
