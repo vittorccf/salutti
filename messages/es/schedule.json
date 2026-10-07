@@ -13,7 +13,7 @@
     "viewMonth": "Mes",
     "previousMonth": "Mes anterior",
     "nextMonth": "Mes siguiente",
-    "more": "+{count} {count, plural, one {sesión} other {sesiones}}",
+    "more": "+{count} más",
     "openWeekOf": "Ver la semana del {date}"
   },
   "form": {
