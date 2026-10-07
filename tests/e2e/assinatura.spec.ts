@@ -5,9 +5,9 @@ test("assinatura em modo de teste ativa o plano e encerra o teste grátis", asyn
   await login(page, "kris");
   await expect(page.getByText(/Teste grátis: \d+ dias? restantes?/)).toBeVisible();
   await page.goto("/app/ajustes");
-  await page.getByRole("button", { name: "Ativar Pro (simulação)" }).click();
+  await page.getByRole("button", { name: "Ativar Essencial (simulação)" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Plano ativado em modo de teste" })).toBeVisible();
-  await expect(page.getByText("Plano atual: Pro")).toBeVisible();
+  await expect(page.getByText("Plano atual: Essencial")).toBeVisible();
   await expect(page.getByText(/Teste grátis: \d+ dias?/)).toHaveCount(0);
 });
 

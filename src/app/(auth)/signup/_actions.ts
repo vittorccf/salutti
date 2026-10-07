@@ -65,8 +65,10 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
   if (await db.user.findUnique({ where: { email } })) return { erro: t("errors.emailTaken") };
   if (google && (await db.user.findUnique({ where: { googleSub: google.sub } }))) return { erro: t("errors.emailTaken") };
 
+  // Dias de teste do catálogo (backoffice → Planos).
+  const trialPlan = await db.platformPlan.findUnique({ where: { code: "trial" }, select: { trialDays: true } });
   const trial = new Date();
-  trial.setDate(trial.getDate() + 15);
+  trial.setDate(trial.getDate() + (trialPlan?.trialDays ?? 15));
 
   const slugBase = slugify(workspaceName);
   let slug = slugBase;

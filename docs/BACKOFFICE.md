@@ -41,8 +41,10 @@ Semeados pela migration (códigos gravados em `Workspace.planTier`):
 | `anual` | Anual | R$ 749,90/ano |
 
 `starter`, `pro` e `enterprise` continuam aceitos como legados. A mudança de plano no backoffice é **manual**: não cria nem cancela
-assinatura no Stripe. A cobrança automática (`src/lib/providers/billing.ts`, tela Ajustes) ainda usa Starter/Pro e os preços do Stripe;
-alinhar ao catálogo novo é o próximo passo de planos.
+assinatura no Stripe. A cobrança automática (`src/lib/providers/billing.ts`, telas Ajustes e `/app/assinatura`) usa os planos
+ativos do catálogo: cada plano pago precisa do **ID do preço no Stripe** (`price_…`), conferido contra o Stripe ao salvar
+(valor, BRL, mensal/anual). Ao trocar o Stripe de teste para produção, cole os IDs dos preços de produção. Os dias do
+teste grátis valem para os próximos cadastros.
 
 ## Botão de suporte no app
 

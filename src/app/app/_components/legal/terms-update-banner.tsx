@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 async function acceptTermsAction() {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   if (ctx.user.termsVersion === LEGAL_VERSION) return;
   await db.user.update({ where: { id: ctx.user.id }, data: termsAcceptance() });
   await auditTermsAcceptance(ctx.workspace.id, ctx.user.id, "update");

@@ -104,10 +104,8 @@
       "current": "Plano atual: <strong>{plan}</strong>",
       "stripe": " · cobrança através do Stripe",
       "stripeTest": " · Stripe em modo de teste: a ativação é simulada",
-      "starterPrice": "R$ 49/mês",
-      "starterDescription": "Individual · até 50 pacientes ativos",
-      "proPrice": "R$ 129/mês",
-      "proDescription": "Individual + IA preditiva ilimitada",
+      "perMonth": "{price}/mês",
+      "perYear": "{price}/ano",
       "currentBadge": "Plano atual",
       "subscribe": "Subscrever {plan}",
       "activateSimulated": "Ativar {plan} (simulação)",
@@ -117,6 +115,17 @@
       "manage": "Gerir subscrição e faturas",
       "ownerOnly": "Só o proprietário do consultório pode alterar o plano."
     }
+  },
+  "subscription": {
+    "title": "Escolha um plano para continuar",
+    "intro": "O período de teste gratuito deste consultório terminou (ou a subscrição foi encerrada). Os seus dados continuam guardados: subscreva um plano para voltar a usar a agenda, o processo clínico e o financeiro.",
+    "pending": "Pagamento recebido. O acesso é libertado assim que o Stripe confirmar, dentro de instantes: atualize a página.",
+    "plansTitle": "Planos",
+    "plansOwner": "A cobrança é recorrente e pode cancelar quando quiser nas Definições.",
+    "plansMember": "Só o titular do consultório pode subscrever. Avise a pessoa responsável.",
+    "dataTitle": "Os seus dados",
+    "dataDescription": "Mesmo sem plano, pode exportar os dados dos pacientes e responder a pedidos de proteção de dados.",
+    "dataLink": "Abrir proteção de dados e exportação"
   },
   "team": {
     "title": "Profissionais",

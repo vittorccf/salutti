@@ -16,7 +16,7 @@ const field = (formData: FormData, name: string) => {
 const isLimit = (e: unknown) => e instanceof Error && e.message === "limite";
 
 export async function openSupportTicketAction(_prev: SupportResult, formData: FormData): Promise<SupportResult> {
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const t = await getTranslations("support.errors");
   const parsed = newTicketSchema.safeParse({
     category: field(formData, "category"),
@@ -42,7 +42,7 @@ export async function openSupportTicketAction(_prev: SupportResult, formData: Fo
 }
 
 export async function replySupportTicketAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   const t = await getTranslations("support");
   const parsed = replySchema.safeParse({ ticketId: field(formData, "ticketId"), message: field(formData, "message") });
   if (!parsed.success) return { erro: t("errors.empty") };
@@ -57,7 +57,7 @@ export async function replySupportTicketAction(_prev: FormResult, formData: Form
 
 // Abrir um chamado no painel apaga o ponto de "resposta nova" dele.
 export async function markSupportReadAction(ticketId: string) {
-  const ctx = await requireContext();
+  const ctx = await requireContext({ allowExpired: true });
   await markReadByClient(ctx.user.id, ticketId);
   revalidatePath("/app", "layout");
 }

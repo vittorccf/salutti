@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
 import { formatPlanPrice, intervalLabel } from "@/lib/backoffice/labels";
+import { billing, billingConfigured } from "@/lib/providers/billing";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const schema = z.object({
   price: z.string().trim(),
   trialDays: z.string().optional(),
   description: z.string().trim().max(300).optional(),
+  stripePriceId: z.string().trim().regex(/^price_\w+$/).optional(),
   active: z.boolean(),
 });
 
@@ -35,9 +37,14 @@ async function updatePlanAction(_prev: FormResult, formData: FormData): Promise<
     price: formData.get("price") ?? "0",
     trialDays: formData.get("trialDays") || undefined,
     description: formData.get("description") || undefined,
+    stripePriceId: formData.get("stripePriceId") || undefined,
     active: formData.get("active") === "on",
   });
-  if (!parsed.success) return { erro: "Confira o nome do plano (2 a 60 caracteres)." };
+  if (!parsed.success) {
+    return parsed.error.issues.some((i) => i.path[0] === "stripePriceId")
+      ? { erro: "O ID do preço do Stripe começa com price_ (copie em Catálogo de produtos → preço)." }
+      : { erro: "Confira o nome do plano (2 a 60 caracteres)." };
+  }
   const plan = await db.platformPlan.findUnique({ where: { id: parsed.data.id } });
   if (!plan) return { erro: "Plano não encontrado." };
 
@@ -48,16 +55,37 @@ async function updatePlanAction(_prev: FormResult, formData: FormData): Promise<
     return { erro: "Dias de teste: de 1 a 90." };
   }
 
+  // O preço do Stripe precisa cobrar exatamente o que o catálogo mostra (valor, reais, mensal/anual).
+  const stripePriceId = plan.interval === "trial" ? null : (parsed.data.stripePriceId ?? null);
+  if (stripePriceId) {
+    if (!billingConfigured()) return { erro: "Configure a STRIPE_SECRET_KEY na Vercel antes de vincular preços." };
+    const taken = await db.platformPlan.findFirst({ where: { stripePriceId, id: { not: plan.id } }, select: { name: true } });
+    if (taken) return { erro: `Esse preço já está no plano ${taken.name}.` };
+    const mismatch = await billing.checkPrice(stripePriceId, { priceCents, interval: plan.interval });
+    if (mismatch) return { erro: mismatch };
+  }
+
   await db.platformPlan.update({
     where: { id: plan.id },
-    data: { name: parsed.data.name, priceCents, trialDays, description: parsed.data.description ?? null, active: parsed.data.active },
+    data: {
+      name: parsed.data.name,
+      priceCents,
+      trialDays,
+      description: parsed.data.description ?? null,
+      stripePriceId,
+      active: parsed.data.active,
+    },
   });
   await recordBackofficeAudit({
     userId: me.id,
     action: "plan.update",
     entity: "PlatformPlan",
     entityId: plan.id,
-    metadata: { code: plan.code, from: { name: plan.name, priceCents: plan.priceCents, active: plan.active }, to: { name: parsed.data.name, priceCents, active: parsed.data.active } },
+    metadata: {
+      code: plan.code,
+      from: { name: plan.name, priceCents: plan.priceCents, active: plan.active, stripePriceId: plan.stripePriceId },
+      to: { name: parsed.data.name, priceCents, active: parsed.data.active, stripePriceId },
+    },
   });
   revalidatePath("/backoffice/planos");
   return { ok: `Plano ${parsed.data.name} salvo.` };
@@ -77,7 +105,8 @@ export default async function PlansPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Planos</h1>
         <p className="text-sm text-muted-foreground">
-          Catálogo de planos da Salutti. A cobrança automática (Stripe) ainda usa os preços configurados lá: alinhe antes de vender.
+          Catálogo de planos da Salutti. Cada plano pago cobra pelo preço do Stripe vinculado aqui, que precisa ter o mesmo valor e
+          a mesma recorrência. Ao trocar o Stripe de teste para produção, cole os IDs dos preços de produção.
         </p>
       </div>
 
@@ -94,6 +123,7 @@ export default async function PlansPage() {
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   {p.active ? <Badge variant="success">Ativo</Badge> : <Badge variant="muted">Inativo</Badge>}
+                  {p.interval !== "trial" && !p.stripePriceId ? <Badge variant="warning">Sem preço no Stripe</Badge> : null}
                   <span className="text-xs text-muted-foreground">
                     {countOf(p.code)} cliente{countOf(p.code) === 1 ? "" : "s"}
                   </span>
@@ -121,6 +151,19 @@ export default async function PlansPage() {
                       </div>
                     )}
                   </div>
+                  {p.interval !== "trial" ? (
+                    <div className="space-y-1.5">
+                      <Label htmlFor={`stripe-${p.id}`}>ID do preço no Stripe</Label>
+                      <Input
+                        id={`stripe-${p.id}`}
+                        name="stripePriceId"
+                        defaultValue={p.stripePriceId ?? ""}
+                        placeholder="price_…"
+                        autoComplete="off"
+                        spellCheck={false}
+                      />
+                    </div>
+                  ) : null}
                   <div className="space-y-1.5">
                     <Label htmlFor={`desc-${p.id}`}>Descrição</Label>
                     <Input id={`desc-${p.id}`} name="description" defaultValue={p.description ?? ""} maxLength={300} />

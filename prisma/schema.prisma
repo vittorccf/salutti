@@ -756,6 +756,8 @@ model PlatformPlan {
   priceCents  Int      @default(0)
   interval    String   @default("mensal") // trial | mensal | anual
   trialDays   Int?
+  // Preço recorrente no Stripe (price_…) que cobra este plano; muda ao trocar o Stripe de teste para produção.
+  stripePriceId String? @unique
   description String?
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)

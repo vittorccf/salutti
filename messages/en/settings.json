@@ -104,10 +104,8 @@
       "current": "Current plan: <strong>{plan}</strong>",
       "stripe": " · billed through Stripe",
       "stripeTest": " · Stripe in test mode: activation is simulated",
-      "starterPrice": "R$ 49/month",
-      "starterDescription": "Solo · up to 50 active patients",
-      "proPrice": "R$ 129/month",
-      "proDescription": "Solo + unlimited predictive AI",
+      "perMonth": "{price}/month",
+      "perYear": "{price}/year",
       "currentBadge": "Current plan",
       "subscribe": "Subscribe to {plan}",
       "activateSimulated": "Activate {plan} (simulation)",
@@ -117,6 +115,17 @@
       "manage": "Manage subscription and invoices",
       "ownerOnly": "Only the practice owner can change the plan."
     }
+  },
+  "subscription": {
+    "title": "Choose a plan to continue",
+    "intro": "This practice's free trial has ended (or the subscription was cancelled). Your data is still stored: subscribe to a plan to use the schedule, records and finances again.",
+    "pending": "Payment received. Access is restored as soon as Stripe confirms, in a moment: refresh the page.",
+    "plansTitle": "Plans",
+    "plansOwner": "Billing is recurring and you can cancel anytime in Settings.",
+    "plansMember": "Only the practice owner can subscribe. Let them know.",
+    "dataTitle": "Your data",
+    "dataDescription": "Even without a plan, you can export patient data and handle data protection requests.",
+    "dataLink": "Open data protection and export"
   },
   "team": {
     "title": "Professionals",
