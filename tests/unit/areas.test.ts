@@ -25,6 +25,8 @@ describe("áreas", () => {
     expect(professionalDefaults("estetica_farmacia")).toEqual({ type: "farmaceutico", council: "CRF" });
     expect(professionalDefaults("estetica_esteticista")).toEqual({ type: "esteticista", council: "sem_registro" });
     expect(professionalDefaults("solo_psicologo")).toEqual({ type: "psicologo", council: "CRP" });
+    expect(professionalDefaults("ubs")).toEqual({ type: "psicologo", council: "CRP" });
+    expect(professionalDefaults("odonto")).toEqual({ type: "dentista", council: "CRO" });
     // Profissão e conselho sugeridos sempre existem na lista da área do segmento.
     for (const area of ["mental", "estetica"] as const) {
       for (const s of [...AREAS[area].segments.autonomo, ...AREAS[area].segments.clinica]) {
