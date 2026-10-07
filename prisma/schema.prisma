@@ -18,7 +18,11 @@ model User {
   id            String        @id @default(cuid())
   email         String        @unique
   name          String
-  passwordHash  String
+  // Nulo em conta criada só com o Google (entra pelo botão "Entrar com Google").
+  passwordHash  String?
+  // Login com Google: "sub" (id estável da conta Google) e o e-mail dela no momento do vínculo.
+  googleSub     String?       @unique
+  googleEmail   String?
   avatarUrl     String? // legado, sem uso (a foto de perfil é avatarId)
   // Foto de perfil enviada pelo usuário (MediaFile).
   avatarId      String?

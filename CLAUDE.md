@@ -39,6 +39,6 @@ Testes: unitários em `tests/unit` (Vitest) e ponta a ponta em `tests/e2e` (Play
 ## Armadilhas conhecidas
 
 - **Banco é Postgres em todo lugar.** Local: `npm run db:local` + `SEED_DEMO=1 npm run db:seed`. Mudou o schema? `npm run db:migrate -- --name <descricao>` (nunca `db push`). Produção aplica migrations no `vercel-build`, pela conexão direta do Neon (`DATABASE_URL_UNPOOLED`).
-- Auth é implementação própria (jose + bcrypt) com 2FA TOTP (`src/lib/totp.ts`); não há SSO nem Auth.js.
+- Auth é implementação própria (jose + bcrypt) com 2FA TOTP (`src/lib/totp.ts`) e "Entrar com Google" (`src/lib/providers/google-login.ts`, `/api/auth/google/*`); não há Auth.js. `User.passwordHash` pode ser nulo (conta só Google).
 - O backoffice (`/backoffice`, `docs/BACKOFFICE.md`) tem usuários e sessão próprios (`src/lib/backoffice/auth.ts`); `requireContext()` não vale lá, e `requireBackoffice()` não vale no app.
 - No Windows, `prisma generate` falha com EPERM se um dev server estiver aberto (a DLL do motor fica travada); o cliente JS é gerado mesmo assim.

@@ -22,7 +22,8 @@ const segmentKey = (type: AccountType, value: string) => (type === "clinica" && 
 
 // Cadastro em duas partes: primeiro o tipo de conta (autônomo ou clínica), depois os campos que valem para ele.
 // Na Salutti Estética o foco é a profissional autônoma: o tipo já vem escolhido (dá para trocar para clínica).
-export function SignupForm({ area = "mental" }: { area?: Area }) {
+// Com `google`, o e-mail vem da conta Google (fixo) e não há senha: a conta entra pelo Google.
+export function SignupForm({ area = "mental", google = null }: { area?: Area; google?: { email: string; name: string } | null }) {
   const [type, setType] = useState<AccountType | null>(AREAS[area].defaultAccountType);
   const t = useTranslations("auth.signup.form");
   const labels = useTranslations("common.labels");
@@ -70,14 +71,18 @@ export function SignupForm({ area = "mental" }: { area?: Area }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">{t("name")}</Label>
-              <Input id="name" name="name" required autoComplete="name" />
+              <Input id="name" name="name" required autoComplete="name" defaultValue={google?.name} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t("email")}</Label>
-              <EmailInput id="email" name="email" required />
+              {google ? (
+                <Input id="email" value={google.email} readOnly disabled />
+              ) : (
+                <EmailInput id="email" name="email" required />
+              )}
             </div>
           </div>
-          <NewPasswordFields label={t("password")} placeholder={t("passwordPlaceholder")} />
+          {google ? null : <NewPasswordFields label={t("password")} placeholder={t("passwordPlaceholder")} />}
           <div className="space-y-2">
             <Label htmlFor="birthDate">{t("birthDate")}</Label>
             <Input id="birthDate" name="birthDate" type="date" />

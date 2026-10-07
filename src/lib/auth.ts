@@ -37,8 +37,9 @@ export type SessionPayload = {
 };
 
 export const hashPassword = (password: string) => bcrypt.hash(password, 10);
-export const verifyPassword = (password: string, hash: string) =>
-  bcrypt.compare(password, hash);
+// Conta criada só com o Google não tem senha: nenhuma senha confere.
+export const verifyPassword = async (password: string, hash: string | null) =>
+  hash ? bcrypt.compare(password, hash) : false;
 
 export const createSession = async (payload: SessionPayload) => {
   const token = await new SignJWT({ ...payload })
@@ -105,6 +106,53 @@ export const getPendingTwoFactor = async (): Promise<string | null> => {
 };
 
 export const clearPendingTwoFactor = () => cookies().delete(COOKIE_2FA);
+
+// --- Conta Google ainda sem cadastro (entre o retorno do Google e o fim do cadastro ou do convite) ---
+const COOKIE_GOOGLE = "salutti_google_pending";
+const GOOGLE_PENDING_AUDIENCE = "salutti-google-pending";
+export type PendingGoogle = { sub: string; email: string; name: string };
+
+export const setPendingGoogle = async (identity: PendingGoogle) => {
+  const token = await new SignJWT({ ...identity })
+    .setProtectedHeader({ alg: "HS256" })
+    .setAudience(GOOGLE_PENDING_AUDIENCE)
+    .setIssuedAt()
+    .setExpirationTime("30m")
+    .sign(secretKey());
+  cookies().set(COOKIE_GOOGLE, token, { ...cookieBase, maxAge: 30 * 60 });
+};
+
+export const getPendingGoogle = async (): Promise<PendingGoogle | null> => {
+  const token = cookies().get(COOKIE_GOOGLE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), { audience: GOOGLE_PENDING_AUDIENCE });
+    const { sub, email, name } = payload as Partial<PendingGoogle>;
+    return typeof sub === "string" && typeof email === "string" ? { sub, email, name: typeof name === "string" ? name : "" } : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearPendingGoogle = () => cookies().delete(COOKIE_GOOGLE);
+
+// Destino depois do login: só caminhos internos de convite, nunca uma URL externa.
+export const safeNext = (next: unknown) => (typeof next === "string" && /^\/convite\/[A-Za-z0-9_-]+$/.test(next) ? next : "/app");
+
+// Fim comum do login (senha ou Google): com 2FA, a sessão só nasce depois do código.
+export const completeLogin = async (
+  user: { id: string; email: string; name: string; totpEnabledAt: Date | null; memberships: { workspaceId: string }[] },
+  next?: unknown,
+): Promise<never> => {
+  if (user.totpEnabledAt) {
+    await startTwoFactor(user.id);
+    redirect("/login/verificar");
+  }
+  await createSession({ userId: user.id, email: user.email, name: user.name });
+  const firstWs = user.memberships[0];
+  if (firstWs) setActiveWorkspaceCookie(firstWs.workspaceId);
+  redirect(safeNext(next));
+};
 
 export const setActiveWorkspaceCookie = (workspaceId: string) => {
   cookies().set(COOKIE_WS, workspaceId, cookieBase);

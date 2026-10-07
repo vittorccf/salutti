@@ -14,6 +14,7 @@ import {
   verifyTotp,
 } from "@/lib/totp";
 import { getFormat, getTranslations } from "@/i18n/server";
+import { googleOAuthConfigured } from "@/lib/providers/google-login";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,15 +94,30 @@ async function regenerateAction(formData: FormData) {
   redirect(PAGE);
 }
 
+// Desvincula o Google só de quem tem senha: conta criada pelo Google ficaria sem como entrar.
+async function unlinkGoogleAction() {
+  "use server";
+  const ctx = await requireContext();
+  const user = await db.user.findUniqueOrThrow({ where: { id: ctx.user.id } });
+  if (!user.passwordHash) redirect(PAGE);
+  await db.user.update({ where: { id: user.id }, data: { googleSub: null, googleEmail: null } });
+  await audit(ctx, "auth.google_unlink");
+  redirect(PAGE);
+}
+
 async function dismissCodesAction() {
   "use server";
   cookies().delete({ name: RECOVERY_COOKIE, path: PAGE });
   redirect(PAGE);
 }
 
-export default async function SecurityPage({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
+// Resultado do vínculo com o Google (?google=, vindo de /api/auth/google/retorno) → chave em auth.security.
+const GOOGLE_STATUS = { ok: "googleOk", emuso: "googleInUse", email: "googleEmail", erro: "googleError" } as const;
+
+export default async function SecurityPage({ searchParams }: { searchParams: Promise<{ erro?: string; google?: string }> }) {
   const ctx = await requireContext();
-  const { erro } = await searchParams;
+  const { erro, google: googleStatus } = await searchParams;
+  const googleMessage = googleStatus && googleStatus in GOOGLE_STATUS ? GOOGLE_STATUS[googleStatus as keyof typeof GOOGLE_STATUS] : null;
   const t = await getTranslations("auth.security");
   const f = await getFormat();
   const user = await db.user.findUniqueOrThrow({ where: { id: ctx.user.id } });
@@ -137,6 +153,19 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
       {erro === "codigo" ? (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
           {t("codeInvalid")}
+        </p>
+      ) : null}
+
+      {googleMessage ? (
+        <p
+          role={googleMessage === "googleOk" ? "status" : "alert"}
+          className={
+            googleMessage === "googleOk"
+              ? "rounded-md bg-success/10 p-3 text-sm text-success-strong"
+              : "rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong"
+          }
+        >
+          {t(googleMessage)}
         </p>
       ) : null}
 
@@ -222,6 +251,38 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
             <form action={startAction}>
               <Button type="submit">{t("setup")}</Button>
             </form>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex flex-wrap items-center gap-2">
+            {t("googleTitle")}
+            {user.googleSub ? <Badge variant="success">{t("googleLinked")}</Badge> : <Badge variant="muted">{t("googleNotLinked")}</Badge>}
+          </CardTitle>
+          <CardDescription>{t("googleDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {user.googleSub ? (
+            <>
+              {user.googleEmail ? <p className="text-muted-foreground">{t("googleAccount", { email: user.googleEmail })}</p> : null}
+              {user.passwordHash ? (
+                <form action={unlinkGoogleAction}>
+                  <Button type="submit" variant="outline">
+                    {t("googleUnlink")}
+                  </Button>
+                </form>
+              ) : (
+                <p className="text-muted-foreground">{t("googleOnly")}</p>
+              )}
+            </>
+          ) : googleOAuthConfigured() ? (
+            <Button variant="outline" asChild>
+              <a href="/api/auth/google/iniciar?vincular=1">{t("googleLink")}</a>
+            </Button>
+          ) : (
+            <p className="text-muted-foreground">{t("googleUnavailable")}</p>
           )}
         </CardContent>
       </Card>

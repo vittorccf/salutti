@@ -8,10 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getTranslations } from "@/i18n/server";
 import { SignupForm } from "./signup-form";
 import { AREAS, type Area } from "@/lib/areas";
+import { getPendingGoogle } from "@/lib/auth";
+import { googleOAuthConfigured } from "@/lib/providers/google-login";
+import { GoogleButton, OrDivider } from "@/components/forms/google-button";
 
 // Tela de cadastro, usada por /signup (Salutti) e /estetica/cadastro (Salutti Estética).
 export async function SignupScreen({ area = "mental" }: { area?: Area }) {
   const t = await getTranslations("auth.signup");
+  const tg = await getTranslations("auth.google");
+  // Voltou do "Continuar com Google" sem conta: o cadastro segue com o e-mail da conta Google e sem senha.
+  const google = await getPendingGoogle();
   return (
     <main data-area={area} className="ds2-glow min-h-screen grid place-items-center p-4 py-12">
       <AreaTheme area={area} />
@@ -25,7 +31,20 @@ export async function SignupScreen({ area = "mental" }: { area?: Area }) {
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <SignupForm area={area} />
+          {google ? (
+            <p className="mb-4 rounded-md bg-accent p-3 text-sm">
+              {tg("signupAs", { email: google.email })}{" "}
+              <a href={`/api/auth/google/cancelar?area=${area}`} className="text-brand underline-offset-4 hover:underline">
+                {tg("useOther")}
+              </a>
+            </p>
+          ) : googleOAuthConfigured() ? (
+            <div className="mb-4 space-y-4">
+              <GoogleButton href={`/api/auth/google/iniciar?area=${area}`} label={tg("continue")} />
+              <OrDivider label={tg("or")} />
+            </div>
+          ) : null}
+          <SignupForm area={area} google={google ? { email: google.email, name: google.name } : null} />
           <p className="mt-4 text-center text-sm text-muted-foreground">
             {t("hasAccount")}{" "}
             <Link href={AREAS[area].loginPath} className="text-brand underline-offset-4 hover:underline">

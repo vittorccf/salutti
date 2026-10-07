@@ -4,7 +4,7 @@ import { getTranslations } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { createSession, hashPassword, setActiveWorkspaceCookie } from "@/lib/auth";
+import { clearPendingGoogle, createSession, getPendingGoogle, hashPassword, setActiveWorkspaceCookie } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
 import { recordAudit } from "@/lib/audit";
 import { defaultTemplateFor } from "@/lib/anamnesis-library";
@@ -23,7 +23,8 @@ const FIELD_ERRORS = ["accountType", "name", "password", "acceptTerms"] as const
 const schema = z.object({
   accountType: z.string().refine(isAccountType),
   name: z.string().trim().min(2).max(120),
-  password: z.string().min(8).max(200),
+  // Opcional só no cadastro com Google (a conta entra pelo Google); conferida abaixo nos demais casos.
+  password: z.string().min(8).max(200).optional(),
   workspaceName: z.string().trim().max(120).optional(),
   segment: z.string(),
   area: z.string().refine(isArea).optional(),
@@ -41,7 +42,10 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
     return { erro: t(`errors.${field ?? "invalid"}`) };
   }
   const d = parsed.data;
-  if (formData.get("passwordConfirm") !== d.password) return { erro: (await getTranslations("common.password"))("mismatch") };
+  // Conta Google confirmada no retorno do Google (cookie assinado): o e-mail vem dela e não há senha.
+  const google = await getPendingGoogle();
+  if (!google && !d.password) return { erro: t("errors.password") };
+  if (!google && formData.get("passwordConfirm") !== d.password) return { erro: (await getTranslations("common.password"))("mismatch") };
   const accountType = d.accountType as "autonomo" | "clinica";
   const area = d.area && isArea(d.area) ? d.area : "mental";
   if (!segmentAllowed(accountType, d.segment, area)) return { erro: t("errors.segment") };
@@ -53,12 +57,13 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
 
   let email: string;
   try {
-    email = (await validEmail(formData.get("email"), { required: true }))!;
+    email = google?.email ?? (await validEmail(formData.get("email"), { required: true }))!;
   } catch (e) {
     if (e instanceof ContactError) return { erro: await errorMessage(e) };
     throw e;
   }
   if (await db.user.findUnique({ where: { email } })) return { erro: t("errors.emailTaken") };
+  if (google && (await db.user.findUnique({ where: { googleSub: google.sub } }))) return { erro: t("errors.emailTaken") };
 
   const trial = new Date();
   trial.setDate(trial.getDate() + 15);
@@ -74,7 +79,14 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
 
   const { user, workspace } = await db.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email, name: d.name, passwordHash: await hashPassword(d.password), birthDate, ...termsAcceptance() },
+      data: {
+        email,
+        name: d.name,
+        passwordHash: google || !d.password ? null : await hashPassword(d.password),
+        ...(google ? { googleSub: google.sub, googleEmail: google.email } : {}),
+        birthDate,
+        ...termsAcceptance(),
+      },
     });
     const workspace = await tx.workspace.create({
       data: {
@@ -104,6 +116,7 @@ export async function signupAction(_prev: FormResult, formData: FormData): Promi
   });
   await auditTermsAcceptance(workspace.id, user.id, "signup");
 
+  if (google) clearPendingGoogle();
   await createSession({ userId: user.id, email: user.email, name: user.name });
   setActiveWorkspaceCookie(workspace.id);
   redirect("/app/primeiros-passos");

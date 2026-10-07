@@ -4,7 +4,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { createSession, getSession, hashPassword, setActiveWorkspaceCookie } from "@/lib/auth";
+import { clearPendingGoogle, createSession, getPendingGoogle, getSession, hashPassword, setActiveWorkspaceCookie } from "@/lib/auth";
+import { googleOAuthConfigured } from "@/lib/providers/google-login";
+import { GoogleButton, OrDivider } from "@/components/forms/google-button";
 import { recordAudit } from "@/lib/audit";
 import { acceptInvitation, findInvitation } from "@/lib/invitations";
 import { getTranslations } from "@/i18n/server";
@@ -66,6 +68,28 @@ async function createAccountAction(formData: FormData) {
   await finish(inv.id, inv.workspaceId, user.id, inv.role);
 }
 
+// Voltou do "Continuar com Google" sem conta, com a conta Google do e-mail convidado: cria sem senha.
+async function createWithGoogleAction(formData: FormData) {
+  "use server";
+  const token = String(formData.get("token"));
+  const inv = await findInvitation(token);
+  const google = await getPendingGoogle();
+  if (!inv || !google || google.email !== inv.email.toLowerCase()) redirect(`/convite/${token}`);
+  const name = z.string().trim().min(2).max(120).safeParse(formData.get("name"));
+  if (!name.success) redirect(`/convite/${token}?erro=dados`);
+  if (formData.get("acceptTerms") !== "on") redirect(`/convite/${token}?erro=termos`);
+  if (await db.user.findFirst({ where: { OR: [{ email: { equals: inv.email, mode: "insensitive" } }, { googleSub: google.sub }] } })) {
+    redirect(`/convite/${token}`);
+  }
+  const user = await db.user.create({
+    data: { email: google.email, name: name.data, googleSub: google.sub, googleEmail: google.email, ...termsAcceptance() },
+  });
+  await auditTermsAcceptance(inv.workspaceId, user.id, "invite");
+  clearPendingGoogle();
+  await createSession({ userId: user.id, email: user.email, name: user.name });
+  await finish(inv.id, inv.workspaceId, user.id, inv.role);
+}
+
 export default async function InvitePage({
   params,
   searchParams,
@@ -80,6 +104,9 @@ export default async function InvitePage({
   const session = await getSession();
   const hasAccount = inv ? Boolean(await db.user.findFirst({ where: { email: { equals: inv.email, mode: "insensitive" } } })) : false;
   const error = ERRORS.find((e) => e === erro);
+  const tg = await getTranslations("auth.google");
+  const google = !session && !hasAccount ? await getPendingGoogle() : null;
+  const googleMatches = Boolean(inv && google && google.email === inv.email.toLowerCase());
 
   return (
     <main className="min-h-screen ds2-glow grid place-items-center p-4">
@@ -121,17 +148,41 @@ export default async function InvitePage({
                   <Link href={`/login?next=${encodeURIComponent(`/convite/${params.token}`)}`}>{t("login")}</Link>
                 </Button>
               </div>
-            ) : (
-              <form action={createAccountAction} className="space-y-3">
+            ) : googleMatches && google ? (
+              <form action={createWithGoogleAction} className="space-y-3">
                 <input type="hidden" name="token" value={params.token} />
+                <p className="text-sm text-muted-foreground">{tg("signupAs", { email: google.email })}</p>
                 <div className="space-y-1">
                   <Label htmlFor="name">{t("name")}</Label>
-                  <Input id="name" name="name" required autoComplete="name" />
+                  <Input id="name" name="name" required autoComplete="name" defaultValue={google.name} />
                 </div>
-                <NewPasswordFields label={t("password")} className="sm:grid-cols-1" />
                 <TermsCheckbox label={t.rich("acceptTerms", legalLinks)} />
                 <Button type="submit" className="w-full">{t("createAndJoin")}</Button>
               </form>
+            ) : (
+              <div className="space-y-4">
+                {google ? (
+                  <p role="alert" className="rounded-md bg-destructive/[.12] p-3 text-sm text-destructive-strong">
+                    {tg("inviteMismatch", { google: google.email, email: inv.email })}
+                  </p>
+                ) : null}
+                {googleOAuthConfigured() ? (
+                  <>
+                    <GoogleButton href={`/api/auth/google/iniciar?next=${encodeURIComponent(`/convite/${params.token}`)}`} label={tg("continue")} />
+                    <OrDivider label={tg("or")} />
+                  </>
+                ) : null}
+                <form action={createAccountAction} className="space-y-3">
+                  <input type="hidden" name="token" value={params.token} />
+                  <div className="space-y-1">
+                    <Label htmlFor="name">{t("name")}</Label>
+                    <Input id="name" name="name" required autoComplete="name" />
+                  </div>
+                  <NewPasswordFields label={t("password")} className="sm:grid-cols-1" />
+                  <TermsCheckbox label={t.rich("acceptTerms", legalLinks)} />
+                  <Button type="submit" className="w-full">{t("createAndJoin")}</Button>
+                </form>
+              </div>
             )}
           </CardContent>
         ) : null}
