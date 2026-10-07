@@ -8,7 +8,7 @@ O `tokens.css` publicado lá estava desatualizado (índigo e coral) no dia da ap
 
 - **Tokens:** `src/app/globals.css`: tema **Dia** em `:root`, **Noite** em `.dark`, mesmos nomes. Tailwind em `tailwind.config.ts`.
 - **Fontes:** Geist 400/500/600 e Instrument Serif itálico em `src/app/fonts/` (via `next/font/local`, sem Google Fonts no build).
-- **Logo:** `src/components/brand/logo.tsx` (Diálogo: dois balões de fala; "salu" leve, "tti" seminegrito, pingo pêssego). Favicon em `src/app/icon.svg`.
+- **Logo:** `src/components/brand/brand-logo.tsx` com os arquivos oficiais de `public/brand` (colorido no tema claro, branco no escuro): `variant="logo"` no login, cadastro e topo; `variant="symbol"` em espaços pequenos. Favicon `src/app/icon.svg`, ícones do app em `src/app/manifest.ts`.
 - **Componentes:** `src/components/ui/*` seguem os do DS (Button, Badge, Card, Input, Select, Textarea, Label, Separator, Table, EmptyState).
 
 ## Regras de uso (resumo do DS)
