@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Historia clínica",
-    "description": "Notas de evolución y anamnesis de tus pacientes. Saluttin resume cada nota al guardar; revísala antes de usarla.",
+    "description": "Notas de evolución y anamnesis de tus pacientes.",
     "emptyTitle": "No hay notas de evolución registradas",
     "emptyDescription": "Abre la ficha de un paciente para registrar la primera evolución.",
     "selectPatient": "Seleccionar paciente",
@@ -122,11 +122,11 @@
   },
   "chart": {
     "title": "Historia clínica · {name}",
-    "subtitle": "{count, plural, one {# registro} other {# registros}} · Saluttin resume cada evolución al guardar.",
+    "subtitle": "{count, plural, one {# registro} other {# registros}}",
     "applyAnamnesis": "Aplicar anamnesis",
     "newNote": "Nueva nota de evolución",
     "emptyTitle": "No hay evoluciones registradas",
-    "emptyDescription": "Registra la primera evolución y Saluttin genera el resumen de la sesión.",
+    "emptyDescription": "Registra la primera evolución de este paciente.",
     "signed": "Firmado",
     "session": "Sesión {date}",
     "aiSummary": "Resumen generado por IA (Saluttin) · revísalo antes de usarlo",
@@ -143,12 +143,12 @@
   },
   "note": {
     "title": "Nueva nota de evolución · {name}",
-    "description": "Saluttin resume la evolución al guardar. La firma digital se simula con un hash SHA-256 del contenido y la hora.",
+    "description": "La firma digital se simula con un hash SHA-256 del contenido y la hora.",
     "professional": "Profesional",
     "type": "Tipo de registro",
     "content": "Contenido",
     "placeholder": "Sesión #__\nMotivo de consulta: …\nObservación clínica: …\nIntervención: …\nPlan: …",
-    "hint": "Acepta Markdown. Saluttin identifica temas (ansiedad, duelo, sueño, pánico, vínculo de pareja) y sugiere puntos para tu reflexión.",
+    "hint": "Acepta Markdown.",
     "sign": "Firmar digitalmente (simulación ICP-Brasil)",
     "submit": "Guardar nota de evolución",
     "errors": {

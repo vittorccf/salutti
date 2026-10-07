@@ -1,15 +1,13 @@
-// Provider de videochamada: Google Meet (via Google Agenda) e Zoom.
+// Provider de videochamada: Google Meet (via Google Agenda).
 // Sem credenciais, gera um link simulado da Salutti (modo sandbox), sem imitar um link real.
 //
 // Google Meet: app OAuth da plataforma (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) e a conta Google que cada
 //   usuário conecta em Ajustes (src/lib/providers/google-oauth.ts). O Meet nasce na agenda principal de quem
 //   atende (a escolha da conta fica em src/lib/video-connections.ts).
-// Zoom: app "Server-to-Server OAuth" com escopo meeting:write.
-//   ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET
 import { TZ } from "../dates";
 import { accessTokenFrom, googleOAuthConfigured } from "./google-oauth";
 
-export type VideoProvider = "google_meet" | "zoom";
+export type VideoProvider = "google_meet";
 
 export type MeetingInput = {
   provider: VideoProvider;
@@ -22,12 +20,8 @@ export type MeetingInput = {
 
 export type Meeting = { url: string; externalId: string; simulated: boolean };
 
-const zoomConfigured = () =>
-  Boolean(process.env.ZOOM_ACCOUNT_ID && process.env.ZOOM_CLIENT_ID && process.env.ZOOM_CLIENT_SECRET);
-
 export const videoStatus = {
   google_meet: () => (googleOAuthConfigured() ? "real" : "sandbox"),
-  zoom: () => (zoomConfigured() ? "real" : "sandbox"),
 } as const;
 
 const simulated = (provider: VideoProvider): Meeting => {
@@ -68,41 +62,12 @@ async function createGoogleMeet({ topic, startsAt, durationMinutes }: MeetingInp
   return { url, externalId: event.id, simulated: false };
 }
 
-async function createZoom({ topic, startsAt, durationMinutes }: MeetingInput): Promise<Meeting> {
-  const basic = Buffer.from(`${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`).toString("base64");
-  const tokenRes = await fetch(
-    `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${encodeURIComponent(process.env.ZOOM_ACCOUNT_ID!)}`,
-    { method: "POST", headers: { authorization: `Basic ${basic}` } },
-  );
-  if (!tokenRes.ok) throw new Error(`Zoom OAuth: ${tokenRes.status}`);
-  const { access_token } = (await tokenRes.json()) as { access_token: string };
-
-  const meetingRes = await fetch("https://api.zoom.us/v2/users/me/meetings", {
-    method: "POST",
-    headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      topic,
-      type: 2, // reunião agendada
-      start_time: startsAt.toISOString(),
-      duration: durationMinutes,
-      timezone: TZ,
-      settings: { waiting_room: true, join_before_host: false },
-    }),
-  });
-  if (!meetingRes.ok) throw new Error(`Zoom: ${meetingRes.status}`);
-  const meeting = (await meetingRes.json()) as { id: number; join_url: string };
-  return { url: meeting.join_url, externalId: String(meeting.id), simulated: false };
-}
-
 export const video = {
   deleteGoogleEvent,
   async createMeeting(input: MeetingInput): Promise<Meeting> {
-    if (input.provider === "google_meet") {
-      return googleOAuthConfigured() && input.googleRefreshToken
-        ? createGoogleMeet(input, input.googleRefreshToken)
-        : simulated("google_meet");
-    }
-    return zoomConfigured() ? createZoom(input) : simulated("zoom");
+    return googleOAuthConfigured() && input.googleRefreshToken
+      ? createGoogleMeet(input, input.googleRefreshToken)
+      : simulated(input.provider);
   },
 };
 
@@ -121,7 +86,6 @@ export async function deleteGoogleEvent(refreshToken: string, eventId: string) {
 export const meetingPlatform = (url: string | null | undefined) => {
   if (!url) return null;
   if (url.includes("meet.google.com") || url.includes("via=google_meet")) return "Google Meet";
-  if (url.includes("zoom.us") || url.includes("via=zoom")) return "Zoom";
   return "Videochamada";
 };
 

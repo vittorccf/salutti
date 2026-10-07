@@ -31,7 +31,7 @@ const schema = z.object({
   price: z.coerce.number().min(0),
   notes: z.string().optional(),
   generateCharge: z.string().optional(),
-  videoProvider: z.enum(["google_meet", "zoom", "none"]).default("google_meet"),
+  videoProvider: z.enum(["google_meet", "none"]).default("google_meet"),
   billing: z.string().default("particular"), // "particular" ou id do convênio
   procedureId: z.string().optional(), // só na área com o módulo de procedimentos (Salutti Estética)
 });
@@ -61,7 +61,7 @@ async function createAppointmentAction(formData: FormData) {
         professionalId: data.professionalId,
         userId: ctx.user.id,
         provider: data.videoProvider,
-        // Título genérico: nome do paciente não vai para Google/Zoom (dado de saúde, LGPD).
+        // Título genérico: nome do paciente não vai para o Google (dado de saúde, LGPD).
         topic: (await getTranslations("schedule.form"))("meetingTopic"),
         startsAt,
         durationMinutes: data.durationMinutes,
@@ -256,7 +256,6 @@ export default async function NewAppointmentPage({
                 <Label htmlFor="videoProvider">{t("video")}</Label>
                 <Select name="videoProvider" id="videoProvider" defaultValue="google_meet">
                   <option value="google_meet">{t("videoMeet")}</option>
-                  <option value="zoom">{t("videoZoom")}</option>
                   <option value="none">{t("videoNone")}</option>
                 </Select>
               </div>

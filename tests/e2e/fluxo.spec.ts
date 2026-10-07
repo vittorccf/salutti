@@ -44,19 +44,19 @@ test("profissional → paciente → sessão online com Meet → cobrança paga",
   await expect(page.getByRole("link", { name: /15:00 Paciente/ })).toBeVisible();
 });
 
-test("sessão online sem link: gerar link do Zoom depois", async ({ page }) => {
+test("sessão online sem link: gerar link do Meet depois", async ({ page }) => {
   await login(page, "kris");
-  await createProfessional(page, "Dr. Zoom E2E");
-  await createPatient(page, "Paciente Zoom E2E");
+  await createProfessional(page, "Dr. Link E2E");
+  await createPatient(page, "Paciente Link E2E");
   await page.goto("/app/agenda/novo");
-  await page.locator("#patientId").selectOption({ label: "Paciente Zoom E2E" });
-  await selectByText(page, "#professionalId", "Dr. Zoom E2E");
+  await page.locator("#patientId").selectOption({ label: "Paciente Link E2E" });
+  await selectByText(page, "#professionalId", "Dr. Link E2E");
   await page.locator("#modality").selectOption("online");
   await page.locator("#videoProvider").selectOption("none");
   await page.locator("#generateCharge").uncheck();
   await page.getByRole("button", { name: "Agendar sessão" }).click();
 
-  await page.getByRole("combobox", { name: "Plataforma da videochamada" }).selectOption("zoom");
   await page.getByRole("button", { name: "Gerar link" }).click();
-  await expect(page.getByRole("link", { name: /Entrar no Zoom/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Entrar no Google Meet/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Copiar link" })).toBeVisible();
 });

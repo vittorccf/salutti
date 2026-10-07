@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Prontuário",
-    "description": "Evoluções e anamneses dos seus pacientes. O Saluttin resume cada evolução ao salvar; revise antes de usar.",
+    "description": "Evoluções e anamneses dos seus pacientes.",
     "emptyTitle": "Nenhuma evolução registrada",
     "emptyDescription": "Abra a ficha de um paciente para registrar a primeira evolução.",
     "selectPatient": "Selecionar paciente",
@@ -122,11 +122,11 @@
   },
   "chart": {
     "title": "Prontuário · {name}",
-    "subtitle": "{count, plural, one {# registro} other {# registros}} · o Saluttin resume cada evolução ao salvar.",
+    "subtitle": "{count, plural, one {# registro} other {# registros}}",
     "applyAnamnesis": "Aplicar anamnese",
     "newNote": "Nova evolução",
     "emptyTitle": "Nenhuma evolução registrada",
-    "emptyDescription": "Registre a primeira evolução e o Saluttin gera o resumo da sessão.",
+    "emptyDescription": "Registre a primeira evolução deste paciente.",
     "signed": "Assinado",
     "session": "Sessão {date}",
     "aiSummary": "Resumo gerado por IA (Saluttin) · revise antes de usar",
@@ -143,12 +143,12 @@
   },
   "note": {
     "title": "Nova evolução · {name}",
-    "description": "O Saluttin resume a evolução ao salvar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e do horário.",
+    "description": "A assinatura digital é simulada com um hash SHA-256 do conteúdo e do horário.",
     "professional": "Profissional",
     "type": "Tipo de registro",
     "content": "Conteúdo",
     "placeholder": "Sessão #__\nQueixa: …\nObservação clínica: …\nIntervenção: …\nPlano: …",
-    "hint": "Aceita Markdown. O Saluttin identifica temas (ansiedade, luto, sono, pânico, vínculo conjugal) e sugere pontos para a sua reflexão.",
+    "hint": "Aceita Markdown.",
     "sign": "Assinar digitalmente (simulação ICP-Brasil)",
     "submit": "Salvar evolução",
     "errors": {

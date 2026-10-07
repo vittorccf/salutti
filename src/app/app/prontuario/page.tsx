@@ -9,6 +9,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ClipboardList, FilePlus2 } from "lucide-react";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,7 @@ export default async function ProntuarioListPage() {
                   <TH>{t("professional")}</TH>
                   <TH>{t("type")}</TH>
                   <TH>{t("updated")}</TH>
-                  <TH>{t("saluttin")}</TH>
+                  {SALUTTIN_ENABLED ? <TH>{t("saluttin")}</TH> : null}
                   <TH></TH>
                 </TR>
               </THead>
@@ -68,13 +69,15 @@ export default async function ProntuarioListPage() {
                     <TD>{n.professional.fullName}</TD>
                     <TD>{label("noteType", n.noteType)}</TD>
                     <TD className="whitespace-nowrap">{f.dateTime(n.updatedAt)}</TD>
-                    <TD>
-                      {n.aiSummary ? (
-                        <Badge variant="success">{t("summarized")}</Badge>
-                      ) : (
-                        <Badge variant="muted">{t("pending")}</Badge>
-                      )}
-                    </TD>
+                    {SALUTTIN_ENABLED ? (
+                      <TD>
+                        {n.aiSummary ? (
+                          <Badge variant="success">{t("summarized")}</Badge>
+                        ) : (
+                          <Badge variant="muted">{t("pending")}</Badge>
+                        )}
+                      </TD>
+                    ) : null}
                     <TD>
                       <Button size="sm" variant="ghost" asChild>
                         <Link href={`/app/prontuario/${n.patient.id}`}>{t("open")}</Link>

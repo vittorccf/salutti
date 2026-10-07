@@ -19,6 +19,7 @@ import {
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { AREAS, type Module } from "@/lib/areas";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 // `module`: item que só aparece quando o módulo está ligado na área do consultório (src/lib/areas.ts).
 const nav: { href: string; label: string; icon: typeof Users; module?: Module }[] = [
@@ -31,7 +32,7 @@ const nav: { href: string; label: string; icon: typeof Users; module?: Module }[
   { href: "/app/financeiro", label: "finance", icon: Banknote },
   { href: "/app/convenios", label: "insurance", icon: Handshake, module: "convenios" },
   { href: "/app/fiscal", label: "tax", icon: FileSignature },
-  { href: "/app/saluttin", label: "saluttin", icon: Sparkles },
+  ...(SALUTTIN_ENABLED ? [{ href: "/app/saluttin", label: "saluttin", icon: Sparkles }] : []),
   { href: "/app/comunicacao", label: "communication", icon: MessageSquareText },
   { href: "/app/equipe", label: "team", icon: Stethoscope },
   { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck },

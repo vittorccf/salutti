@@ -4,13 +4,13 @@
     "tryFree": "Experimentar grátis",
     "badge": "Em conformidade com a LGPD e o Receita Saúde",
     "headline": "O <hl>ERP de Saúde</hl> que automatiza o que ninguém quer fazer.",
-    "subtitle": "Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas, não de folhas de cálculo. Agenda, Pix, faturação, WhatsApp e IA preditiva num só sistema.",
+    "subtitle": "Para psicólogos, psicanalistas, terapeutas e clínicas que querem voltar a cuidar de pessoas, não de folhas de cálculo. Agenda, Pix, faturação e WhatsApp num só sistema.",
     "ctaCreate": "Criar o meu consultório",
     "ctaDemo": "Ver demonstração",
     "fineprint": "15 dias grátis · Sem cartão · Cancele quando quiser",
     "features": {
       "schedule": {
-        "title": "Agenda integrada com Meet/Zoom",
+        "title": "Agenda integrada com o Meet",
         "desc": "Confirmação automática por WhatsApp, lembretes 24h/2h, ligação de teleconsulta encriptada."
       },
       "finance": {

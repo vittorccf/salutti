@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { insightsEngine } from "@/lib/providers/insights";
@@ -7,17 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { Brain, Sparkles, RefreshCw } from "lucide-react";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
 async function regenerateAction() {
   "use server";
+  if (!SALUTTIN_ENABLED) notFound();
   const ctx = await requireContext();
   await insightsEngine.regenerate({ workspaceId: ctx.workspace.id });
   redirect("/app/saluttin");
 }
 
 export default async function SaluttinPage() {
+  if (!SALUTTIN_ENABLED) notFound();
   const ctx = await requireContext();
   let insights = await db.aiInsight.findMany({
     where: { workspaceId: ctx.workspace.id },

@@ -25,6 +25,7 @@ import { onboardingProgress } from "@/lib/onboarding";
 import { upcomingBirthdays, type BirthdayPerson } from "@/lib/birthdays";
 import { moduleEnabled } from "@/lib/areas";
 import { stockAlerts } from "@/lib/stock";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -127,7 +128,7 @@ export default async function DashboardPage() {
 
   // Garante insights ao menos uma vez (auto-seed lazy)
   let liveInsights = insights;
-  if (liveInsights.length === 0) {
+  if (SALUTTIN_ENABLED && liveInsights.length === 0) {
     liveInsights = await insightsEngine.regenerate({ workspaceId: wsId });
   }
 
@@ -326,54 +327,56 @@ export default async function DashboardPage() {
 
       {/* Insights do Saluttin: o ponto pêssego é o indicador; o degradê da borda fica só em /app/saluttin
           (o painel já tem o brilho do topo, e a IA não deve parecer a autoridade da tela). */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-brand" aria-hidden /> {t("insightsTitle")}
-              <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
-            </CardTitle>
-            <CardDescription>{t("insightsDescription")}</CardDescription>
-          </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/app/saluttin">{tc("seeAll")}</Link>
-          </Button>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          {liveInsights.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t("noInsights")}
-            </p>
-          ) : (
-            liveInsights.map((insight) => (
-              <div
-                key={insight.id}
-                className="rounded-md border bg-card p-4 text-sm flex gap-3 items-start"
-              >
+      {SALUTTIN_ENABLED ? (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-brand" aria-hidden /> {t("insightsTitle")}
+                <span className="h-2 w-2 rounded-full bg-highlight" aria-hidden />
+              </CardTitle>
+              <CardDescription>{t("insightsDescription")}</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/app/saluttin">{tc("seeAll")}</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2">
+            {liveInsights.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t("noInsights")}
+              </p>
+            ) : (
+              liveInsights.map((insight) => (
                 <div
-                  className={`mt-0.5 grid h-8 w-8 place-content-center rounded-md ${
-                    insight.severity === "critical"
-                      ? "bg-destructive/10 text-destructive-strong"
-                      : insight.severity === "warn"
-                        ? "bg-warning/10 text-warning-strong"
-                        : "bg-accent text-accent-foreground"
-                  }`}
+                  key={insight.id}
+                  className="rounded-md border bg-card p-4 text-sm flex gap-3 items-start"
                 >
-                  {insight.kind === "revenue_drop" ? (
-                    pct < 0 ? <TrendingDown className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />
-                  ) : (
-                    <Sparkles className="h-4 w-4" aria-hidden />
-                  )}
+                  <div
+                    className={`mt-0.5 grid h-8 w-8 place-content-center rounded-md ${
+                      insight.severity === "critical"
+                        ? "bg-destructive/10 text-destructive-strong"
+                        : insight.severity === "warn"
+                          ? "bg-warning/10 text-warning-strong"
+                          : "bg-accent text-accent-foreground"
+                    }`}
+                  >
+                    {insight.kind === "revenue_drop" ? (
+                      pct < 0 ? <TrendingDown className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <Sparkles className="h-4 w-4" aria-hidden />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{insight.title}</p>
+                    <p className="text-muted-foreground mt-1">{insight.body}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold">{insight.title}</p>
-                  <p className="text-muted-foreground mt-1">{insight.body}</p>
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Agenda imediata */}
       <Card>

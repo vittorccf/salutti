@@ -8,7 +8,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Settings, KeyRound, CreditCard, Plug } from "lucide-react";
 import { getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
-import { videoStatus } from "@/lib/providers/video";
 import { ANAMNESIS_LIBRARY } from "@/lib/anamnesis-library";
 import { addLibraryTemplatesAction } from "../_actions/anamnesis";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import { ImageUpload } from "@/components/forms/image-upload";
 import { googleOAuthConfigured } from "@/lib/providers/google-oauth";
 import { disconnectGoogleAction } from "../_actions/integrations";
 import { mediaUrl } from "@/lib/media";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -83,11 +83,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       status: billingConfigured() ? "real" : "sandbox",
     },
     {
-      name: "Zoom",
-      desc: t("integrations.zoom"),
-      status: videoStatus.zoom(),
-    },
-    {
       name: "Asaas / Iugu",
       desc: t("integrations.asaas"),
       status: process.env.ASAAS_API_KEY?.includes("mock") ? "sandbox" : "real",
@@ -107,11 +102,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       desc: t("integrations.receitaSaude"),
       status: process.env.RECEITA_SAUDE_TOKEN?.includes("mock") ? "sandbox" : "real",
     },
-    {
-      name: "OpenAI (Saluttin)",
-      desc: t("integrations.openai"),
-      status: process.env.OPENAI_API_KEY ? "real" : "heurístico",
-    },
+    ...(SALUTTIN_ENABLED
+      ? [{ name: "OpenAI (Saluttin)", desc: t("integrations.openai"), status: process.env.OPENAI_API_KEY ? "real" : "heurístico" }]
+      : []),
   ];
 
   return (

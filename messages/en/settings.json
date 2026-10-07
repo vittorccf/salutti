@@ -85,7 +85,6 @@
       "title": "Integrations",
       "description": "Sandbox integrations run on simulated data until you enter the real key.",
       "stripe": "SaaS subscriptions + recurring card payments",
-      "zoom": "Video call link via the Zoom API",
       "asaas": "Automatic Pix and boleto",
       "nfe": "NFS-e issuing by municipality",
       "whatsapp": "Reminders and collection sequence",

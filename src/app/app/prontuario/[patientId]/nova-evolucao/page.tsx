@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { assertInWorkspace } from "@/lib/tenant";
 import { getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 // Ordem das opções no formulário (a primeira é a padrão).
 const NOTE_TYPES = ["evolucao", "anamnese", "plano_terapeutico", "alta"] as const;
@@ -54,10 +55,10 @@ async function saveNoteAction(_prev: FormResult, formData: FormData): Promise<Fo
     appointmentId: data.appointmentId || null,
   });
 
-  const aiOutput = await saluttin.summarizeSession({
-    text: data.contentMarkdown,
-    patientName: patient.fullName,
-  });
+  // Saluttin oculto: nada vai para a IA e a evolução fica sem resumo.
+  const aiOutput = SALUTTIN_ENABLED
+    ? await saluttin.summarizeSession({ text: data.contentMarkdown, patientName: patient.fullName })
+    : null;
 
   const signedHash =
     data.sign === "on"
@@ -72,8 +73,8 @@ async function saveNoteAction(_prev: FormResult, formData: FormData): Promise<Fo
       appointmentId: data.appointmentId || null,
       noteType: data.noteType,
       contentMarkdown: data.contentMarkdown,
-      aiSummary: aiOutput.summary,
-      aiTopics: aiOutput.topics.join(","),
+      aiSummary: aiOutput?.summary ?? null,
+      aiTopics: aiOutput ? aiOutput.topics.join(",") : null,
       signedAt: data.sign === "on" ? new Date() : null,
       signedHash,
     },

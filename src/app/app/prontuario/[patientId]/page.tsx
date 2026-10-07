@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
 import { FilePlus2, FileSignature, Sparkles, ShieldCheck } from "lucide-react";
+import { SALUTTIN_ENABLED } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,7 @@ export default async function ProntuarioPatientPage({
                 <article className="prose prose-sm max-w-none whitespace-pre-wrap text-sm">
                   {n.contentMarkdown}
                 </article>
-                {n.aiSummary ? (
+                {SALUTTIN_ENABLED && n.aiSummary ? (
                   <div className="rounded-md border bg-accent/20 p-3 text-sm">
                     <p className="font-semibold flex items-center gap-2 text-brand">
                       <Sparkles className="h-4 w-4" aria-hidden /> {t("aiSummary")}

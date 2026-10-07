@@ -107,7 +107,7 @@
   },
   "records": {
     "title": "Processo clínico",
-    "description": "Notas de sessão e anamneses dos seus pacientes. O Saluttin resume cada nota ao guardar; reveja antes de usar.",
+    "description": "Notas de sessão e anamneses dos seus pacientes.",
     "emptyTitle": "Nenhuma nota de sessão registada",
     "emptyDescription": "Abra a ficha de um paciente para registar a primeira evolução.",
     "selectPatient": "Selecionar paciente",
@@ -122,11 +122,11 @@
   },
   "chart": {
     "title": "Processo clínico · {name}",
-    "subtitle": "{count, plural, one {# registo} other {# registos}} · o Saluttin resume cada evolução ao guardar.",
+    "subtitle": "{count, plural, one {# registo} other {# registos}}",
     "applyAnamnesis": "Aplicar anamnese",
     "newNote": "Nova nota de sessão",
     "emptyTitle": "Nenhuma evolução registada",
-    "emptyDescription": "Registe a primeira evolução e o Saluttin gera o resumo da sessão.",
+    "emptyDescription": "Registe a primeira evolução deste paciente.",
     "signed": "Assinado",
     "session": "Sessão {date}",
     "aiSummary": "Resumo gerado por IA (Saluttin) · reveja antes de utilizar",
@@ -143,12 +143,12 @@
   },
   "note": {
     "title": "Nova nota de sessão · {name}",
-    "description": "O Saluttin resume a evolução ao guardar. A assinatura digital é simulada com um hash SHA-256 do conteúdo e da hora.",
+    "description": "A assinatura digital é simulada com um hash SHA-256 do conteúdo e da hora.",
     "professional": "Profissional",
     "type": "Tipo de registo",
     "content": "Conteúdo",
     "placeholder": "Sessão #__\nQueixa: …\nObservação clínica: …\nIntervenção: …\nPlano: …",
-    "hint": "Aceita Markdown. O Saluttin identifica temas (ansiedade, luto, sono, pânico, relação conjugal) e sugere pontos para a sua reflexão.",
+    "hint": "Aceita Markdown.",
     "sign": "Assinar digitalmente (simulação ICP-Brasil)",
     "submit": "Guardar nota de sessão",
     "errors": {

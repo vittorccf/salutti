@@ -83,7 +83,6 @@ export default function PrivacyPage() {
           <li><strong>Vercel</strong> (hospedagem do aplicativo) e <strong>Neon</strong> (banco de dados PostgreSQL).</li>
           <li><strong>Stripe</strong> (cobrança da assinatura da Salutti).</li>
           <li><strong>Google</strong> (Agenda e Google Meet), apenas para quem conectar a própria conta.</li>
-          <li><strong>Zoom</strong> (videochamadas), quando escolhido no agendamento: recebe só um título genérico, a data e a duração da reunião, sem o nome do paciente.</li>
           <li>
             <strong>OpenAI</strong> (resumo do assistente Saluttin): quando o recurso está ativo na plataforma, ao salvar
             uma evolução o texto dela é enviado à OpenAI, nos Estados Unidos, para gerar o resumo. O nome do paciente não é
