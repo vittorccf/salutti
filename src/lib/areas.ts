@@ -80,7 +80,6 @@ export function professionalDefaults(segment: string): { type: string; council: 
     case "solo_psicanalista":
       return { type: "psicanalista", council: "sem_registro" };
     case "odonto":
-    case "ubs":
     case "estetica_hof":
       return { type: "dentista", council: "CRO" };
     case "estetica_farmacia":
