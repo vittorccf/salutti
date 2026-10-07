@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { appOrigin } from "@/lib/app-url";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -60,7 +61,7 @@ async function sendChargeReminder(formData: FormData) {
       amount: br.money(charge.amount),
       due: br.date(charge.dueDate),
       pix: charge.pixCopyPaste ?? "-",
-      link: charge.paymentLink ? `https://salutti.app${charge.paymentLink.url}` : "",
+      link: charge.paymentLink ? `${appOrigin()}${charge.paymentLink.url}` : "",
     },
   });
   await recordAudit({

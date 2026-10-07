@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { appOrigin } from "@/lib/app-url";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { whatsapp } from "@/lib/providers/whatsapp";
@@ -37,7 +38,7 @@ async function runDunningAction() {
       vars: {
         patient: c.patient.fullName.split(" ")[0],
         amount: br.money(c.amount),
-        link: c.paymentLink ? `https://salutti.app${c.paymentLink.url}` : "",
+        link: c.paymentLink ? `${appOrigin()}${c.paymentLink.url}` : "",
       },
     });
     await db.charge.update({ where: { id: c.id }, data: { status: "overdue" } });
