@@ -22,12 +22,14 @@ test("clínica no cadastro → equipe → vira autônomo só com um profissional
   await page.locator("#workspaceName").fill("Clínica Ponte E2E");
   await page.locator("#cnpj").fill("11.222.333/0001-82");
   await expect(page.locator("#segment")).toHaveValue("clinica");
+  await page.locator("#acceptTerms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
 
   // CNPJ com dígito errado: erro na hora, sem perder o que foi digitado.
   await expect(page.getByRole("alert").filter({ hasText: "CNPJ inválido" })).toBeVisible();
   await expect(page.locator("#workspaceName")).toHaveValue("Clínica Ponte E2E");
   await page.locator("#cnpj").fill("11.222.333/0001-81");
+  await page.locator("#acceptTerms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/app\/primeiros-passos$/);
 
@@ -89,6 +91,7 @@ test("perfil e dados do consultório em Ajustes (CEP preenche o endereço)", asy
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");
   await page.locator("#passwordConfirm").fill("senha-segura-123");
+  await page.locator("#acceptTerms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/app\/primeiros-passos$/);
 

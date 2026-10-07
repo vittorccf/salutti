@@ -11,6 +11,7 @@ async function signup(page: Page, email: string) {
   await page.locator("#password").fill(PASSWORD);
   await page.locator("#passwordConfirm").fill(PASSWORD);
   await page.locator("#workspaceName").fill("Consultório 2FA");
+  await page.locator("#acceptTerms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/primeiros-passos/);
 }

@@ -12,6 +12,7 @@ import { ACCOUNT_TYPES, type AccountType } from "@/lib/account";
 import { AREAS, segmentsFor, type Area } from "@/lib/areas";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/i18n/client";
+import { TermsCheckbox, legalLinks } from "@/components/legal/terms-checkbox";
 import { signupAction } from "./_actions";
 
 const ICONS: Record<AccountType, typeof UserRound> = { autonomo: UserRound, clinica: Building2 };
@@ -106,6 +107,7 @@ export function SignupForm({ area = "mental" }: { area?: Area }) {
               ))}
             </Select>
           </div>
+          <TermsCheckbox label={t.rich("acceptTerms", legalLinks)} />
           <Button className="w-full">{t("submit")}</Button>
         </>
       ) : null}

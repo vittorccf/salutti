@@ -7,6 +7,7 @@ type AuditInput = {
   entity: string;
   entityId?: string;
   metadata?: Record<string, unknown>;
+  ipAddress?: string | null;
 };
 
 export const recordAudit = async (input: AuditInput) => {
@@ -18,6 +19,7 @@ export const recordAudit = async (input: AuditInput) => {
       entity: input.entity,
       entityId: input.entityId,
       metadata: input.metadata ? JSON.stringify(input.metadata) : null,
+      ipAddress: input.ipAddress ?? null,
     },
   });
 };

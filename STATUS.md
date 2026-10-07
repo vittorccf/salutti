@@ -1,6 +1,25 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-07. A seção "Backoffice" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-07. A seção "Termos de Uso e Política de Privacidade" é a mais recente; as demais ficam como histórico.
+
+## Termos de Uso e Política de Privacidade (2026-10-07) — branch `feat/termos-privacidade`
+
+Páginas públicas `/termos` e `/privacidade` (URLs para a tela de consentimento OAuth do Google), com a declaração de
+Uso Limitado das APIs do Google, escopos pedidos, fornecedores (Vercel, Neon, Stripe, Google, Zoom, OpenAI, ViaCEP/BrasilAPI),
+papéis LGPD (Salutti controladora da conta, operadora dos dados de pacientes), guarda de prontuário e fotos clínicas.
+Versão e identificação da empresa em `src/lib/legal.ts` (`LEGAL_VERSION`, `LEGAL_ENTITY`). Aceite obrigatório no cadastro
+(/signup, /estetica/cadastro) e na conta criada por convite, conferido no servidor; o usuário guarda `termsAcceptedAt` e
+`termsVersion`, e a auditoria (`legal.accept`) guarda IP e navegador. Quem tem conta sem aceite da versão atual vê um aviso
+no app até clicar "Li e aceito". O Saluttin deixou de mandar o nome do paciente à OpenAI e o prompt não pede mais hipóteses
+nem plano terapêutico. Revisado por qualidade, advogado do diabo, psicólogo e esteta.
+
+**Depende do dono:** razão social, CNPJ, endereço e nome do encarregado (DPO) em `LEGAL_ENTITY`; domínio próprio verificado
+no Search Console (o Google exige domínio do dono para a página inicial e os links; `*.vercel.app` tende a ser recusado);
+confirmar o DPA da OpenAI; decidir se o resumo do Saluttin vira opcional.
+
+**Ficou para depois:** resumo do Saluttin automático ao salvar evolução (tornar opcional); registro de acesso (login com IP,
+6 meses, Marco Civil art. 15) ainda não existe e por isso não é prometido na política; erro de aceite no convite perde o nome
+digitado; `tests/e2e/fluxo.spec.ts` falha localmente quando o `.env` tem `GOOGLE_CLIENT_ID` (espera o Meet simulado).
 
 ## Backoffice (2026-10-07) — branch `feat/backoffice`
 

@@ -20,6 +20,7 @@ test("estética: cadastro → estoque → procedimento com kit → sessão regis
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("senha-segura-123");
   await page.locator("#passwordConfirm").fill("senha-segura-123");
+  await page.locator("#acceptTerms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/app\/primeiros-passos$/);
 

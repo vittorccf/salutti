@@ -26,7 +26,13 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "menu": "Menu",
-    "workspace": "Active practice"
+    "workspace": "Active practice",
+    "terms": {
+      "label": "Terms of Service and Privacy Policy",
+      "first": "We have published Salutti's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>. Please read them and confirm to record your acceptance.",
+      "updated": "We have updated the <terms>Terms of Service</terms> and the <privacy>Privacy Policy</privacy>. Please read them and confirm to record your acceptance.",
+      "accept": "I have read and accept"
+    }
   },
   "userMenu": {
     "open": "Account menu for {name}",

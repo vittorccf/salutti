@@ -26,7 +26,13 @@
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu",
     "menu": "Menu",
-    "workspace": "Consultório ativo"
+    "workspace": "Consultório ativo",
+    "terms": {
+      "label": "Termos de Uso e Política de Privacidade",
+      "first": "Publicamos os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy> da Salutti. Leia e confirme para registrar seu aceite.",
+      "updated": "Atualizamos os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy>. Leia e confirme para registrar seu aceite.",
+      "accept": "Li e aceito"
+    }
   },
   "userMenu": {
     "open": "Menu da conta de {name}",

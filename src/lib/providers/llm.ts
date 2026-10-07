@@ -12,7 +12,7 @@ export const saluttin = {
   async summarizeSession({ text, patientName }: SummarizeArgs) {
     if (process.env.OPENAI_API_KEY) {
       try {
-        return await callOpenAI({ text, patientName });
+        return await callOpenAI({ text });
       } catch (err) {
         console.warn("[Saluttin] fallback heurístico:", err);
       }
@@ -64,7 +64,8 @@ const heuristicSummary = ({ text, patientName }: SummarizeArgs) => {
   return { summary, topics };
 };
 
-const callOpenAI = async ({ text, patientName }: SummarizeArgs) => {
+// O nome do paciente não sai da Salutti: a OpenAI recebe só o texto da evolução (Política de Privacidade, seção 4).
+const callOpenAI = async ({ text }: { text: string }) => {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -77,11 +78,11 @@ const callOpenAI = async ({ text, patientName }: SummarizeArgs) => {
         {
           role: "system",
           content:
-            "Você é o Saluttin, assistente clínico da Salutti. Sumarize sessões em até 5 bullets: temas, hipóteses, plano terapêutico sugerido, riscos. Cite explicitamente se houver indício de risco psiquiátrico agudo. Não invente dados ausentes.",
+            "Você é o Saluttin, assistente da Salutti. Resuma o registro de sessão em até 5 bullets: temas trabalhados, pontos para a reflexão do profissional e próximos passos possíveis. Não faça diagnóstico. Sinalize explicitamente se houver indício de risco agudo. Não invente dados ausentes.",
         },
         {
           role: "user",
-          content: `Paciente: ${patientName ?? "anônimo"}\n\nRegistro da sessão:\n${text}`,
+          content: `Registro da sessão:\n${text}`,
         },
       ],
       temperature: 0.3,

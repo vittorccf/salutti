@@ -141,5 +141,13 @@
     "footer": "Salutti Estética · Practice management for aesthetics professionals ·",
     "contact": "Talk to us:",
     "otherArea": "Work in mental health? Meet Salutti"
+  },
+  "legal": {
+    "home": "Salutti home page",
+    "updatedAt": "Last updated: {date} (version {version})",
+    "ptBrNotice": "This document is published in Brazilian Portuguese, which is the governing version.",
+    "otherDocs": "Other documents",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
   }
 }
