@@ -1,4 +1,4 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +50,7 @@ export default async function PublicPaymentPage({
     <main className="ds2-glow min-h-screen grid place-items-center p-4">
       <Card className="w-full max-w-[440px]">
         <CardHeader className="text-center">
-          <BrandLogo variant="symbol" height={48} className="mx-auto" />
+          <Logo variant="symbol" size={48} className="mx-auto" />
           <CardTitle>{t("title", { workspace: link.workspace.name })}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>

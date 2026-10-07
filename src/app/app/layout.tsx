@@ -1,4 +1,4 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import { AreaTheme } from "@/components/brand/area-theme";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -55,7 +55,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <span className="min-w-0 font-semibold leading-tight">{ctx.user.name}</span>
             </span>
           ) : (
-            <BrandLogo height={area === "mental" ? 28 : 36} area={area} />
+            <Logo size={area === "mental" ? 28 : 36} area={area} />
           )}
           {AREAS[area].brandTag && customBrand ? (
             <span className="block text-xs font-medium text-brand">{AREAS[area].name}</span>
@@ -101,7 +101,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="flex min-w-0 items-center gap-3">
               <MobileNav>{sidebar}</MobileNav>
               <Link href="/app" className="rounded-md md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t("home")}>
-                <BrandLogo variant="symbol" height={28} area={area} />
+                <Logo variant="symbol" size={28} area={area} />
               </Link>
               <Badge variant="muted" className="hidden sm:inline-flex">
                 {label("accountType", ctx.workspace.accountType)} · {label("segment", ctx.workspace.segment)}

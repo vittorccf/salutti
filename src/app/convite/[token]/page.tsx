@@ -1,4 +1,4 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import { NewPasswordFields } from "@/components/forms/password-input";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -78,7 +78,7 @@ export default async function InvitePage({
       </div>
       <Card className="w-full max-w-[440px]">
         <CardHeader className="text-center">
-          <BrandLogo variant="symbol" height={48} className="mx-auto" />
+          <Logo variant="symbol" size={48} className="mx-auto" />
           {inv ? (
             <>
               <CardTitle>{t("title", { workspace: inv.workspace.name })}</CardTitle>

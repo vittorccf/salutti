@@ -1,5 +1,5 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,7 +36,7 @@ export default async function Home() {
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="container flex items-center justify-between gap-3 py-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label="Salutti">
-            <BrandLogo height={30} />
+            <Logo size={30} />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>

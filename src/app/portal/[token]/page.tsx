@@ -1,4 +1,4 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
@@ -96,7 +96,7 @@ export default async function PatientPortalPage({
       <header className="sticky top-0 border-b bg-background/80 backdrop-blur">
         <div className="container flex flex-wrap items-center justify-between gap-2 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <BrandLogo height={26} />
+            <Logo size={26} />
             <span className="text-sm font-medium text-muted-foreground">{t("header")}</span>
           </Link>
           <Badge variant="muted">{patient.workspace.name}</Badge>

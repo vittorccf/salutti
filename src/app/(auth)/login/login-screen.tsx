@@ -1,6 +1,6 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { PasswordInput } from "@/components/forms/password-input";
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
 import { AreaTheme } from "@/components/brand/area-theme";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -74,7 +74,7 @@ export async function LoginScreen({ area = "mental", searchParams }: { area?: Ar
       </div>
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
-          <BrandLogo height={area === "mental" ? 40 : 46} area={area} className="mx-auto" />
+          <Logo size={area === "mental" ? 40 : 46} area={area} className="mx-auto" />
           <CardTitle>{t(`title${AREAS[area].titleKey}`)}</CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
