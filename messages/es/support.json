@@ -78,5 +78,12 @@
     "aguardando_cliente": "Esperando tu respuesta",
     "resolvido": "Resuelta",
     "fechado": "Cerrada"
+  },
+  "access": {
+    "banner": "Acceso de soporte a la cuenta {workspace}: solo lectura, sin contenido clínico. Termina a las {time}.",
+    "leave": "Terminar acceso",
+    "noticeTitle": "El equipo de Salutti accedió a tu cuenta",
+    "noticeItem": "{date} · motivo: {reason}",
+    "noticeHelp": "El acceso de soporte es de solo lectura y no incluye historias clínicas, anamnesis ni fotos clínicas. Todo queda registrado en la pantalla de privacidad."
   }
 }

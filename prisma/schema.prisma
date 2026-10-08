@@ -106,6 +106,7 @@ model Workspace {
   stockMovements  StockMovement[]
   clinicalPhotos  ClinicalPhoto[]
   supportTickets  SupportTicket[]
+  supportAccessGrants SupportAccessGrant[]
 }
 
 model Membership {
@@ -744,6 +745,7 @@ model BackofficeUser {
   createdAt          DateTime  @default(now())
 
   assignedTickets SupportTicket[]      @relation("TicketAssignee")
+  accessGrants    SupportAccessGrant[]
   messages        SupportMessage[]
   auditEvents     BackofficeAuditLog[]
 }
@@ -836,4 +838,27 @@ model BackofficeAuditLog {
   backofficeUser BackofficeUser? @relation(fields: [backofficeUserId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+}
+
+// Acesso da equipe Salutti à conta de um consultório pelo usuário oculto "Suporte Salutti" (src/lib/support-access.ts).
+// A senha (aleatória, mostrada uma vez no backoffice) vale para um consultório, um login e 15 minutos; a sessão
+// termina junto. Ver docs/ACESSO-SUPORTE.md.
+model SupportAccessGrant {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  backofficeUserId String?
+  ticketId         String?
+  reason           String
+  passwordHash     String
+  expiresAt        DateTime
+  usedAt           DateTime?
+  revokedAt        DateTime?
+  endedAt          DateTime?
+  createdAt        DateTime  @default(now())
+
+  workspace        Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  backofficeUser   BackofficeUser? @relation(fields: [backofficeUserId], references: [id], onDelete: SetNull)
+
+  @@index([expiresAt])
+  @@index([workspaceId, createdAt])
 }

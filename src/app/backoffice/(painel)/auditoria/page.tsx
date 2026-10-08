@@ -22,6 +22,8 @@ const ACTIONS: Record<string, string> = {
   "staff.toggle": "Ativou/desativou pessoa da equipe",
   "staff.reset": "Redefiniu senha de pessoa da equipe",
   "staff.role": "Mudou papel na equipe",
+  "support.grant.create": "Gerou acesso à conta de cliente",
+  "support.grant.revoke": "Revogou acesso à conta de cliente",
 };
 
 export default async function AuditPage() {

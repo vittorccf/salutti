@@ -2,7 +2,7 @@
 // depois de aberto (toxina reconstituída) e rastreabilidade de qual lote foi aplicado em qual paciente.
 // Todas as funções recebem o workspaceId e filtram por ele (multi-tenant).
 import type { Prisma } from "@prisma/client";
-import { db } from "./db";
+import { db, type DbTransaction } from "./db";
 import { dateKeySP } from "./dates";
 import { TranslatableError } from "@/i18n/errors";
 
@@ -45,7 +45,7 @@ export function parseDecimal(value: unknown): number {
 
 // Baixa atômica: só desconta se ainda houver saldo no momento da escrita (duas baixas simultâneas no mesmo
 // lote não se sobrescrevem; a segunda falha se o saldo acabou).
-async function decrementLot(tx: Prisma.TransactionClient, lotId: string, take: number, data: Prisma.StockLotUpdateManyMutationInput = {}) {
+async function decrementLot(tx: DbTransaction, lotId: string, take: number, data: Prisma.StockLotUpdateManyMutationInput = {}) {
   const { count } = await tx.stockLot.updateMany({
     where: { id: lotId, quantity: { gte: take - 1e-9 } },
     data: { ...data, quantity: { decrement: take } },

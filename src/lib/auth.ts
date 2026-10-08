@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
 import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
+import { getLiveGrant, SUPPORT_ROLE } from "./support-access";
+import { LEGAL_VERSION } from "./legal";
 import { accessExpired } from "@/lib/plan-access";
 
 // Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
@@ -35,6 +37,8 @@ export type SessionPayload = {
   userId: string;
   email: string;
   name: string;
+  // Sessão do "Suporte Salutti": presa a uma concessão (consultório e prazo). Ver src/lib/support-access.ts.
+  supportGrantId?: string;
 };
 
 export const hashPassword = (password: string) => bcrypt.hash(password, 10);
@@ -42,14 +46,16 @@ export const hashPassword = (password: string) => bcrypt.hash(password, 10);
 export const verifyPassword = async (password: string, hash: string | null) =>
   hash ? bcrypt.compare(password, hash) : false;
 
-export const createSession = async (payload: SessionPayload) => {
+export const createSession = async (payload: SessionPayload, opts: { expiresAt?: Date } = {}) => {
   const token = await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("30d")
+    .setExpirationTime(opts.expiresAt ?? "30d")
     .sign(secretKey());
 
-  cookies().set(COOKIE_NAME, token, cookieBase);
+  const maxAge = opts.expiresAt ? Math.max(1, Math.floor((opts.expiresAt.getTime() - Date.now()) / 1000)) : cookieBase.maxAge;
+  cookies().set(COOKIE_NAME, token, { ...cookieBase, maxAge });
+  if (payload.supportGrantId) return;
   // Idioma escolhido em Ajustes vale em qualquer navegador onde a pessoa entrar.
   const user = await db.user.findUnique({ where: { id: payload.userId }, select: { locale: true } });
   // Perfil com idioma: ele vale. Sem idioma no perfil: a escolha feita na tela de login (cookie) passa a ser
@@ -165,6 +171,7 @@ export const getActiveWorkspaceId = () => cookies().get(COOKIE_WS)?.value ?? nul
 export const getCurrentContext = async () => {
   const session = await getSession();
   if (!session) return null;
+  if (session.supportGrantId) return getSupportContext(session);
 
   const user = await db.user.findUnique({
     where: { id: session.userId },
@@ -181,6 +188,24 @@ export const getCurrentContext = async () => {
     workspace: membership.workspace,
     role: membership.role,
     allWorkspaces: user.memberships.map((m) => m.workspace),
+    support: null as { grantId: string; expiresAt: Date } | null,
+  };
+};
+
+// Contexto do "Suporte Salutti": o consultório vem da concessão, não de Membership (o usuário é oculto em todas as contas).
+// Concessão revogada, encerrada ou vencida derruba a sessão na hora.
+const getSupportContext = async (session: SessionPayload) => {
+  const [grant, user] = await Promise.all([
+    getLiveGrant(session.supportGrantId!),
+    db.user.findUnique({ where: { id: session.userId } }),
+  ]);
+  if (!grant || !user) return null;
+  return {
+    user: { id: user.id, email: user.email, name: user.name, birthDate: null, showPatientBirthdays: false, avatarId: null, locale: user.locale, termsVersion: LEGAL_VERSION },
+    workspace: grant.workspace,
+    role: SUPPORT_ROLE,
+    allWorkspaces: [grant.workspace],
+    support: { grantId: grant.id, expiresAt: grant.expiresAt },
   };
 };
 

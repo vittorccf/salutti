@@ -78,5 +78,12 @@
     "aguardando_cliente": "Aguardando você",
     "resolvido": "Resolvido",
     "fechado": "Fechado"
+  },
+  "access": {
+    "banner": "Acesso de suporte à conta {workspace}: somente leitura, sem conteúdo clínico. Termina às {time}.",
+    "leave": "Encerrar acesso",
+    "noticeTitle": "A equipe Salutti acessou sua conta",
+    "noticeItem": "{date} · motivo: {reason}",
+    "noticeHelp": "Acesso de suporte é somente leitura e não inclui prontuários, anamneses nem fotos clínicas. Tudo fica registrado na tela LGPD."
   }
 }

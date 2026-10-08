@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireContext } from "@/lib/auth";
+import { SupportAccessNotice } from "./_components/support/support-access";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -157,6 +158,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="ds2-glow -m-4 min-h-[calc(100vh-57px)] space-y-8 p-4 md:-m-6 md:p-6">
+      {ctx.role === "owner" || ctx.role === "admin" ? <SupportAccessNotice workspaceId={wsId} /> : null}
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-display">

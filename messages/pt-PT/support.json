@@ -78,5 +78,12 @@
     "aguardando_cliente": "A aguardar por si",
     "resolvido": "Resolvido",
     "fechado": "Fechado"
+  },
+  "access": {
+    "banner": "Acesso de suporte à conta {workspace}: só de leitura, sem conteúdo clínico. Termina às {time}.",
+    "leave": "Terminar acesso",
+    "noticeTitle": "A equipa Salutti acedeu à sua conta",
+    "noticeItem": "{date} · motivo: {reason}",
+    "noticeHelp": "O acesso de suporte é só de leitura e não inclui processos clínicos, anamneses nem fotografias clínicas. Tudo fica registado no ecrã RGPD."
   }
 }

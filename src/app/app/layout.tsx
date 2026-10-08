@@ -22,6 +22,7 @@ import { TZ } from "@/lib/dates";
 import { getLocale } from "@/i18n/server";
 import { TermsUpdateBanner } from "./_components/legal/terms-update-banner";
 import { SupportWidget, type SupportTicketView } from "./_components/support/support-widget";
+import { SupportAccessBanner } from "./_components/support/support-access";
 import { APP_COMMIT, APP_VERSION, APP_VERSION_FULL } from "@/lib/version";
 
 // Título da aba pela marca do consultório ativo: "Salutti" ou "Salutti Estética".
@@ -119,6 +120,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:flex-col border-r bg-card">{sidebar}</aside>
 
       <main className="bg-background min-h-screen min-w-0">
+        {ctx.support ? <SupportAccessBanner workspace={ctx.workspace.name} expiresAt={ctx.support.expiresAt} /> : null}
         <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-30">
           <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
@@ -139,7 +141,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <TermsUpdateBanner termsVersion={ctx.user.termsVersion} />
         <div className="p-4 md:p-6">{children}</div>
       </main>
-      <SupportWidget tickets={supportTickets} appVersion={APP_VERSION_FULL} />
+      {/* O suporte não abre chamado em nome do cliente. */}
+      {ctx.support ? null : <SupportWidget tickets={supportTickets} appVersion={APP_VERSION_FULL} />}
     </div>
   );
 }

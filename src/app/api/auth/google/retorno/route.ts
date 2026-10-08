@@ -5,6 +5,7 @@ import { type NextRequest } from "next/server";
 import { completeLogin, getSession, safeNext, setPendingGoogle } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
+import { isSupportEmail } from "@/lib/support-access";
 import { AREAS, areaOf } from "@/lib/areas";
 import { exchangeLoginCode, googleLoginRedirectUri, LOGIN_COOKIE, LOGIN_COOKIE_PATH } from "@/lib/providers/google-login";
 
@@ -53,6 +54,8 @@ export const GET = async (req: NextRequest) => {
     return fail("google");
   }
   if (!identity.emailVerified) return fail("googleEmail");
+  // O usuário oculto do suporte só entra com a senha de uma concessão do backoffice, nunca pelo Google.
+  if (isSupportEmail(identity.email)) return fail("google");
 
   if (saved.linkUserId) {
     const session = await getSession();

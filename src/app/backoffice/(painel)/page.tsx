@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { SUPPORT_USER_EMAIL } from "@/lib/support-access";
 import { requireBackoffice } from "@/lib/backoffice/auth";
 import { OPEN_STATUSES } from "@/lib/support";
 import {
@@ -23,7 +24,7 @@ export default async function BackofficeHome() {
   const [workspaces, users, newWorkspaces, trialsActive, trialsEnding, byPlan, openTickets, unread, urgent, plans, recentTickets, recentSignups] =
     await Promise.all([
       db.workspace.count(),
-      db.user.count(),
+      db.user.count({ where: { email: { not: SUPPORT_USER_EMAIL } } }),
       db.workspace.count({ where: { createdAt: { gte: new Date(now.getTime() - 30 * DAY) } } }),
       db.workspace.count({ where: { planTier: "trial", trialEndsAt: { gte: now } } }),
       db.workspace.count({ where: { planTier: "trial", trialEndsAt: { gte: now, lte: new Date(now.getTime() + 7 * DAY) } } }),

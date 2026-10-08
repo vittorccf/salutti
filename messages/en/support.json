@@ -78,5 +78,12 @@
     "aguardando_cliente": "Waiting for you",
     "resolvido": "Resolved",
     "fechado": "Closed"
+  },
+  "access": {
+    "banner": "Support access to the {workspace} account: read-only, no clinical content. Ends at {time}.",
+    "leave": "End access",
+    "noticeTitle": "The Salutti team accessed your account",
+    "noticeItem": "{date} · reason: {reason}",
+    "noticeHelp": "Support access is read-only and doesn’t include records, intake forms or clinical photos. Everything is logged on the privacy screen."
   }
 }
