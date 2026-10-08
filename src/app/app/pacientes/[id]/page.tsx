@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { canSeeClinical } from "@/lib/permissions";
+
+const CLINICAL_CONSENT_PURPOSES = new Set(["procedimento", "foto_clinica", "foto_divulgacao"]);
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -94,6 +96,8 @@ export default async function PatientPage({
   // Finalidades da área estética (termo do procedimento, fotos clínicas) têm texto em aesthetics.consentPurposes.
   const purposeLabel = (purpose: string) => (tPurpose.has(purpose) ? tPurpose(purpose) : label("consentPurpose", purpose));
 
+  // Termo de procedimento e autorização de foto revelam o tratamento: só a equipe clínica vê.
+  const consents = clinical ? patient.consentRecords : patient.consentRecords.filter((r) => !CLINICAL_CONSENT_PURPOSES.has(r.purpose));
   return (
     <div className="space-y-6">
       <header className="flex items-end justify-between flex-wrap gap-3">
@@ -335,10 +339,10 @@ export default async function PatientPage({
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 md:grid-cols-2">
-            {patient.consentRecords.length === 0 ? (
+            {consents.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("consentsEmpty")}</p>
             ) : (
-              patient.consentRecords.map((r) => (
+              consents.map((r) => (
                 <div key={r.id} className="rounded-md border p-3 text-sm">
                   <p className="font-medium">{purposeLabel(r.purpose)}</p>
                   <p className="text-xs text-muted-foreground">

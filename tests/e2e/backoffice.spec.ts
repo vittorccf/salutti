@@ -107,6 +107,11 @@ test("acesso de suporte: senha de 15 min, uso único, somente leitura, sem pront
   await staff.goto("/backoffice/clientes?q=Guilherme");
   await staff.getByRole("link", { name: "Consultório Guilherme Quintino" }).click();
   await staff.locator("#reason").fill("Teste e2e: investigar agenda");
+  // Sem a senha certa do backoffice, não gera.
+  await staff.locator("#confirmPassword").fill("senha-errada");
+  await staff.getByRole("button", { name: "Acessar conta" }).click();
+  await expect(staff.getByText("Senha do backoffice incorreta.")).toBeVisible();
+  await staff.locator("#confirmPassword").fill(NEW_PASSWORD);
   await staff.getByRole("button", { name: "Acessar conta" }).click();
   await expect(staff.locator("#support-email")).toHaveValue("suporte_salutti@salutti.com");
   const password = await staff.locator("#support-password").inputValue();
@@ -126,6 +131,8 @@ test("acesso de suporte: senha de 15 min, uso único, somente leitura, sem pront
   // Sem conteúdo clínico.
   const prontuario = await support.goto("/app/prontuario");
   expect(prontuario?.status()).toBe(404);
+  const lgpd = await support.goto("/app/lgpd");
+  expect(lgpd?.status()).toBe(404);
 
   // Somente leitura: a Server Action é recusada e nada é gravado.
   await support.goto("/app/pacientes/novo");

@@ -3,6 +3,7 @@
 // sala, e o sigilo da sessão é do profissional (Código de Ética, art. 9º).
 // Sem o app OAuth da plataforma configurado (desenvolvimento, demonstração), o provider gera link simulado.
 import { db } from "./db";
+import { assertNotSupportSession } from "@/lib/db";
 import { decryptSecret } from "./totp";
 import { googleOAuthConfigured, GoogleTokenRevokedError } from "./providers/google-oauth";
 import { video, type VideoProvider } from "./providers/video";
@@ -50,6 +51,7 @@ export async function createSessionMeeting(input: {
   startsAt: Date;
   durationMinutes: number;
 }) {
+  await assertNotSupportSession();
   const base = { provider: input.provider, topic: input.topic, startsAt: input.startsAt, durationMinutes: input.durationMinutes };
   if (input.provider !== "google_meet" || !googleOAuthConfigured()) {
     const m = await video.createMeeting(base);
@@ -71,6 +73,7 @@ export async function createSessionMeeting(input: {
 
 // Ao cancelar a sessão, o evento sai da agenda de quem atende (falha aqui não impede o cancelamento).
 export async function cancelSessionMeeting(appt: { meetingEventId: string | null; meetingOwnerId: string | null }) {
+  await assertNotSupportSession();
   if (!appt.meetingEventId || !appt.meetingOwnerId || !googleOAuthConfigured()) return;
   const conn = await db.integrationConnection.findUnique({
     where: { userId_provider: { userId: appt.meetingOwnerId, provider: "google" } },

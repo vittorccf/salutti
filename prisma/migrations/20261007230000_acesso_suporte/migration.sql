@@ -33,3 +33,6 @@ ALTER TABLE "SupportAccessGrant" ADD CONSTRAINT "SupportAccessGrant_backofficeUs
 INSERT INTO "User" ("id", "email", "name", "passwordHash") VALUES
   ('suporte_salutti', 'suporte_salutti@salutti.com', 'Suporte Salutti', '!')
 ON CONFLICT ("email") DO NOTHING;
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SupportAccessGrant_passwordHash_key" ON "SupportAccessGrant"("passwordHash");

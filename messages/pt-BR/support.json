@@ -84,6 +84,6 @@
     "leave": "Encerrar acesso",
     "noticeTitle": "A equipe Salutti acessou sua conta",
     "noticeItem": "{date} · motivo: {reason}",
-    "noticeHelp": "Acesso de suporte é somente leitura e não inclui prontuários, anamneses nem fotos clínicas. Tudo fica registrado na tela LGPD."
+    "noticeHelp": "Durante o acesso, a equipe Salutti pôde ver a agenda, o cadastro e o financeiro dos pacientes, sem alterar nem enviar nada. Prontuários, evoluções, anamneses, fotos clínicas, termos e observações livres não ficam visíveis. Cada acesso dura no máximo 15 minutos e fica no registro de auditoria."
   }
 }

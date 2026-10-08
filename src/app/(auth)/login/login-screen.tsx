@@ -8,7 +8,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { isSupportEmail, redeemSupportPassword, SUPPORT_USER_EMAIL } from "@/lib/support-access";
+import { getLiveGrant, isSupportEmail, redeemSupportPassword, SUPPORT_USER_EMAIL } from "@/lib/support-access";
 import { completeLogin, createSession, getSession, setActiveWorkspaceCookie, verifyPassword } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,7 +64,8 @@ export type LoginSearchParams = Promise<{ error?: string; next?: string }>;
 // Tela de login, usada por /login (Salutti) e /estetica/login (Salutti Estética).
 export async function LoginScreen({ area = "mental", searchParams }: { area?: Area; searchParams: LoginSearchParams }) {
   const session = await getSession();
-  if (session) redirect("/app");
+  // Sessão de suporte com a concessão revogada ou vencida não volta para /app (seria um laço com o layout do app).
+  if (session && (!session.supportGrantId || (await getLiveGrant(session.supportGrantId)))) redirect("/app");
   const params = await searchParams;
   const t = await getTranslations("auth.login");
   const error = ERRORS.find((e) => e === params.error);

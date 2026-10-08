@@ -24,6 +24,7 @@ const ACTIONS: Record<string, string> = {
   "staff.role": "Mudou papel na equipe",
   "support.grant.create": "Gerou acesso à conta de cliente",
   "support.grant.revoke": "Revogou acesso à conta de cliente",
+  "support.grant.denied": "Acesso à conta de cliente negado (senha)",
 };
 
 export default async function AuditPage() {

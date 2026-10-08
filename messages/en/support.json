@@ -84,6 +84,6 @@
     "leave": "End access",
     "noticeTitle": "The Salutti team accessed your account",
     "noticeItem": "{date} · reason: {reason}",
-    "noticeHelp": "Support access is read-only and doesn’t include records, intake forms or clinical photos. Everything is logged on the privacy screen."
+    "noticeHelp": "During the access, the Salutti team could see patients’ schedule, records and billing, without changing or sending anything. Clinical records, progress notes, intake forms, clinical photos, consent forms and free-text notes are not visible. Each access lasts at most 15 minutes and is kept in the audit log."
   }
 }

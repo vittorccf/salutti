@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { decodeJwt } from "jose";
+import { SESSION_COOKIE } from "./session-cookie";
 
 // Acesso de suporte é somente leitura (src/lib/support-access.ts): com a sessão do "Suporte Salutti" no pedido,
 // nenhuma gravação passa, venha de Server Action, rota ou componente. Exceções: a própria concessão e a auditoria
@@ -11,12 +12,18 @@ const ALLOWED_FOR_SUPPORT = new Set(["SupportAccessGrant", "AuditLog"]);
 const isSupportRequest = async () => {
   try {
     const { cookies } = await import("next/headers");
-    const token = cookies().get("salutti_session")?.value;
+    const token = cookies().get(SESSION_COOKIE)?.value;
     return Boolean(token && decodeJwt(token).supportGrantId);
   } catch {
     // Fora de um pedido (seed, scripts, testes): não há sessão.
     return false;
   }
+};
+
+// Para efeitos fora do banco (Google Agenda, WhatsApp, Stripe, NFS-e…): chame antes de enviar, para o acesso de
+// suporte não disparar nada real antes de a gravação ser recusada.
+export const assertNotSupportSession = async () => {
+  if (await isSupportRequest()) throw new Error("Acesso de suporte: somente leitura.");
 };
 
 const extend = (client: PrismaClient) =>

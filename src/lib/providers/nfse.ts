@@ -1,8 +1,11 @@
 // Provider NFS-e - MOCK (estilo NFE.io / Focus NF-e / Nuvem Fiscal).
 // Em produção: chamada async + webhook quando prefeitura responder.
+import { assertNotSupportSession } from "@/lib/db";
 
 export const nfse = {
   async issue(input: { workspaceId: string; patientName: string; amount: number; serviceCode?: string }) {
+    // Acesso de suporte é somente leitura: nada sai daqui.
+    await assertNotSupportSession();
     const id = `nfeio_${Math.random().toString(36).slice(2, 12)}`;
     const pdfUrl = `/mock/nfse/${id}.pdf`;
     const xmlUrl = `/mock/nfse/${id}.xml`;

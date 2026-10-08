@@ -849,7 +849,8 @@ model SupportAccessGrant {
   backofficeUserId String?
   ticketId         String?
   reason           String
-  passwordHash     String
+  // SHA-256 da senha aleatória (único: o login acha a concessão por igualdade).
+  passwordHash     String    @unique
   expiresAt        DateTime
   usedAt           DateTime?
   revokedAt        DateTime?

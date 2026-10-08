@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 import { getLiveGrant, SUPPORT_ROLE } from "./support-access";
 import { LEGAL_VERSION } from "./legal";
+import { SESSION_COOKIE } from "./session-cookie";
 import { accessExpired } from "@/lib/plan-access";
 
 // Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
@@ -30,7 +31,7 @@ const cookieBase = {
   path: "/",
   maxAge: 60 * 60 * 24 * 30,
 };
-const COOKIE_NAME = "salutti_session";
+const COOKIE_NAME = SESSION_COOKIE;
 const COOKIE_WS = "salutti_ws";
 
 export type SessionPayload = {

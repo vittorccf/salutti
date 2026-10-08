@@ -1,7 +1,7 @@
 // Termos de Uso e Política de Privacidade da plataforma (páginas públicas /termos e /privacidade).
 // Ao mudar o texto de forma relevante, troque a versão (data AAAA-MM-DD): novos cadastros registram a versão nova
 // e quem já tem conta vê o aviso de aceite no app (TermsUpdateBanner) até confirmar.
-export const LEGAL_VERSION = "2026-10-07";
+export const LEGAL_VERSION = "2026-10-08";
 
 export const TERMS_PATH = "/termos";
 export const PRIVACY_PATH = "/privacidade";

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Copy, KeyRound } from "lucide-react";
 import { FormError } from "@/components/forms/form-error";
+import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,7 +108,11 @@ export function SupportAccessCard({
       <div className="space-y-1.5">
         <Label htmlFor="reason">Motivo</Label>
         <Input id="reason" name="reason" required minLength={10} maxLength={200} defaultValue={defaultReason} placeholder="Ex.: chamado #12, agenda não salva" />
-        <p className="text-xs text-muted-foreground">O cliente vê este motivo no aviso de acesso.</p>
+        <p className="text-xs text-muted-foreground">O cliente vê este motivo no aviso de acesso: não cite nomes de pacientes.</p>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="confirmPassword">Sua senha do backoffice</Label>
+        <PasswordInput id="confirmPassword" name="confirmPassword" required autoComplete="current-password" />
       </div>
       <Submit>Acessar conta</Submit>
     </form>

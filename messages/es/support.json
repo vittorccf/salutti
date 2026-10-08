@@ -84,6 +84,6 @@
     "leave": "Terminar acceso",
     "noticeTitle": "El equipo de Salutti accedió a tu cuenta",
     "noticeItem": "{date} · motivo: {reason}",
-    "noticeHelp": "El acceso de soporte es de solo lectura y no incluye historias clínicas, anamnesis ni fotos clínicas. Todo queda registrado en la pantalla de privacidad."
+    "noticeHelp": "Durante el acceso, el equipo de Salutti pudo ver la agenda, el registro y las finanzas de los pacientes, sin cambiar ni enviar nada. Historias clínicas, evoluciones, anamnesis, fotos clínicas, consentimientos y observaciones libres no quedan visibles. Cada acceso dura como máximo 15 minutos y queda en el registro de auditoría."
   }
 }

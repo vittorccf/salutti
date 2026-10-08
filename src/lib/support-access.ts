@@ -3,7 +3,6 @@
 // (SupportAccessGrant) gerada no backoffice. Cada concessão vale para um consultório, um login e 15 minutos,
 // e a sessão do suporte termina junto com ela. O acesso é somente leitura e sem conteúdo clínico.
 import crypto from "node:crypto";
-import bcrypt from "bcryptjs";
 import { db } from "./db";
 import { recordAudit } from "./audit";
 
@@ -17,6 +16,14 @@ const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 export const generateSupportPassword = (length = 20) =>
   Array.from(crypto.randomBytes(length), (b) => ALPHABET[b % ALPHABET.length]).join("");
 
+// A senha é aleatória e longa (não é escolhida por gente): SHA-256 basta, como nos convites, e permite achar a
+// concessão por igualdade, sem comparar bcrypt contra várias.
+const hashPassword = (password: string) => crypto.createHash("sha256").update(password).digest("hex");
+
+// Preview e produção dividem o banco: uma senha gerada em produção não pode abrir um deploy de preview
+// (que pode rodar código de outra branch).
+export const supportLoginAllowedHere = () => process.env.VERCEL_ENV !== "preview";
+
 export const isSupportEmail = (email: string) => email.trim().toLowerCase() === SUPPORT_USER_EMAIL;
 
 export const grantIsLive = (g: { expiresAt: Date; revokedAt: Date | null; endedAt: Date | null }, now = new Date()) =>
@@ -28,11 +35,12 @@ export const createSupportGrant = async (input: {
   reason: string;
   ticketId?: string | null;
 }) => {
-  // Uma concessão viva por consultório: gerar outra encerra a anterior.
-  await db.supportAccessGrant.updateMany({
+  // Uma concessão viva por consultório: gerar outra revoga a anterior.
+  const live = await db.supportAccessGrant.findMany({
     where: { workspaceId: input.workspaceId, revokedAt: null, endedAt: null, expiresAt: { gt: new Date() } },
-    data: { revokedAt: new Date() },
+    select: { id: true },
   });
+  for (const g of live) await revokeSupportGrant(g.id);
   // A migration cria o usuário oculto; o upsert cobre bancos recriados por seed (desenvolvimento, e2e).
   await db.user.upsert({
     where: { email: SUPPORT_USER_EMAIL },
@@ -46,7 +54,7 @@ export const createSupportGrant = async (input: {
       backofficeUserId: input.backofficeUserId,
       reason: input.reason,
       ticketId: input.ticketId ?? null,
-      passwordHash: await bcrypt.hash(password, 10),
+      passwordHash: hashPassword(password),
       expiresAt: new Date(Date.now() + SUPPORT_ACCESS_MINUTES * 60 * 1000),
     },
   });
@@ -55,32 +63,43 @@ export const createSupportGrant = async (input: {
 
 // Login do usuário de suporte: a senha precisa ser de uma concessão viva e ainda não usada (uso único).
 export const redeemSupportPassword = async (password: string) => {
-  const candidates = await db.supportAccessGrant.findMany({
-    where: { usedAt: null, revokedAt: null, endedAt: null, expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-    take: 20,
+  if (!supportLoginAllowedHere() || password.length > 100) return null;
+  const g = await db.supportAccessGrant.findFirst({
+    where: { passwordHash: hashPassword(password), usedAt: null, revokedAt: null, endedAt: null, expiresAt: { gt: new Date() } },
   });
-  for (const g of candidates) {
-    if (await bcrypt.compare(password, g.passwordHash)) {
-      // updateMany com usedAt: null: dois logins simultâneos com a mesma senha, só um vence.
-      const { count } = await db.supportAccessGrant.updateMany({ where: { id: g.id, usedAt: null }, data: { usedAt: new Date() } });
-      if (count === 0) return null;
-      await recordAudit({
-        workspaceId: g.workspaceId,
-        action: "support.access.start",
-        entity: "SupportAccessGrant",
-        entityId: g.id,
-        metadata: { reason: g.reason, expiresAt: g.expiresAt.toISOString() },
-      });
-      return g;
-    }
-  }
-  return null;
+  if (!g) return null;
+  // updateMany com usedAt: null: dois logins simultâneos com a mesma senha, só um vence.
+  const { count } = await db.supportAccessGrant.updateMany({ where: { id: g.id, usedAt: null }, data: { usedAt: new Date() } });
+  if (count === 0) return null;
+  await recordAudit({
+    workspaceId: g.workspaceId,
+    action: "support.access.start",
+    entity: "SupportAccessGrant",
+    entityId: g.id,
+    metadata: { reason: g.reason, expiresAt: g.expiresAt.toISOString() },
+  });
+  return g;
 };
 
 export const getLiveGrant = async (grantId: string) => {
   const grant = await db.supportAccessGrant.findUnique({ where: { id: grantId }, include: { workspace: true } });
   return grant && grantIsLive(grant) ? grant : null;
+};
+
+// Revogar derruba a sessão na próxima requisição; se a senha já tinha sido usada, o fim fica no AuditLog do consultório.
+export const revokeSupportGrant = async (grantId: string) => {
+  const { count } = await db.supportAccessGrant.updateMany({ where: { id: grantId, revokedAt: null, endedAt: null }, data: { revokedAt: new Date() } });
+  if (count === 0) return;
+  const grant = await db.supportAccessGrant.findUnique({ where: { id: grantId } });
+  if (grant?.usedAt) {
+    await recordAudit({
+      workspaceId: grant.workspaceId,
+      action: "support.access.end",
+      entity: "SupportAccessGrant",
+      entityId: grant.id,
+      metadata: { motivo: "revogado" },
+    });
+  }
 };
 
 export const endSupportGrant = async (grantId: string) => {

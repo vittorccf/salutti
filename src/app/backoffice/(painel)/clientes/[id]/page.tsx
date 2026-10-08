@@ -24,13 +24,15 @@ import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
-import { createSupportGrant, grantIsLive, SUPPORT_ACCESS_MINUTES, SUPPORT_USER_EMAIL } from "@/lib/support-access";
+import { createSupportGrant, grantIsLive, revokeSupportGrant, SUPPORT_ACCESS_MINUTES, SUPPORT_USER_EMAIL } from "@/lib/support-access";
+import { verifyPassword } from "@/lib/auth";
 import { SupportAccessCard, type GrantResult } from "../../../_components/support-access-card";
 
 const grantSchema = z.object({
   workspaceId: z.string().min(1),
   reason: z.string().trim().min(10, "Descreva o motivo (10 letras ou mais).").max(200),
   ticketId: z.string().optional(),
+  confirmPassword: z.string().min(1, "Confirme com a sua senha do backoffice."),
 });
 
 // Gera a senha do "Suporte Salutti" para este consultório (só admin). A senha volta uma vez para a tela; o banco guarda o hash.
@@ -41,8 +43,14 @@ async function grantAccessAction(_prev: GrantResult, formData: FormData): Promis
     workspaceId: formData.get("workspaceId"),
     reason: formData.get("reason"),
     ticketId: formData.get("ticketId") || undefined,
+    confirmPassword: formData.get("confirmPassword") ?? "",
   });
   if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Confira os campos." };
+  // Confirmação na hora: uma sessão do backoffice esquecida aberta não basta para entrar na conta de um cliente.
+  if (!(await verifyPassword(parsed.data.confirmPassword, me.passwordHash))) {
+    await recordBackofficeAudit({ userId: me.id, action: "support.grant.denied", entity: "Workspace", entityId: parsed.data.workspaceId });
+    return { erro: "Senha do backoffice incorreta." };
+  }
   const { workspaceId, reason } = parsed.data;
   if (!(await db.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } }))) return { erro: "Cliente não encontrado." };
   const ticketId =
@@ -68,7 +76,7 @@ async function revokeAccessAction(formData: FormData) {
   const id = String(formData.get("grantId") ?? "");
   const grant = await db.supportAccessGrant.findUnique({ where: { id } });
   if (!grant) return;
-  await db.supportAccessGrant.updateMany({ where: { id, revokedAt: null }, data: { revokedAt: new Date() } });
+  await revokeSupportGrant(id);
   await recordBackofficeAudit({ userId: me.id, action: "support.grant.revoke", entity: "SupportAccessGrant", entityId: id });
   revalidatePath(`/backoffice/clientes/${grant.workspaceId}`);
 }

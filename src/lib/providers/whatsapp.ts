@@ -1,7 +1,7 @@
 // Provider WhatsApp Business - MOCK
 // Em produção: WhatsApp Cloud API (Meta) c/ templates aprovados.
 
-import { db } from "../db";
+import { assertNotSupportSession, db } from "../db";
 
 type SendArgs = {
   workspaceId: string;
@@ -12,6 +12,8 @@ type SendArgs = {
 
 export const whatsapp = {
   async send({ workspaceId, recipient, template, vars }: SendArgs) {
+    // Acesso de suporte é somente leitura: nada sai daqui.
+    await assertNotSupportSession();
     const body = renderTemplate(template, vars);
     await db.notificationLog.create({
       data: {

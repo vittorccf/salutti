@@ -208,7 +208,8 @@ export default async function AppointmentDetailPage({
             <p className="text-sm">{t("professional", { name: appt.professional.fullName })}</p>
             <p className="text-sm">{t("modality", { modality: label("modality", appt.modality) })}</p>
             <p className="text-sm">{t("price")} <span className="tabular-nums">{f.money(appt.price)}</span></p>
-            {appt.notes ? <p className="mt-2 text-sm text-muted-foreground">{appt.notes}</p> : null}
+            {/* Observação livre pode ter conteúdo clínico: oculta no acesso de suporte. */}
+            {appt.notes && !ctx.support ? <p className="mt-2 text-sm text-muted-foreground">{appt.notes}</p> : null}
             {appt.reminderSentAt ? (
               <p className="mt-2 text-xs text-muted-foreground">
                 {t("reminderSent", { date: f.dateTime(appt.reminderSentAt) })}

@@ -84,6 +84,6 @@
     "leave": "Terminar acesso",
     "noticeTitle": "A equipa Salutti acedeu à sua conta",
     "noticeItem": "{date} · motivo: {reason}",
-    "noticeHelp": "O acesso de suporte é só de leitura e não inclui processos clínicos, anamneses nem fotografias clínicas. Tudo fica registado no ecrã RGPD."
+    "noticeHelp": "Durante o acesso, a equipa Salutti pôde ver a agenda, o registo e o financeiro dos pacientes, sem alterar nem enviar nada. Processos clínicos, evoluções, anamneses, fotografias clínicas, termos e observações livres não ficam visíveis. Cada acesso dura no máximo 15 minutos e fica no registo de auditoria."
   }
 }
