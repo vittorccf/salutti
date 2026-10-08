@@ -78,5 +78,12 @@
     "aguardando_cliente": "Esperando tu respuesta",
     "resolvido": "Resuelta",
     "fechado": "Cerrada"
+  },
+  "access": {
+    "banner": "Acceso de soporte a la cuenta {workspace}: solo lectura, sin contenido clínico. Termina a las {time}.",
+    "leave": "Terminar acceso",
+    "noticeTitle": "El equipo de Salutti accedió a tu cuenta",
+    "noticeItem": "{date} · motivo: {reason}",
+    "noticeHelp": "Durante el acceso, el equipo de Salutti pudo ver la agenda, el registro y las finanzas de los pacientes, sin cambiar ni enviar nada. Historias clínicas, evoluciones, anamnesis, fotos clínicas, consentimientos y observaciones libres no quedan visibles. Cada acceso dura como máximo 15 minutos y queda en el registro de auditoría."
   }
 }

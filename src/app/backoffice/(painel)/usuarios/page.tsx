@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { SUPPORT_USER_EMAIL } from "@/lib/support-access";
 import { requireBackoffice } from "@/lib/backoffice/auth";
 import { memberRoleLabel } from "@/lib/backoffice/labels";
 import { Badge } from "@/components/ui/badge";
@@ -17,9 +18,11 @@ const PAGE_SIZE = 100;
 export default async function UsersPage({ searchParams }: { searchParams: { q?: string } }) {
   await requireBackoffice();
   const q = searchParams.q?.trim();
-  const where: Prisma.UserWhereInput = q
-    ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }] }
-    : {};
+  // O usuário oculto do suporte não é cliente: fica fora da lista.
+  const where: Prisma.UserWhereInput = {
+    email: { not: SUPPORT_USER_EMAIL },
+    ...(q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }] } : {}),
+  };
 
   const [users, total] = await Promise.all([
     db.user.findMany({
@@ -89,6 +92,9 @@ export default async function UsersPage({ searchParams }: { searchParams: { q?: 
                               {m.workspace.name}
                             </Link>
                             <span className="text-xs text-muted-foreground"> · {memberRoleLabel(m.role)}</span>
+                            <Link href={`/backoffice/clientes/${m.workspace.id}#acesso`} className="ml-2 text-xs text-brand hover:underline">
+                              Acessar conta
+                            </Link>
                           </li>
                         ))}
                         {u.memberships.length === 0 ? <li className="text-muted-foreground">Sem consultório</li> : null}

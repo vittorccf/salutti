@@ -317,6 +317,16 @@ export default async function TicketPage({ params }: { params: { id: string } })
                   </Link>
                   <span className="text-muted-foreground"> · {planLabel(ticket.workspace.planTier, plans)}</span>
                 </p>
+              ) : null}
+              {ticket.workspace ? (
+                <p>
+                  <Link
+                    href={`/backoffice/clientes/${ticket.workspace.id}?chamado=${ticket.id}#acesso`}
+                    className="text-brand hover:underline"
+                  >
+                    Acessar a conta para investigar
+                  </Link>
+                </p>
               ) : (
                 <p className="text-muted-foreground">Consultório removido.</p>
               )}

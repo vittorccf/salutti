@@ -6,7 +6,7 @@ const db = vi.hoisted(() => ({
   platformPlan: { findUnique: vi.fn() },
 }));
 const recordAudit = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/db", () => ({ db }));
+vi.mock("@/lib/db", () => ({ db, assertNotSupportSession: async () => {} }));
 vi.mock("@/lib/audit", () => ({ recordAudit }));
 
 import { billing, billingConfigured, priceMismatch, verifyStripeSignature } from "@/lib/providers/billing";

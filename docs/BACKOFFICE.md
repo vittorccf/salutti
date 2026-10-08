@@ -21,7 +21,7 @@ Painel interno da equipe Salutti em **`/backoffice`** (ex.: https://salutti.verc
 | `/backoffice/chamados` | Fila de chamados com busca (nº, assunto, nome, e-mail, consultório) e filtros (situação, tipo, prioridade, só meus). Mensagem nova primeiro |
 | `/backoffice/chamados/[id]` | Conversa, resposta ao cliente ou nota interna, situação/prioridade/responsável, dados do cliente e contexto técnico |
 | `/backoffice/clientes` | Consultórios com responsável, área, tipo, plano, validade do teste e contagens |
-| `/backoffice/clientes/[id]` | Dados do consultório, usuários com papel e 2FA, chamados, ajuste manual de plano e de validade do teste |
+| `/backoffice/clientes/[id]` | **Acessar conta** (acesso de suporte de 15 min, ver `docs/ACESSO-SUPORTE.md`), Dados do consultório, usuários com papel e 2FA, chamados, ajuste manual de plano e de validade do teste |
 | `/backoffice/usuarios` | Pessoas com login no app e seus consultórios |
 | `/backoffice/planos` | Catálogo `PlatformPlan`: nome, preço, dias de teste, descrição, disponível ou não |
 | `/backoffice/equipe` | (admin) Pessoas do backoffice: adicionar com senha provisória, papel, desativar, redefinir senha |

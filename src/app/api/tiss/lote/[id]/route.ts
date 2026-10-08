@@ -7,6 +7,8 @@ import { tissXmlBytes } from "@/lib/tiss";
 export const GET = async (_req: Request, { params }: { params: { id: string } }) => {
   const ctx = await getCurrentContext();
   if (!ctx) return NextResponse.json({ error: "unauth" }, { status: 401 });
+  // O lote leva dados de pacientes (carteirinha, procedimentos): fora do acesso de suporte.
+  if (ctx.support) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const batch = await db.tissBatch.findFirst({ where: { id: params.id, workspaceId: ctx.workspace.id } });
   if (!batch) return NextResponse.json({ error: "not found" }, { status: 404 });
   return new NextResponse(tissXmlBytes(batch.xml), {

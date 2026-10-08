@@ -136,6 +136,14 @@ export default function PrivacyPage() {
           <li>Credenciais de integrações e segredos da verificação em duas etapas guardados cifrados.</li>
           <li>Isolamento entre consultórios: cada conta só acessa os próprios dados; dentro da equipe, recepção e financeiro não abrem prontuário.</li>
           <li>Registro de auditoria das ações sensíveis.</li>
+          <li>
+            <strong>Acesso de suporte:</strong> para investigar um problema, a equipe Salutti pode entrar na conta do
+            consultório por até 15 minutos, com uma senha de uso único gerada por um administrador, com motivo registrado.
+            Esse acesso é somente leitura (nada é alterado nem enviado) e não abre prontuários, evoluções, anamneses,
+            fotos clínicas, termos de procedimento nem observações livres; podem aparecer a agenda, o cadastro e o
+            financeiro dos pacientes. O dono e os administradores da conta veem cada acesso, com data e motivo, no painel,
+            e o início e o fim ficam no registro de auditoria.
+          </li>
         </List>
         <p>
           Nenhum sistema é totalmente imune a incidentes. Se ocorrer um incidente de segurança que possa trazer risco

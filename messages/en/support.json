@@ -78,5 +78,12 @@
     "aguardando_cliente": "Waiting for you",
     "resolvido": "Resolved",
     "fechado": "Closed"
+  },
+  "access": {
+    "banner": "Support access to the {workspace} account: read-only, no clinical content. Ends at {time}.",
+    "leave": "End access",
+    "noticeTitle": "The Salutti team accessed your account",
+    "noticeItem": "{date} · reason: {reason}",
+    "noticeHelp": "During the access, the Salutti team could see patients’ schedule, records and billing, without changing or sending anything. Clinical records, progress notes, intake forms, clinical photos, consent forms and free-text notes are not visible. Each access lasts at most 15 minutes and is kept in the audit log."
   }
 }

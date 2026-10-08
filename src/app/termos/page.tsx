@@ -108,6 +108,11 @@ export default function TermsPage() {
           dentro da plataforma ou pelo e-mail{" "}
           <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>.
         </p>
+        <p>
+          Para investigar um problema, a equipe Salutti pode acessar a sua conta por até 15 minutos, somente para leitura
+          e sem conteúdo clínico, nas condições descritas na Política de Privacidade (seção “Segurança”). Cada acesso fica
+          registrado e aparece para o dono e os administradores da conta.
+        </p>
       </Section>
 
       <Section id="responsabilidade" title="10. Limitação de responsabilidade">

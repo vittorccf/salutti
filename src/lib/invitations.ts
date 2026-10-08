@@ -1,6 +1,7 @@
 // Convites para a equipe. O link leva um token aleatório; o banco guarda só o hash (SHA-256), então quem
 // lê o banco não consegue usar um convite. Vale 7 dias, uma vez, e só para o e-mail convidado.
 import crypto from "node:crypto";
+import { isSupportEmail } from "./support-access";
 import { db } from "./db";
 
 export const INVITE_ROLES = ["admin", "professional", "financial", "receptionist"] as const;
@@ -38,6 +39,9 @@ export async function findInvitation(token: string) {
 // Entra na equipe: cria (ou atualiza) o vínculo com o papel do convite e marca o convite como usado.
 export async function acceptInvitation(invitationId: string, userId: string) {
   return db.$transaction(async (tx) => {
+    // O usuário oculto do suporte nunca vira membro: o acesso dele é só por concessão do backoffice.
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (!user || isSupportEmail(user.email)) throw new Error("Convite inválido para este usuário.");
     const inv = await tx.invitation.update({ where: { id: invitationId }, data: { acceptedAt: new Date() } });
     const existing = await tx.membership.findUnique({ where: { userId_workspaceId: { userId, workspaceId: inv.workspaceId } } });
     // Quem já é membro não perde papel maior (ex.: dono convidado de novo continua dono).

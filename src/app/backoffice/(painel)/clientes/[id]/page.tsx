@@ -24,6 +24,62 @@ import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
+import { createSupportGrant, grantIsLive, revokeSupportGrant, SUPPORT_ACCESS_MINUTES, SUPPORT_USER_EMAIL } from "@/lib/support-access";
+import { verifyPassword } from "@/lib/auth";
+import { SupportAccessCard, type GrantResult } from "../../../_components/support-access-card";
+
+const grantSchema = z.object({
+  workspaceId: z.string().min(1),
+  reason: z.string().trim().min(10, "Descreva o motivo (10 letras ou mais).").max(200),
+  ticketId: z.string().optional(),
+  confirmPassword: z.string().min(1, "Confirme com a sua senha do backoffice."),
+});
+
+// Gera a senha do "Suporte Salutti" para este consultório (só admin). A senha volta uma vez para a tela; o banco guarda o hash.
+async function grantAccessAction(_prev: GrantResult, formData: FormData): Promise<GrantResult> {
+  "use server";
+  const me = await requireBackoffice({ role: "admin" });
+  const parsed = grantSchema.safeParse({
+    workspaceId: formData.get("workspaceId"),
+    reason: formData.get("reason"),
+    ticketId: formData.get("ticketId") || undefined,
+    confirmPassword: formData.get("confirmPassword") ?? "",
+  });
+  if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Confira os campos." };
+  // Confirmação na hora: uma sessão do backoffice esquecida aberta não basta para entrar na conta de um cliente.
+  if (!(await verifyPassword(parsed.data.confirmPassword, me.passwordHash))) {
+    await recordBackofficeAudit({ userId: me.id, action: "support.grant.denied", entity: "Workspace", entityId: parsed.data.workspaceId });
+    return { erro: "Senha do backoffice incorreta." };
+  }
+  const { workspaceId, reason } = parsed.data;
+  if (!(await db.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } }))) return { erro: "Cliente não encontrado." };
+  const ticketId =
+    parsed.data.ticketId && (await db.supportTicket.findFirst({ where: { id: parsed.data.ticketId, workspaceId }, select: { id: true } }))
+      ? parsed.data.ticketId
+      : null;
+
+  const { grant, password } = await createSupportGrant({ workspaceId, backofficeUserId: me.id, reason, ticketId });
+  await recordBackofficeAudit({
+    userId: me.id,
+    action: "support.grant.create",
+    entity: "SupportAccessGrant",
+    entityId: grant.id,
+    metadata: { workspaceId, reason, ticketId },
+  });
+  revalidatePath(`/backoffice/clientes/${workspaceId}`);
+  return { password, email: SUPPORT_USER_EMAIL, expiresAt: grant.expiresAt.toISOString() };
+}
+
+async function revokeAccessAction(formData: FormData) {
+  "use server";
+  const me = await requireBackoffice({ role: "admin" });
+  const id = String(formData.get("grantId") ?? "");
+  const grant = await db.supportAccessGrant.findUnique({ where: { id } });
+  if (!grant) return;
+  await revokeSupportGrant(id);
+  await recordBackofficeAudit({ userId: me.id, action: "support.grant.revoke", entity: "SupportAccessGrant", entityId: id });
+  revalidatePath(`/backoffice/clientes/${grant.workspaceId}`);
+}
 
 const planSchema = z.object({
   workspaceId: z.string().min(1),
@@ -68,7 +124,7 @@ async function changePlanAction(_prev: FormResult, formData: FormData): Promise<
   return { ok: "Plano atualizado." };
 }
 
-export default async function ClientPage({ params }: { params: { id: string } }) {
+export default async function ClientPage({ params, searchParams }: { params: { id: string }; searchParams: { chamado?: string } }) {
   const me = await requireBackoffice();
   const workspace = await db.workspace.findUnique({
     where: { id: params.id },
@@ -84,7 +140,21 @@ export default async function ClientPage({ params }: { params: { id: string } })
   });
   if (!workspace) notFound();
   await recordBackofficeAudit({ userId: me.id, action: "workspace.view", entity: "Workspace", entityId: workspace.id });
-  const plans = await db.platformPlan.findMany({ orderBy: { sortOrder: "asc" } });
+  const [plans, grants, fromTicket] = await Promise.all([
+    db.platformPlan.findMany({ orderBy: { sortOrder: "asc" } }),
+    db.supportAccessGrant.findMany({
+      where: { workspaceId: workspace.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: { backofficeUser: { select: { name: true } } },
+    }),
+    // Vindo de um chamado (?chamado=<id>), o motivo já sai preenchido e a concessão fica ligada a ele.
+    searchParams.chamado
+      ? db.supportTicket.findFirst({ where: { id: searchParams.chamado, workspaceId: workspace.id }, select: { id: true, number: true, subject: true } })
+      : Promise.resolve(null),
+  ]);
+  const grantState = (g: (typeof grants)[number]) =>
+    g.revokedAt ? "Revogada" : g.endedAt ? "Encerrada" : !grantIsLive(g) ? (g.usedAt ? "Expirada (usada)" : "Expirada sem uso") : g.usedAt ? "Em uso" : "Aguardando login";
 
   const info = [
     ["Área", areaLabel(workspace.area)],
@@ -186,7 +256,51 @@ export default async function ClientPage({ params }: { params: { id: string } })
           </Card>
         </div>
 
-        <aside>
+        <aside className="space-y-6">
+          <Card id="acesso">
+            <CardHeader>
+              <CardTitle className="text-base">Acessar conta</CardTitle>
+              <CardDescription>
+                Gera uma senha de {SUPPORT_ACCESS_MINUTES} minutos para o usuário oculto “Suporte Salutti” nesta conta: um login, somente
+                leitura, sem prontuário, anamnese nem fotos clínicas. O cliente é avisado.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {me.role === "admin" ? (
+                <SupportAccessCard
+                  action={grantAccessAction}
+                  workspaceId={workspace.id}
+                  ticketId={fromTicket?.id}
+                  defaultReason={fromTicket ? `Chamado #${fromTicket.number}: ${fromTicket.subject}`.slice(0, 200) : undefined}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Só administradores acessam contas de clientes.</p>
+              )}
+              {grants.length > 0 ? (
+                <ul className="space-y-2 border-t pt-3 text-xs">
+                  {grants.map((g) => (
+                    <li key={g.id} className="space-y-0.5">
+                      <p className="font-medium">
+                        {formatDateTimeBR(g.createdAt)} · {grantState(g)}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {g.backofficeUser?.name ?? "—"} · {g.reason}
+                      </p>
+                      {grantIsLive(g) && me.role === "admin" ? (
+                        <form action={revokeAccessAction}>
+                          <input type="hidden" name="grantId" value={g.id} />
+                          <Button type="submit" size="sm" variant="outline">
+                            Revogar agora
+                          </Button>
+                        </form>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Plano</CardTitle>

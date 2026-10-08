@@ -1,9 +1,12 @@
 // Receita Saúde - MOCK
 // A partir de 01/2025: emissão obrigatória de recibos de serviços de saúde PF
 // via app oficial da Receita Federal. Salutti mock simula protocolo + status.
+import { assertNotSupportSession } from "@/lib/db";
 
 export const receitaSaude = {
   async submit(input: { receiptNumber: string; patientCpf?: string; amount: number; issuedAt: Date }) {
+    // Acesso de suporte é somente leitura: nada sai daqui.
+    await assertNotSupportSession();
     const protocol = `RS-${input.receiptNumber}-${Date.now().toString(36)}`;
     // Simula 95% sucesso
     const ok = Math.random() > 0.05;

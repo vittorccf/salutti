@@ -1,5 +1,5 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { media } from "@/lib/providers/media";
@@ -114,6 +114,8 @@ async function softDeleteAction(formData: FormData) {
 
 export default async function LgpdPage() {
   const ctx = await requireContext({ allowExpired: true });
+  // Consentimentos e auditoria do consultório (procedimentos, termos, fotos) ficam fora do acesso de suporte.
+  if (ctx.support) notFound();
   const [auditLog, consents, patients] = await Promise.all([
     db.auditLog.findMany({
       where: { workspaceId: ctx.workspace.id },

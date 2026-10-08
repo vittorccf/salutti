@@ -8,7 +8,8 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { completeLogin, verifyPassword, getSession } from "@/lib/auth";
+import { getLiveGrant, isSupportEmail, redeemSupportPassword, SUPPORT_USER_EMAIL } from "@/lib/support-access";
+import { completeLogin, createSession, getSession, setActiveWorkspaceCookie, verifyPassword } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,16 @@ async function loginAction(formData: FormData) {
   });
   if (!parsed.success) return redirect(`${loginPath}?error=dados`);
 
+  // Usuário oculto do suporte: só a senha de uma concessão vigente (backoffice) abre, e só aquele consultório.
+  if (isSupportEmail(parsed.data.email)) {
+    const support = await db.user.findUnique({ where: { email: SUPPORT_USER_EMAIL } });
+    const grant = support ? await redeemSupportPassword(parsed.data.password) : null;
+    if (!support || !grant) return redirect(`${loginPath}?error=credenciais`);
+    await createSession({ userId: support.id, email: support.email, name: support.name, supportGrantId: grant.id }, { expiresAt: grant.expiresAt });
+    setActiveWorkspaceCookie(grant.workspaceId);
+    redirect("/app");
+  }
+
   const user = await db.user.findUnique({
     where: { email: parsed.data.email },
     include: { memberships: true },
@@ -53,7 +64,8 @@ export type LoginSearchParams = Promise<{ error?: string; next?: string }>;
 // Tela de login, usada por /login (Salutti) e /estetica/login (Salutti Estética).
 export async function LoginScreen({ area = "mental", searchParams }: { area?: Area; searchParams: LoginSearchParams }) {
   const session = await getSession();
-  if (session) redirect("/app");
+  // Sessão de suporte com a concessão revogada ou vencida não volta para /app (seria um laço com o layout do app).
+  if (session && (!session.supportGrantId || (await getLiveGrant(session.supportGrantId)))) redirect("/app");
   const params = await searchParams;
   const t = await getTranslations("auth.login");
   const error = ERRORS.find((e) => e === params.error);

@@ -6,6 +6,8 @@ import { authUrl, googleOAuthConfigured, newPkce, OAUTH_COOKIE, googleRedirectUr
 export const GET = async (req: NextRequest) => {
   const session = await getSession();
   if (!session) return NextResponse.redirect(new URL("/login", req.url));
+  // Acesso de suporte é somente leitura: não conecta contas.
+  if (session.supportGrantId) return NextResponse.redirect(new URL("/app", req.url));
   if (!googleOAuthConfigured()) return NextResponse.redirect(new URL("/app/ajustes?google=indisponivel#conexoes", req.url));
 
   const { verifier, challenge, state } = newPkce();

@@ -2,6 +2,16 @@
 
 > Última atualização deste arquivo: 2026-10-08. A seção "Cobrança pelo Stripe com o catálogo" é a mais recente; as demais ficam como histórico.
 
+
+## Acesso de suporte à conta do cliente (2026-10-08) — branch `feat/acesso-suporte`
+
+No backoffice, "Acessar conta" (ficha do cliente, lista de usuários e chamado) gera uma senha de 15 minutos e uso único para
+o usuário oculto `suporte_salutti@salutti.com` (sem Membership). Entra pelo login normal, preso àquele consultório; somente
+leitura (trava no Prisma em `src/lib/db.ts` e nos provedores externos), sem conteúdo clínico, só em produção (preview recusa),
+só admin do backoffice confirmando a própria senha, motivo obrigatório, aviso ao dono no painel e auditoria dos dois lados.
+Termos e Política descrevem o acesso: `LEGAL_VERSION` 2026-10-08 (quem já tem conta vê o aviso de reaceite).
+Guia: `docs/ACESSO-SUPORTE.md`. Revisado por qualidade, advogado do diabo, psicólogo, esteta e Product Owner.
+
 ## Versão do app (2026-10-07) — branch `feat/versao-app`
 
 - Esquema de calendário **AAAA.MM.DD** (ex.: `2026.10.07`), pela data do commit publicado no fuso de São Paulo. Redeploy do mesmo código mantém a versão; o commit curto acompanha para diferenciar duas publicações no mesmo dia.

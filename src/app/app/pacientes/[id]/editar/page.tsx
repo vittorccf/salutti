@@ -13,6 +13,8 @@ export const dynamic = "force-dynamic";
 
 export default async function EditPatientPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireContext();
+  // Acesso de suporte é somente leitura e o formulário mostra as observações livres do paciente.
+  if (ctx.support) notFound();
   const { id } = await params;
   const patient = await db.patient.findFirst({ where: { id, workspaceId: ctx.workspace.id, deletedAt: null } });
   if (!patient) notFound();

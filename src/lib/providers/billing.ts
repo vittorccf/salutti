@@ -5,6 +5,7 @@
 // STRIPE_SECRET_KEY        sk_live_… / sk_test_…
 // STRIPE_WEBHOOK_SECRET    whsec_… (endpoint /api/stripe/webhook)
 import crypto from "node:crypto";
+import { assertNotSupportSession } from "@/lib/db";
 
 export const billingConfigured = () => {
   const key = process.env.STRIPE_SECRET_KEY ?? "";
@@ -67,6 +68,7 @@ export const billing = {
     email: string;
     returnUrl: string;
   }) {
+    await assertNotSupportSession();
     const customer = await customerFor(opts.workspace, opts.email);
     const metadata = { workspaceId: opts.workspace.id, plan: opts.plan.code };
     const session = await stripe<{ url: string }>("POST", "checkout/sessions", {
@@ -83,6 +85,7 @@ export const billing = {
   },
 
   async createPortal(opts: { workspace: { id: string; name: string }; email: string; returnUrl: string }) {
+    await assertNotSupportSession();
     const customer = await customerFor(opts.workspace, opts.email);
     const portal = await stripe<{ url: string }>("POST", "billing_portal/sessions", {
       customer,

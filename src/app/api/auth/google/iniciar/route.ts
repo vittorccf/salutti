@@ -11,6 +11,8 @@ export const GET = async (req: NextRequest) => {
   const link = params.get("vincular") === "1";
   const session = link ? await getSession() : null;
   if (link && !session) return NextResponse.redirect(new URL("/login", req.url));
+  // O usuário de suporte nunca vincula conta Google.
+  if (session?.supportGrantId) return NextResponse.redirect(new URL("/app", req.url));
   if (!googleOAuthConfigured()) {
     return NextResponse.redirect(new URL(link ? "/app/conta/seguranca?google=erro" : `${AREAS[area].loginPath}?error=google`, req.url));
   }

@@ -100,3 +100,63 @@ test("suporte: cliente abre chamado pelo botão, equipe responde e o cliente vê
   await client.getByRole("button", { name: /Agenda não salva/ }).click();
   await expect(client.getByText("Já estamos olhando, obrigado!")).toBeVisible();
 });
+
+test("acesso de suporte: senha de 15 min, uso único, somente leitura, sem prontuário e com aviso ao dono", async ({ browser }) => {
+  const staff = await browser.newPage();
+  await backofficeLogin(staff);
+  await staff.goto("/backoffice/clientes?q=Guilherme");
+  await staff.getByRole("link", { name: "Consultório Guilherme Quintino" }).click();
+  await staff.locator("#reason").fill("Teste e2e: investigar agenda");
+  // Sem a senha certa do backoffice, não gera.
+  await staff.locator("#confirmPassword").fill("senha-errada");
+  await staff.getByRole("button", { name: "Acessar conta" }).click();
+  await expect(staff.getByText("Senha do backoffice incorreta.")).toBeVisible();
+  await staff.locator("#confirmPassword").fill(NEW_PASSWORD);
+  await staff.getByRole("button", { name: "Acessar conta" }).click();
+  await expect(staff.locator("#support-email")).toHaveValue("suporte_salutti@salutti.com");
+  const password = await staff.locator("#support-password").inputValue();
+  expect(password).toHaveLength(20);
+
+  // Contexto separado: o login do suporte não mistura cookies com o backoffice.
+  const ctx = await browser.newContext();
+  const support = await ctx.newPage();
+  await support.goto("/login");
+  await support.locator("#email").fill("suporte_salutti@salutti.com");
+  await support.locator("#password").fill(password);
+  await support.getByRole("button", { name: "Entrar" }).click();
+  await expect(support).toHaveURL(/\/app$/);
+  await expect(support.getByText(/Acesso de suporte à conta Consultório Guilherme Quintino/)).toBeVisible();
+  await expect(support.getByRole("button", { name: "Falar com o suporte" })).toHaveCount(0);
+
+  // Sem conteúdo clínico.
+  const prontuario = await support.goto("/app/prontuario");
+  expect(prontuario?.status()).toBe(404);
+  const lgpd = await support.goto("/app/lgpd");
+  expect(lgpd?.status()).toBe(404);
+
+  // Somente leitura: a Server Action é recusada e nada é gravado.
+  await support.goto("/app/pacientes/novo");
+  await support.locator("#fullName").fill("Paciente criado pelo suporte");
+  await support.getByRole("button", { name: "Cadastrar paciente" }).click();
+  // A action falha (erro de servidor); a navegação seguinte pode interromper a resposta dela: tenta de novo.
+  await expect(async () => {
+    await support.goto("/app/pacientes");
+    await expect(support.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(support.getByText("Paciente criado pelo suporte")).toHaveCount(0);
+
+  // Encerrar o acesso e tentar de novo com a mesma senha: uso único.
+  await support.getByRole("button", { name: "Encerrar acesso" }).click();
+  await expect(support).toHaveURL(/\/login/);
+  await support.locator("#email").fill("suporte_salutti@salutti.com");
+  await support.locator("#password").fill(password);
+  await support.getByRole("button", { name: "Entrar" }).click();
+  await expect(support).toHaveURL(/error=credenciais/);
+  await ctx.close();
+
+  // O dono vê o aviso com o motivo.
+  const owner = await browser.newPage();
+  await login(owner, "guilherme");
+  await expect(owner.getByText("A equipe Salutti acessou sua conta")).toBeVisible();
+  await expect(owner.getByText(/Teste e2e: investigar agenda/)).toBeVisible();
+});
