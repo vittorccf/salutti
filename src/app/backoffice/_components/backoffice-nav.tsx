@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, History, LayoutDashboard, LifeBuoy, ShieldCheck, Store, Users } from "lucide-react";
+import { CreditCard, Gauge, History, LayoutDashboard, LifeBuoy, ShieldCheck, Store, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -11,6 +11,7 @@ const items = [
   { href: "/backoffice/usuarios", label: "Usuários", icon: Users },
   { href: "/backoffice/planos", label: "Planos", icon: CreditCard },
   { href: "/backoffice/equipe", label: "Equipe", icon: ShieldCheck, adminOnly: true },
+  { href: "/backoffice/recursos", label: "Gestão de Recursos", icon: Gauge, adminOnly: true },
   { href: "/backoffice/auditoria", label: "Auditoria", icon: History, adminOnly: true },
 ] as const;
 

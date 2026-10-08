@@ -1,7 +1,16 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Cobrança pelo Stripe com o catálogo" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Gestão de Recursos" é a mais recente; as demais ficam como histórico.
 
+
+## Gestão de Recursos no backoffice (2026-10-08) — branch `feat/gestao-recursos`
+
+- Nova tela `/backoffice/recursos` (admin): limites da Vercel Hobby e da Neon Free, banco medido ao vivo, uso do app,
+  calculadora de usuários simultâneos e tabela do que monitorar. Detalhes em `docs/BACKOFFICE.md` § Gestão de Recursos.
+- **Pendências do dono:** (1) mudar a Vercel para **Pro** antes de ter cliente pagante — o Hobby proíbe uso comercial e
+  pausa o projeto ao estourar a cota; (2) criar `NEON_API_KEY` na Vercel para ver CU-horas e transferência do mês;
+  (3) avaliar o plano Launch da Neon quando o banco passar de ~700 MB ou o compute se aproximar de 100 CU-h.
+- Ficou para depois: histórico diário (gravar um retrato por dia para ver tendência) e aviso por e-mail ao passar de 70%.
 
 ## Acesso de suporte à conta do cliente (2026-10-08) — branch `feat/acesso-suporte`
 
