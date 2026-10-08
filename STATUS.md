@@ -1,7 +1,14 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Gestão de Recursos" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Instagram @salutti_app" é a mais recente; as demais ficam como histórico.
 
+
+## Instagram @salutti_app (2026-10-08) — branch `feat/instagram-salutti`
+
+- `INSTAGRAM_HANDLE`/`INSTAGRAM_URL` em `src/lib/contact.ts` e o componente `InstagramLink` (`src/components/brand/instagram-link.tsx`).
+- Aparece no rodapé da landing (`/`), da landing da Estética (`/estetica`) e no rodapé de `/termos` e `/privacidade` (coberto em `tests/e2e/legal.spec.ts`).
+- Post de lançamento e stories do Instagram (fase de testes) feitos no Claude Design: https://claude.ai/artifact/YJWANHXwM5tBvWYhy7SWKt.
+  Antes de postar: aumentar os dias de teste ou desligar o bloqueio do teste vencido enquanto o Stripe não fica pronto; limite de 100 usuários de teste do Google Meet.
 
 ## Gestão de Recursos no backoffice (2026-10-08) — branch `feat/gestao-recursos`
 

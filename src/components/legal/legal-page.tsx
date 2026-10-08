@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
+import { InstagramLink } from "@/components/brand/instagram-link";
 import { LEGAL_ENTITY, LEGAL_VERSION, PRIVACY_PATH, TERMS_PATH } from "@/lib/legal";
 
 // Moldura das páginas públicas /termos e /privacidade. O texto jurídico vale em português do Brasil;
@@ -37,6 +38,7 @@ export async function LegalPage({ title, children }: { title: string; children: 
           <Link href={TERMS_PATH} className="text-brand underline-offset-4 hover:underline">{t("terms")}</Link>
           <Link href={PRIVACY_PATH} className="text-brand underline-offset-4 hover:underline">{t("privacy")}</Link>
           <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
+          <InstagramLink />
         </nav>
       </article>
     </main>

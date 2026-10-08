@@ -5,6 +5,7 @@ import { ArrowRight, Banknote, CalendarCheck, Camera, FileSignature, Package, Pa
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { AREAS } from "@/lib/areas";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { InstagramLink } from "@/components/brand/instagram-link";
 import { AreaTheme } from "@/components/brand/area-theme";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -114,6 +115,9 @@ export default async function EsteticaHome() {
         </p>
         <p className="mt-2">
           {t("contact")} <a href={supportMailto()} className="text-brand underline-offset-4 hover:underline">{SUPPORT_EMAIL}</a>
+        </p>
+        <p className="mt-2">
+          <InstagramLink />
         </p>
         <p className="mt-2">
           <Link href="/" className="text-brand underline-offset-4 hover:underline">
