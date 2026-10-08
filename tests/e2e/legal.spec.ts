@@ -6,7 +6,9 @@ test("Termos de Uso e Política de Privacidade são públicos e ligados entre si
   await expect(page.getByRole("heading", { level: 1, name: "Política de Privacidade" })).toBeVisible();
   // Declaração de Uso Limitado exigida pelo Google para o escopo da Agenda.
   await expect(page.getByText("Uso Limitado (Limited Use)", { exact: false })).toBeVisible();
-  await page.getByRole("navigation", { name: "Outros documentos" }).getByRole("link", { name: "Termos de Uso" }).click();
+  const docs = page.getByRole("navigation", { name: "Outros documentos" });
+  await expect(docs.getByRole("link", { name: "Instagram @salutti_app" })).toHaveAttribute("href", "https://www.instagram.com/salutti_app/");
+  await docs.getByRole("link", { name: "Termos de Uso" }).click();
   await expect(page).toHaveURL(/\/termos$/);
   await expect(page.getByRole("heading", { level: 1, name: "Termos de Uso" })).toBeVisible();
 });
