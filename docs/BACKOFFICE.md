@@ -26,6 +26,7 @@ Painel interno da equipe Salutti em **`/backoffice`** (ex.: https://salutti.verc
 | `/backoffice/planos` | Catálogo `PlatformPlan`: nome, preço, dias de teste, descrição, disponível ou não |
 | `/backoffice/equipe` | (admin) Pessoas do backoffice: adicionar com senha provisória, papel, desativar, redefinir senha |
 | `/backoffice/auditoria` | (admin) Últimas 200 ações |
+| `/backoffice/recursos` | (admin) **Gestão de Recursos**: limites da Vercel e da Neon, consumo medido, capacidade de usuários (ver abaixo) |
 
 **Privacidade:** o backoffice mostra só **contagens** de pacientes e atendimentos, nunca nomes, prontuários ou anamneses.
 
@@ -73,6 +74,23 @@ Contrato: `src/lib/support.ts` (domínio) e `src/app/app/_actions/support.ts` (`
 `replySupportTicketAction`, `markSupportReadAction`). Usuário e consultório vêm da sessão. `pageUrl` é gravado só com o
 caminho e com ids trocados por `[id]`. Limites: 10 chamados e 30 respostas por usuário por hora. Cliente que responde
 reabre chamado resolvido, fechado ou aguardando.
+
+## Gestão de Recursos
+
+Tela `/backoffice/recursos` (só admin). Limites dos planos em `src/lib/backoffice/capacity.ts` (conferidos em 2026-10-07:
+Vercel **Hobby**, Neon **Free**); medições em `src/lib/backoffice/resources.ts`. Quando um plano mudar, atualize as
+constantes e `LIMITS_CHECKED_AT`.
+
+- **Medido ao vivo no banco:** tamanho (de 1 GB), conexões abertas × `max_connections`, latência (mediana de 3 `SELECT 1`),
+  desde quando o compute está acordado, maiores tabelas, imagens guardadas no Postgres (`MediaFile`).
+- **Uso do app:** consultórios, usuários, pessoas com ação na auditoria nos últimos 15 min / 24 h e pico por hora em 7 dias
+  (o app não grava visualizações, então é uma aproximação por baixo). Projeção de quando o banco enche.
+- **Consumo do mês da Neon** (CU-horas e transferência, com projeção até o fim do ciclo): só com `NEON_API_KEY` na Vercel
+  (`NEON_PROJECT_ID` já vem da integração). Sem a chave, a tela mostra o passo a passo.
+- **Vercel:** no Hobby não há API de consumo; a tela mostra a cota e o link para o Usage do painel.
+- **Capacidade:** calculadora com hipóteses editáveis (telas por pessoa, CPU e bytes por tela). Com os valores padrão o
+  Hobby aguenta ~9 pessoas usando ao mesmo tempo o dia útil inteiro; o primeiro limite é o Fast Origin Transfer.
+- **Alertas:** atenção a partir de 70%, crítico a partir de 90%. Alerta fixo: o Hobby não permite uso comercial.
 
 ## Segurança e privacidade (revisão de 2026-10-07)
 

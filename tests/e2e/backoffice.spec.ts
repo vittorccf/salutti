@@ -47,6 +47,13 @@ test("backoffice: admin entra com a senha inicial, troca a senha provisória e v
   await page.goto("/backoffice/chamados");
   await expect(page.getByRole("heading", { name: "Chamados" })).toBeVisible();
 
+  // Gestão de Recursos mede o banco ao vivo e estima a capacidade do plano.
+  await page.getByRole("link", { name: "Gestão de Recursos" }).click();
+  await expect(page.getByRole("heading", { name: "Gestão de Recursos" })).toBeVisible();
+  await expect(page.getByRole("meter", { name: "Armazenamento" })).toBeVisible();
+  await expect(page.getByText("Vercel Hobby não permite uso comercial")).toBeVisible();
+  await expect(page.getByTestId("capacity-users")).toHaveText("9");
+
   // Sair e entrar de novo com a senha nova.
   await context.clearCookies();
   await page.goto("/backoffice");
