@@ -14,7 +14,7 @@ export const GET = async (req: Request) => {
   const { rows } = await listPayables(ctx.workspace.id, params);
   const today = dateKeySP();
   const csv = toCsv([
-    [t("dueDate"), t("competence"), t("description"), t("supplier"), t("category"), t("costCenter"), t("document"), t("amount"), t("paid"), t("remaining"), t("status"), t("method"), t("lastPayment"), t("deductible")],
+    [t("dueDate"), t("competence"), t("description"), t("supplier"), t("category"), t("costCenter"), t("document"), t("amount"), t("paid"), t("outflow"), t("remaining"), t("status"), t("method"), t("lastPayment"), t("deductible")],
     ...rows.map((r) => {
       const valid = r.payments.filter((p) => !p.reversedAt);
       const last = valid.map((p) => p.paidAt).sort((a, b) => b.getTime() - a.getTime())[0];
@@ -28,6 +28,7 @@ export const GET = async (req: Request) => {
         r.costCenter ?? "",
         r.documentNumber ?? "",
         centsToCsv(r.amountCents),
+        centsToCsv(valid.reduce((sum, p) => sum + p.principalCents, 0)),
         centsToCsv(valid.reduce((sum, p) => sum + paymentOutflow(p), 0)),
         centsToCsv(s === "cancelled" ? 0 : remainingCents({ ...r, dueDate: dateKeySP(r.dueDate) })),
         ts(s),

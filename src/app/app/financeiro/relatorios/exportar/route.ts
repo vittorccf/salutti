@@ -4,13 +4,14 @@ import { dateKeySP } from "@/lib/dates";
 import { centsToCsv, toCsv } from "@/lib/payables";
 import { getTranslations } from "@/i18n/server";
 import { requirePayables } from "../../pagar/_lib";
-import { REPORT_VIEWS, yearReport, type ReportView } from "../_data";
+import { reportViewsFor, yearReport, type ReportView } from "../_data";
 
 // CSV do relatório aberto na tela (mesmo ano e visão).
 export const GET = async (req: Request) => {
   const ctx = await requirePayables();
   const url = new URL(req.url);
-  const view = (REPORT_VIEWS as readonly string[]).includes(url.searchParams.get("view") ?? "") ? (url.searchParams.get("view") as ReportView) : "cashflow";
+  const views = reportViewsFor(ctx.workspace.accountType);
+  const view = (views as readonly string[]).includes(url.searchParams.get("view") ?? "") ? (url.searchParams.get("view") as ReportView) : "cashflow";
   const currentYear = Number(dateKeySP().slice(0, 4));
   const y = Number(url.searchParams.get("year"));
   const year = y >= 2000 && y <= currentYear + 5 ? y : currentYear;

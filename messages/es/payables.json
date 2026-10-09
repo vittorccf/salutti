@@ -78,7 +78,10 @@
     "attachmentFormat": "Formato no aceptado. Sube PDF, JPG, PNG o WebP.",
     "documentInvalid": "El CPF tiene 11 dígitos y el CNPJ, 14.",
     "categoryNameRequired": "Escribe el nombre de la categoría (2 a 80 caracteres).",
-    "groupInvalid": "Elige el grupo de la categoría."
+    "groupInvalid": "Elige el grupo de la categoría.",
+    "seriesConflict": "Otra persona acaba de generar las siguientes cuentas de esta serie. Actualiza la página.",
+    "seriesNotExtendable": "Solo las series recurrentes sin fecha de fin reciben nuevas cuentas.",
+    "seriesEnded": "Esta serie terminó (la última cuenta está cancelada). Reábrela antes de generar más."
   },
   "form": {
     "sectionMain": "Cuenta",
@@ -97,7 +100,7 @@
     "weekendHint": "Cae en fin de semana. El boleto suele poder pagarse el siguiente día hábil.",
     "holidayHint": "Cae en feriado bancario nacional. El boleto suele poder pagarse el siguiente día hábil.",
     "competence": "Mes de devengo",
-    "competenceHint": "Mes al que pertenece el gasto (se usa en el estado de resultados). Ej.: el alquiler de octubre pagado en noviembre.",
+    "competenceHint": "Mes al que se refiere el gasto, aunque se pague en otro mes (se usa en el estado de resultados). Ej.: alquiler de octubre pagado en noviembre.",
     "method": "Forma de pago",
     "noMethod": "Aún sin definir",
     "sectionPayment": "Datos para pagar",
@@ -148,7 +151,8 @@
     "scopeFollowing": "En esta y en las siguientes pendientes de la serie",
     "scopeHint": "En las siguientes cambian la descripción, el proveedor, la categoría, la forma de pago, las observaciones y, en cuentas recurrentes, el importe. El vencimiento, el boleto y el Pix cambian solo en esta.",
     "submitCreate": "Registrar cuenta",
-    "submitEdit": "Guardar cambios"
+    "submitEdit": "Guardar cambios",
+    "costCenterHint": "Úsalo si atiendes en más de un lugar (ej.: sala del Centro y online). Puedes dejarlo en blanco."
   },
   "list": {
     "title": "Cuentas por pagar",
@@ -286,7 +290,11 @@
     "paymentReversed": "Pago anulado.",
     "attachmentAdded": "Adjunto subido.",
     "attachmentRemoved": "Adjunto quitado.",
-    "seriesExtended": "{count, plural, one {# cuenta generada.} other {# cuentas generadas.}}"
+    "seriesExtended": "{count, plural, one {# cuenta generada.} other {# cuentas generadas.}}",
+    "reverseConfirm": "¿Anular el pago de {amount} hecho el {date}? El importe vuelve al saldo de la cuenta.",
+    "reverseLabel": "Anular pago de {amount} del {date}",
+    "removeConfirm": "¿Quitar el adjunto {name}? No se puede deshacer.",
+    "scopeFollowingCancelled": "Esta y las siguientes canceladas de la serie"
   },
   "suppliers": {
     "back": "Cuentas por pagar",
@@ -315,7 +323,7 @@
     "title": "Plan de cuentas",
     "description": "Categorías de gastos, agrupadas como en el estado de resultados. Ajusta los nombres a tu consultorio.",
     "newTitle": "Nueva categoría",
-    "deductibleHint": "\"Deducible\" es la sugerencia para el Livro-Caixa del carnê-leão (persona física). La Receita Federal acepta gastos operativos necesarios para la actividad, como alquiler, comunidad, agua, luz, teléfono, material de consumo, colegio profesional y salarios con cargas. No acepta equipos, depreciación ni transporte. Confírmalo con tu contador.",
+    "deductibleHint": "\"Deducible\" es la sugerencia para el Livro-Caixa del carnê-leão (persona física en Brasil). La Receita Federal acepta gastos operativos necesarios para la actividad, como alquiler, comunidad, agua, luz, teléfono, material de consumo, colegio profesional y salarios con cargas; el IPTU y las cuentas de un inmueble residencial solo en la proporción usada en la atención. No acepta equipos, depreciación ni transporte. El INSS que pagas como autónomo no entra en el Livro-Caixa, pero se deduce directamente en el carnê-leão. En las categorías discutibles (supervisión, cursos, software) dejamos \"no\": confírmalo con tu contador.",
     "name": "Nombre",
     "group": "Grupo",
     "deductible": "Deducible",
@@ -335,14 +343,15 @@
     "costCenter": "Centro de costo",
     "document": "Documento",
     "amount": "Importe",
-    "paid": "Pagado",
+    "paid": "Abonado",
     "remaining": "Saldo",
     "status": "Estado",
     "method": "Forma de pago",
     "lastPayment": "Último pago",
     "deductible": "Deducible",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "outflow": "Salió de caja"
   },
   "reports": {
     "title": "Informes financieros",
@@ -354,7 +363,7 @@
     "viewNav": "Informe",
     "views": {
       "cashflow": "Flujo de caja",
-      "dre": "Estado de resultados",
+      "dre": "Resultado del mes",
       "categories": "Gastos por categoría",
       "livro": "Livro-Caixa"
     },
@@ -377,13 +386,13 @@
     "empty": "Ningún gasto en este año.",
     "bySupplier": "Principales proveedores",
     "bySupplierDescription": "Los 15 con más gastos en el año.",
-    "livroDescription": "Para quien atiende como persona física: ingresos cobrados y gastos deducibles pagados en el mes. La deducción se limita al ingreso del mes; lo que sobra pasa a los meses siguientes, solo hasta diciembre.",
+    "livroDescription": "El Livro-Caixa es el registro de ingresos y gastos que reduce el impuesto de quien atiende como persona física en Brasil. Aquí: ingresos cobrados y gastos deducibles pagados en el mes. La deducción se limita al ingreso del mes; lo que sobra pasa a los meses siguientes, solo hasta diciembre. No es la base final del carnê-leão: quita los ingresos de clínicas, seguros y empresas (persona jurídica, ya con retención) y deduce el INSS pagado y los dependientes.",
     "income": "Ingresos",
     "deductibleExpenses": "Gastos deducibles",
     "carriedIn": "Del mes anterior",
     "deducted": "Deducido",
     "carriedOut": "Al mes siguiente",
-    "taxable": "Base del carnê-leão",
+    "taxable": "Ingresos menos deducciones",
     "livroEntries": "Asientos de gastos",
     "livroEntriesDescription": "Gastos pagados marcados como deducibles. Los intereses y multas quedan fuera; el descuento reduce el importe.",
     "livroEmpty": "Ningún gasto deducible pagado en este año.",
@@ -394,7 +403,8 @@
     "value": "Importe",
     "group": "Grupo",
     "supplier": "Proveedor",
-    "livroDisclaimer": "Apoyo para completar el carnê-leão en el e-CAC. Los ingresos consideran los cobros marcados como pagados en Salutti. Confírmalo con tu contador antes de declarar y guarda los comprobantes 5 años."
+    "livroDisclaimer": "Apoyo para completar el carnê-leão en el e-CAC. Los ingresos consideran los cobros marcados como pagados en Salutti. Confírmalo con tu contador antes de declarar y guarda los comprobantes 5 años.",
+    "livroLimited": "En algún mes la deducción quedó limitada por los ingresos registrados en Salutti. Si también cobraste por fuera (efectivo, Pix directo), el ingreso real es mayor y la deducción puede serlo: confírmalo con tu contador."
   },
   "dashboard": {
     "title": "Cuentas por pagar",

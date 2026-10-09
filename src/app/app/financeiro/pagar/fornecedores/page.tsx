@@ -68,7 +68,7 @@ async function SupplierFields({ s, categories }: { s?: Supplier; categories: Cat
 export default async function SuppliersPage() {
   const ctx = await requirePayables();
   const wsId = ctx.workspace.id;
-  await ensureDefaultCategories(wsId);
+  await ensureDefaultCategories(ctx.workspace);
   const [t, f, suppliers, categories, payments] = await Promise.all([
     getTranslations("payables.suppliers"),
     getFormat(),

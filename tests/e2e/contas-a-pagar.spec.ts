@@ -23,7 +23,7 @@ test("contas a pagar: boleto lido, parcelas, pagamento com juros, anexo, estorno
   await expect(page.getByRole("heading", { level: 1, name: "Contas a pagar" })).toBeVisible();
   await page.getByRole("link", { name: "Plano de contas" }).click();
   await expect(page.getByRole("heading", { name: "Ocupação do consultório" })).toBeVisible();
-  await expect(page.locator('input[value="Aluguel ou sublocação de sala"]')).toBeVisible();
+  await expect(page.locator('input[value^="Aluguel ou sublocação de sala"]')).toBeVisible();
 
   // Conta única com boleto: valor e vencimento preenchidos pela linha digitável; categoria marca "dedutível".
   await page.goto("/app/financeiro/pagar/nova");
@@ -66,7 +66,12 @@ test("contas a pagar: boleto lido, parcelas, pagamento com juros, anexo, estorno
   await page.locator("#interest").fill("");
   await page.getByRole("button", { name: "Registrar pagamento" }).click();
   await expect(page.getByText("Paga", { exact: true }).first()).toBeVisible();
-  await page.getByRole("button", { name: "Estornar" }).last().click();
+  // Estorno pede confirmação (com valor e data).
+  page.once("dialog", (d) => {
+    expect(d.message()).toContain("Estornar o pagamento de R$");
+    void d.accept();
+  });
+  await page.getByRole("button", { name: /Estornar pagamento de R\$\s?60,00/ }).click();
   await expect(page.getByText(/Estornado em/)).toBeVisible();
   await expect(page.getByText(/Saldo: R\$\s?60,00/)).toBeVisible();
 
@@ -115,6 +120,52 @@ test("contas a pagar: boleto lido, parcelas, pagamento com juros, anexo, estorno
   await expect(page.getByRole("cell", { name: "(-) Ocupação do consultório" })).toBeVisible();
   const dreCsv = await page.request.get("/app/financeiro/relatorios/exportar?view=dre&year=2026");
   expect(await dreCsv.text()).toContain("Resultado");
+
+  // Anexo recusado (formato) não deixa conta gravada: corrigir e reenviar não duplica.
+  await page.goto("/app/financeiro/pagar/nova");
+  await page.locator("#description").fill(`Anexo ruim ${tag}`);
+  await page.locator("#categoryId").selectOption(condominio!);
+  await page.locator("#amount").fill("10,00");
+  await page.locator("#attachment").setInputFiles({ name: "nota.txt", mimeType: "text/plain", buffer: Buffer.from("não é PDF") });
+  await page.getByRole("button", { name: "Lançar conta" }).click();
+  await expect(page.getByText("Formato não aceito. Envie PDF, JPG, PNG ou WebP.")).toBeVisible();
+  await page.goto("/app/financeiro/pagar?status=all&q=" + encodeURIComponent(`Anexo ruim ${tag}`));
+  await expect(page.getByText("Nenhuma conta por aqui")).toBeVisible();
+
+  // Recorrente sem fim no dia 31, adiando fim de semana: "Gerar as próximas" mantém o dia âncora.
+  await page.goto("/app/financeiro/pagar/nova");
+  await page.locator("#description").fill(`Aluguel ${tag}`);
+  const aluguel = await page.locator("#categoryId option", { hasText: "Aluguel" }).first().getAttribute("value");
+  await page.locator("#categoryId").selectOption(aluguel!);
+  await page.locator("#amount").fill("1.500,00");
+  await page.locator("#dueDate").fill("2027-01-31");
+  await page.getByLabel("Recorrente").check();
+  await page.locator("#weekendRule").selectOption("next");
+  await page.getByRole("button", { name: "Lançar conta" }).click();
+  await expect(page.getByRole("heading", { name: "Repetições" })).toBeVisible();
+  // 31/01/2027 é domingo → 01/02/2027; 28/02/2027 é domingo → 01/03/2027.
+  await expect(page.getByRole("link", { name: "01/02/2027" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "01/03/2027" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "31/03/2027" })).toBeVisible();
+  await page.getByRole("button", { name: "Gerar as próximas" }).click();
+  await expect(page.getByText("12 contas geradas.")).toBeVisible();
+  // Posição 13 = jan/2028 (31/01/2028, segunda): âncora 31 preservada. 14 = fev/2028: 29/02 é terça de Carnaval → 01/03.
+  await expect(page.getByRole("link", { name: "31/01/2028" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "01/03/2028" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "31/03/2028" })).toBeVisible();
+
+  // Série com quantidade definida não ganha o botão.
+  await page.goto("/app/financeiro/pagar/nova");
+  await page.locator("#description").fill(`Curso ${tag}`);
+  await page.locator("#categoryId").selectOption(aluguel!);
+  await page.locator("#amount").fill("200,00");
+  await page.locator("#dueDate").fill("2026-12-10");
+  await page.getByLabel("Recorrente").check();
+  await page.locator("#recurrenceEnd").selectOption("count");
+  await page.locator("#count").fill("3");
+  await page.getByRole("button", { name: "Lançar conta" }).click();
+  await expect(page.getByText("3 contas nesta série.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Gerar as próximas" })).toHaveCount(0);
 
   // Painel inicial avisa das vencidas (o condomínio venceu em 05/10 e tem saldo).
   await page.goto("/app");

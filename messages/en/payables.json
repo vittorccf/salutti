@@ -78,7 +78,10 @@
     "attachmentFormat": "Format not accepted. Upload PDF, JPG, PNG or WebP.",
     "documentInvalid": "CPF has 11 digits and CNPJ has 14.",
     "categoryNameRequired": "Enter the category name (2 to 80 characters).",
-    "groupInvalid": "Choose the category group."
+    "groupInvalid": "Choose the category group.",
+    "seriesConflict": "Someone else just generated the next bills of this series. Refresh the page.",
+    "seriesNotExtendable": "Only recurring series with no end date get new bills.",
+    "seriesEnded": "This series has ended (the last bill is cancelled). Reopen it before generating more."
   },
   "form": {
     "sectionMain": "Bill",
@@ -97,7 +100,7 @@
     "weekendHint": "Falls on a weekend. A boleto can usually be paid on the next business day.",
     "holidayHint": "Falls on a national bank holiday. A boleto can usually be paid on the next business day.",
     "competence": "Accrual month",
-    "competenceHint": "Month the expense belongs to (used in the income statement). E.g.: October rent paid in November.",
+    "competenceHint": "Month the expense refers to, even if paid in another month (used in the income statement). E.g.: October rent paid in November.",
     "method": "Payment method",
     "noMethod": "Not defined yet",
     "sectionPayment": "Payment details",
@@ -148,7 +151,8 @@
     "scopeFollowing": "To this and the next open bills in the series",
     "scopeHint": "The next ones get the new description, supplier, category, method, notes and, for recurring bills, the amount. Due date, boleto and Pix change only on this one.",
     "submitCreate": "Add bill",
-    "submitEdit": "Save changes"
+    "submitEdit": "Save changes",
+    "costCenterHint": "Use it if you work in more than one place (e.g.: downtown office and online). You can leave it blank."
   },
   "list": {
     "title": "Bills to pay",
@@ -286,7 +290,11 @@
     "paymentReversed": "Payment reversed.",
     "attachmentAdded": "Attachment uploaded.",
     "attachmentRemoved": "Attachment removed.",
-    "seriesExtended": "{count, plural, one {# bill generated.} other {# bills generated.}}"
+    "seriesExtended": "{count, plural, one {# bill generated.} other {# bills generated.}}",
+    "reverseConfirm": "Reverse the payment of {amount} made on {date}? The amount goes back to the bill balance.",
+    "reverseLabel": "Reverse payment of {amount} on {date}",
+    "removeConfirm": "Remove the attachment {name}? This can't be undone.",
+    "scopeFollowingCancelled": "This and the next cancelled ones in the series"
   },
   "suppliers": {
     "back": "Bills to pay",
@@ -315,7 +323,7 @@
     "title": "Chart of accounts",
     "description": "Expense categories, grouped as in the income statement. Adjust the names to your practice.",
     "newTitle": "New category",
-    "deductibleHint": "\"Deductible\" is the suggestion for the carnê-leão Livro-Caixa (individuals). The Brazilian tax authority accepts operating expenses needed for the work, such as rent, condo fees, water, power, phone, consumables, council fees and salaries with payroll taxes. It doesn't accept equipment, depreciation or transportation. Confirm with your accountant.",
+    "deductibleHint": "\"Deductible\" is the suggestion for the carnê-leão Livro-Caixa (individuals in Brazil). The tax authority accepts operating expenses needed for the work, such as rent, condo fees, water, power, phone, consumables, council fees and salaries with payroll taxes; property tax and bills of a home only in the share used for sessions. It doesn't accept equipment, depreciation or transportation. The INSS you pay as self-employed doesn't go in the Livro-Caixa, but it's deducted directly in the carnê-leão. For debatable categories (supervision, courses, software) we left \"no\": confirm with your accountant.",
     "name": "Name",
     "group": "Group",
     "deductible": "Deductible",
@@ -335,14 +343,15 @@
     "costCenter": "Cost center",
     "document": "Document",
     "amount": "Amount",
-    "paid": "Paid",
+    "paid": "Settled",
     "remaining": "Balance",
     "status": "Status",
     "method": "Payment method",
     "lastPayment": "Last payment",
     "deductible": "Deductible",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "outflow": "Paid out"
   },
   "reports": {
     "title": "Financial reports",
@@ -354,7 +363,7 @@
     "viewNav": "Report",
     "views": {
       "cashflow": "Cash flow",
-      "dre": "Income statement",
+      "dre": "Monthly result",
       "categories": "Expenses by category",
       "livro": "Livro-Caixa"
     },
@@ -377,13 +386,13 @@
     "empty": "No expenses this year.",
     "bySupplier": "Top suppliers",
     "bySupplierDescription": "The 15 with the most expenses this year.",
-    "livroDescription": "For professionals working as individuals: income received and deductible expenses paid each month. The deduction is capped at the month's income; the rest carries over to the following months, only until December.",
+    "livroDescription": "The Livro-Caixa is the record of income and expenses that lowers the tax of professionals working as individuals in Brazil. Here: income received and deductible expenses paid each month. The deduction is capped at the month's income; the rest carries over to the following months, only until December. It isn't the final carnê-leão base: remove income from clinics, insurers and companies (legal entities, already withheld) and deduct the INSS paid and dependents.",
     "income": "Income",
     "deductibleExpenses": "Deductible expenses",
     "carriedIn": "From the previous month",
     "deducted": "Deducted",
     "carriedOut": "To the next month",
-    "taxable": "Carnê-leão base",
+    "taxable": "Income minus deductions",
     "livroEntries": "Expense entries",
     "livroEntriesDescription": "Paid expenses marked as deductible. Interest and late fees are left out; discounts reduce the amount.",
     "livroEmpty": "No deductible expenses paid this year.",
@@ -394,7 +403,8 @@
     "value": "Amount",
     "group": "Group",
     "supplier": "Supplier",
-    "livroDisclaimer": "Support for filling in the carnê-leão on e-CAC. Income considers the charges marked as paid in Salutti. Confirm with your accountant before filing and keep receipts for 5 years."
+    "livroDisclaimer": "Support for filling in the carnê-leão on e-CAC. Income considers the charges marked as paid in Salutti. Confirm with your accountant before filing and keep receipts for 5 years.",
+    "livroLimited": "In some month the deduction was capped by the income recorded in Salutti. If you also got paid outside it (cash, direct Pix), your real income is higher and so may be the deduction: check with your accountant."
   },
   "dashboard": {
     "title": "Bills to pay",

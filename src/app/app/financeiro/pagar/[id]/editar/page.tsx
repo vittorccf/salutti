@@ -15,11 +15,8 @@ export default async function EditPayablePage({ params }: { params: Promise<{ id
   const { id } = await params;
   const p = await db.payable.findFirst({ where: { id, workspaceId: ctx.workspace.id } });
   if (!p || p.cancelledAt) notFound();
-  const { categories, suppliers } = await formOptions(ctx.workspace.id);
-  // Categoria desativada continua aparecendo para a conta que já a usa.
-  const allCategories = categories.some((c) => c.id === p.categoryId)
-    ? categories
-    : [...categories, ...(await db.financeCategory.findMany({ where: { id: p.categoryId } }))];
+  // Categoria e fornecedor desativados continuam aparecendo para a conta que já os usa.
+  const { categories: allCategories, suppliers } = await formOptions(ctx.workspace, { categoryId: p.categoryId, supplierId: p.supplierId });
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

@@ -5,7 +5,7 @@ import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { canManagePayables } from "@/lib/permissions";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
-import { addDaysKey, DEFAULT_CATEGORIES, payableStatus, type PayableStatus } from "@/lib/payables";
+import { addDaysKey, categoryProfile, defaultCategoriesFor, payableStatus, type PayableStatus } from "@/lib/payables";
 
 // Sem permissão, a tela não existe (404), como no resto do app.
 export async function requirePayables() {
@@ -14,12 +14,16 @@ export async function requirePayables() {
   return ctx;
 }
 
-// Plano de contas padrão criado no primeiro acesso (e completado se surgir categoria padrão nova).
-export async function ensureDefaultCategories(workspaceId: string) {
-  const existing = await db.financeCategory.count({ where: { workspaceId, systemKey: { not: null } } });
-  if (existing >= DEFAULT_CATEGORIES.length) return;
+// Plano de contas padrão do perfil do consultório (psicologia, odontologia ou estética), criado no primeiro acesso
+// e completado quando surge categoria padrão nova. Categoria que o consultório desativou ou renomeou fica como está.
+export async function ensureDefaultCategories(workspace: { id: string; area: string; segment?: string | null }) {
+  const defaults = defaultCategoriesFor(categoryProfile(workspace.area, workspace.segment));
+  const existing = await db.financeCategory.findMany({ where: { workspaceId: workspace.id, systemKey: { not: null } }, select: { systemKey: true } });
+  const have = new Set(existing.map((c) => c.systemKey));
+  const missing = defaults.filter((c) => !have.has(c.key));
+  if (!missing.length) return;
   await db.financeCategory.createMany({
-    data: DEFAULT_CATEGORIES.map((c) => ({ workspaceId, name: c.name, group: c.group, deductible: c.deductible, systemKey: c.key })),
+    data: missing.map((c) => ({ workspaceId: workspace.id, name: c.name, group: c.group, deductible: c.deductible, systemKey: c.key })),
     skipDuplicates: true,
   });
 }
@@ -61,6 +65,9 @@ export async function listPayables(workspaceId: string, params: ListParams) {
   if (Object.keys(due).length) where.dueDate = due;
   if (status === "cancelled") where.cancelledAt = { not: null };
   else if (status !== "all") where.cancelledAt = null;
+  // Situação filtrada no banco pelo principal pago (paidCents), para o limite de linhas não esconder contas atuais.
+  if (status === "paid") where.paidCents = { gte: db.payable.fields.amountCents };
+  else if (status === "open" || status === "overdue" || status === "next7") where.paidCents = { lt: db.payable.fields.amountCents };
   if (params.category) where.categoryId = params.category;
   if (params.supplier) where.supplierId = params.supplier;
   const q = params.q?.trim();
@@ -78,23 +85,20 @@ export async function listPayables(workspaceId: string, params: ListParams) {
     orderBy: [{ dueDate: status === "paid" ? "desc" : "asc" }, { createdAt: "asc" }],
     take: 500,
   });
-  const keep: Record<ListFilter, (s: PayableStatus) => boolean> = {
-    open: (s) => s !== "paid" && s !== "cancelled",
-    overdue: (s) => s === "overdue",
-    next7: (s) => s !== "paid" && s !== "cancelled",
-    paid: (s) => s === "paid",
-    cancelled: (s) => s === "cancelled",
-    all: () => true,
-  };
-  return { status, rows: rows.filter((r) => keep[status](statusOf(r, today))), truncated: rows.length === 500 };
+  return { status, rows, truncated: rows.length === 500 };
 }
 
-export async function formOptions(workspaceId: string) {
-  await ensureDefaultCategories(workspaceId);
+// Opções do formulário. Na edição, a categoria e o fornecedor atuais entram mesmo se estiverem desativados.
+export async function formOptions(workspace: { id: string; area: string; segment?: string | null }, current?: { categoryId?: string; supplierId?: string | null }) {
+  const workspaceId = workspace.id;
+  await ensureDefaultCategories(workspace);
   const [categories, suppliers] = await Promise.all([
-    db.financeCategory.findMany({ where: { workspaceId, active: true }, orderBy: [{ group: "asc" }, { name: "asc" }] }),
+    db.financeCategory.findMany({
+      where: { workspaceId, OR: [{ active: true }, ...(current?.categoryId ? [{ id: current.categoryId }] : [])] },
+      orderBy: [{ group: "asc" }, { name: "asc" }],
+    }),
     db.supplier.findMany({
-      where: { workspaceId, active: true },
+      where: { workspaceId, OR: [{ active: true }, ...(current?.supplierId ? [{ id: current.supplierId }] : [])] },
       orderBy: { name: "asc" },
       select: { id: true, name: true, defaultCategoryId: true },
     }),

@@ -190,10 +190,16 @@ export function livroCaixa(months: LivroCaixaMonth[]) {
   });
 }
 
+// Perfil do consultório para o plano de contas padrão: psicologia (área "mental"), odontologia (segmento odonto) ou estética.
+export type CategoryProfile = "psicologia" | "odonto" | "estetica";
+export const categoryProfile = (area: string, segment: string | null | undefined): CategoryProfile =>
+  area === "estetica" ? "estetica" : segment === "odonto" ? "odonto" : "psicologia";
+
 // Plano de contas padrão. "deductible" é só a sugestão para o Livro-Caixa (despesa de custeio de quem é pessoa física):
-// marcadas as que a Receita aceita de forma explícita; o profissional confirma com o contador e ajusta.
-export const DEFAULT_CATEGORIES: { key: string; name: string; group: CategoryGroup; deductible: boolean }[] = [
-  { key: "aluguel", name: "Aluguel ou sublocação de sala", group: "ocupacao", deductible: true },
+// marcadas as que a Receita aceita de forma explícita; nas discutíveis fica "não" e o profissional confirma com o contador.
+// "profiles" limita a categoria a alguns perfis (sem o campo, vale para todos).
+export const DEFAULT_CATEGORIES: { key: string; name: string; group: CategoryGroup; deductible: boolean; profiles?: CategoryProfile[] }[] = [
+  { key: "aluguel", name: "Aluguel ou sublocação de sala (mensal, por turno ou por hora)", group: "ocupacao", deductible: true },
   { key: "condominio", name: "Condomínio", group: "ocupacao", deductible: true },
   { key: "iptu", name: "IPTU do consultório", group: "ocupacao", deductible: true },
   { key: "energia_agua", name: "Energia, água e gás", group: "ocupacao", deductible: true },
@@ -204,21 +210,38 @@ export const DEFAULT_CATEGORIES: { key: string; name: string; group: CategoryGro
   { key: "prolabore", name: "Pró-labore", group: "pessoal", deductible: false },
   { key: "servicos_terceiros", name: "Serviços de terceiros (autônomos)", group: "pessoal", deductible: false },
   { key: "conselho", name: "Anuidade do conselho (CRP, CRO...)", group: "profissional", deductible: true },
-  { key: "supervisao", name: "Supervisão clínica", group: "profissional", deductible: false },
+  { key: "supervisao", name: "Supervisão clínica", group: "profissional", deductible: false, profiles: ["psicologia"] },
   { key: "cursos", name: "Cursos, congressos e formação", group: "profissional", deductible: false },
-  { key: "livros_testes", name: "Livros e testes psicológicos", group: "profissional", deductible: false },
+  { key: "testes_consumo", name: "Folhas de resposta e protocolos de testes (SATEPSI)", group: "profissional", deductible: true, profiles: ["psicologia"] },
+  { key: "livros_testes", name: "Manuais, kits de testes e livros", group: "profissional", deductible: false, profiles: ["psicologia"] },
+  { key: "analise_pessoal", name: "Análise pessoal ou psicoterapia (despesa pessoal)", group: "outros", deductible: false, profiles: ["psicologia"] },
+  { key: "seguro_rc", name: "Seguro de responsabilidade civil profissional", group: "profissional", deductible: false },
   { key: "contador", name: "Contador", group: "administrativo", deductible: true },
   { key: "software", name: "Software e sistemas", group: "administrativo", deductible: false },
+  { key: "teleatendimento", name: "Plataforma de teleatendimento", group: "administrativo", deductible: false, profiles: ["psicologia"] },
   { key: "material_escritorio", name: "Material de escritório e consumo", group: "administrativo", deductible: true },
-  { key: "marketing", name: "Divulgação e anúncios", group: "marketing", deductible: true },
-  { key: "insumos", name: "Materiais e insumos (odonto, estética)", group: "materiais", deductible: true },
-  { key: "laboratorio", name: "Laboratório (prótese e exames)", group: "materiais", deductible: false },
+  { key: "marketing", name: "Divulgação e anúncios", group: "marketing", deductible: false },
+  { key: "insumos", name: "Materiais e insumos", group: "materiais", deductible: true, profiles: ["odonto", "estetica"] },
+  { key: "laboratorio", name: "Laboratório (prótese e exames)", group: "materiais", deductible: false, profiles: ["odonto"] },
   { key: "das", name: "DAS (Simples Nacional)", group: "impostos", deductible: false },
   { key: "iss", name: "ISS", group: "impostos", deductible: false },
   { key: "inss_individual", name: "INSS (contribuinte individual)", group: "impostos", deductible: false },
   { key: "carne_leao", name: "Carnê-leão (IRPF)", group: "impostos", deductible: false },
   { key: "tarifas", name: "Tarifas bancárias e de maquininha", group: "financeiro", deductible: false },
   { key: "juros_multas", name: "Juros e multas", group: "financeiro", deductible: false },
+  { key: "transporte", name: "Deslocamento e transporte", group: "outros", deductible: false },
   { key: "equipamentos", name: "Equipamentos e móveis", group: "outros", deductible: false },
   { key: "outras", name: "Outras despesas", group: "outros", deductible: false },
 ];
+
+export const defaultCategoriesFor = (profile: CategoryProfile) =>
+  DEFAULT_CATEGORIES.filter((c) => !c.profiles || c.profiles.includes(profile));
+
+// Competência de cada ocorrência de uma conta recorrente: anda o mesmo número de meses que o vencimento andou
+// desde o primeiro ("2026-10" com vencimentos 10/11 → 10/12 vira "2026-11").
+export function shiftCompetence(competence: string, firstDue: string, due: string) {
+  const [y, m] = competence.split("-").map(Number);
+  const months = (Number(due.slice(0, 4)) - Number(firstDue.slice(0, 4))) * 12 + (Number(due.slice(5, 7)) - Number(firstDue.slice(5, 7)));
+  const total = y * 12 + (m - 1) + months;
+  return `${Math.floor(total / 12)}-${pad((total % 12) + 1)}`;
+}

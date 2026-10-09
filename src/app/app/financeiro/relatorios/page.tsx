@@ -8,14 +8,15 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { FinanceTabs } from "../_components/finance-tabs";
 import { requirePayables } from "../pagar/_lib";
-import { REPORT_VIEWS, yearReport, type ReportView } from "./_data";
+import { reportViewsFor, yearReport, type ReportView } from "./_data";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ view?: string; year?: string }> }) {
   const ctx = await requirePayables();
   const sp = await searchParams;
-  const view: ReportView = (REPORT_VIEWS as readonly string[]).includes(sp.view ?? "") ? (sp.view as ReportView) : "cashflow";
+  const views = reportViewsFor(ctx.workspace.accountType);
+  const view: ReportView = (views as readonly string[]).includes(sp.view ?? "") ? (sp.view as ReportView) : "cashflow";
   const currentYear = Number(dateKeySP().slice(0, 4));
   const year = Number(sp.year) >= 2000 && Number(sp.year) <= currentYear + 5 ? Number(sp.year) : currentYear;
   const [t, tg, f, r] = await Promise.all([getTranslations("payables.reports"), getTranslations("payables.groups"), getFormat(), yearReport(ctx.workspace.id, year)]);
@@ -56,7 +57,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       <FinanceTabs role={ctx.role} active="reports" />
 
       <nav aria-label={t("viewNav")} className="flex flex-wrap gap-2">
-        {REPORT_VIEWS.map((v) => (
+        {views.map((v) => (
           <Link
             key={v}
             href={href(v)}
@@ -310,6 +311,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               )}
             </CardContent>
           </Card>
+          {r.livroLimited ? (
+            <p role="note" className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning-strong">
+              {t("livroLimited")}
+            </p>
+          ) : null}
           <p className="text-xs text-muted-foreground">{t("livroDisclaimer")}</p>
         </>
       ) : null}

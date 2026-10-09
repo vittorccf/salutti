@@ -160,3 +160,27 @@ describe("CSV", () => {
     expect(csv).toContain("'=HYPERLINK(1);");
   });
 });
+
+describe("plano de contas e competência", () => {
+  it("competência da recorrência anda com o vencimento", async () => {
+    const { shiftCompetence } = await import("@/lib/payables");
+    expect(shiftCompetence("2026-10", "2026-10-10", "2026-10-10")).toBe("2026-10");
+    expect(shiftCompetence("2026-10", "2026-10-10", "2027-01-10")).toBe("2027-01");
+    // Competência anterior ao vencimento (aluguel de setembro vence em outubro) continua um mês atrás.
+    expect(shiftCompetence("2026-09", "2026-10-05", "2026-12-05")).toBe("2026-11");
+  });
+
+  it("categorias padrão pelo perfil do consultório", async () => {
+    const { categoryProfile, defaultCategoriesFor } = await import("@/lib/payables");
+    expect(categoryProfile("mental", "solo_psicologo")).toBe("psicologia");
+    expect(categoryProfile("mental", "odonto")).toBe("odonto");
+    expect(categoryProfile("estetica", null)).toBe("estetica");
+    const keys = (p: "psicologia" | "odonto" | "estetica") => defaultCategoriesFor(p).map((c) => c.key);
+    expect(keys("psicologia")).toEqual(expect.arrayContaining(["supervisao", "testes_consumo", "teleatendimento", "seguro_rc"]));
+    expect(keys("psicologia")).not.toContain("insumos");
+    expect(keys("odonto")).toEqual(expect.arrayContaining(["insumos", "laboratorio"]));
+    expect(keys("odonto")).not.toContain("supervisao");
+    expect(keys("estetica")).toContain("insumos");
+    expect(keys("estetica")).not.toContain("laboratorio");
+  });
+});

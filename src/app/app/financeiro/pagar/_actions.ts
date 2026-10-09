@@ -2,6 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
@@ -18,10 +19,10 @@ import {
   WEEKEND_RULES,
   addMonthsKey,
   occurrenceDate,
-  paidPrincipal,
   parseMoneyToCents,
   principalFromPaid,
   seriesDates,
+  shiftCompetence,
   splitInstallments,
   type Frequency,
   type WeekendRule,
@@ -42,24 +43,40 @@ class PayableError extends Error {}
 async function fail(e: unknown): Promise<FormResult> {
   const t = await getTranslations("payables.errors");
   if (e instanceof PayableError || e instanceof UploadError) return { erro: t.has(e.message) ? t(e.message) : t("generic") };
+  // Posição repetida na série (dois "Gerar as próximas" ao mesmo tempo).
+  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { erro: t("seriesConflict") };
   throw e;
 }
 
-// Categoria e fornecedor precisam ser do consultório; fornecedor novo digitado no formulário é criado na hora.
-async function resolveRefs(workspaceId: string, fd: FormData) {
+// Cliente da transação do `db` estendido (src/lib/db.ts), não o TransactionClient padrão.
+type Tx = Omit<typeof db, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
+
+// Trava as contas durante a leitura do saldo: pagamento, estorno e cancelamento simultâneos não se atropelam.
+const lock = (tx: Tx, workspaceId: string, ids: string[]) =>
+  tx.$executeRaw`SELECT 1 FROM "Payable" WHERE "id" = ANY(${ids}) AND "workspaceId" = ${workspaceId} FOR UPDATE`;
+
+// Categoria e fornecedor do consultório. Categoria desativada só vale se já for a da conta (edição).
+// Fornecedor novo digitado no formulário só é validado aqui; é criado junto com a conta, na mesma transação.
+async function resolveRefs(workspaceId: string, fd: FormData, currentCategoryId?: string) {
   const categoryId = str(fd, "categoryId");
-  const category = await db.financeCategory.findFirst({ where: { id: categoryId, workspaceId }, select: { id: true } });
+  const category = await db.financeCategory.findFirst({
+    where: { id: categoryId, workspaceId, ...(categoryId === currentCategoryId ? {} : { active: true }) },
+    select: { id: true },
+  });
   if (!category) throw new PayableError("categoryRequired");
-  let supplierId = optional(fd, "supplierId");
+  const supplierId = optional(fd, "supplierId");
   if (supplierId === "__new") {
     const name = str(fd, "newSupplierName");
-    if (name.length < 2) throw new PayableError("supplierNameRequired");
-    supplierId = (await db.supplier.create({ data: { workspaceId, name, defaultCategoryId: category.id } })).id;
-  } else if (supplierId) {
-    const ok = await db.supplier.count({ where: { id: supplierId, workspaceId } });
-    if (!ok) throw new PayableError("supplierInvalid");
+    if (name.length < 2 || name.length > 120) throw new PayableError("supplierNameRequired");
+    return { categoryId: category.id, supplierId: null, newSupplierName: name };
   }
-  return { categoryId: category.id, supplierId };
+  if (supplierId && !(await db.supplier.count({ where: { id: supplierId, workspaceId } }))) throw new PayableError("supplierInvalid");
+  return { categoryId: category.id, supplierId, newSupplierName: null };
+}
+
+async function createSupplierIfNew(tx: Tx, workspaceId: string, refs: Awaited<ReturnType<typeof resolveRefs>>) {
+  if (!refs.newSupplierName) return refs.supplierId;
+  return (await tx.supplier.create({ data: { workspaceId, name: refs.newSupplierName, defaultCategoryId: refs.categoryId } })).id;
 }
 
 // Campos comuns de lançamento e edição.
@@ -90,8 +107,17 @@ function readCommon(fd: FormData) {
   };
 }
 
-async function saveAttachment(workspaceId: string, payableId: string, fd: FormData, field: string, kind: string) {
-  const file = await readAttachmentUpload(fd, field);
+// Data de pagamento: válida e não futura.
+function readPaidAt(fd: FormData, key = "paidAt") {
+  const paidAt = str(fd, key) || dateKeySP();
+  if (!isDateKey(paidAt) || paidAt > dateKeySP()) throw new PayableError("paidAtInvalid");
+  return paidAt;
+}
+
+type Upload = Awaited<ReturnType<typeof readAttachmentUpload>>;
+
+// O arquivo é lido e validado antes de gravar qualquer coisa; aqui só é guardado.
+async function storeAttachment(workspaceId: string, payableId: string, file: Upload, kind: string) {
   if (!file) return null;
   const mediaId = await media.save("payable_attachment", { workspaceId }, file);
   return db.payableAttachment.create({
@@ -104,6 +130,7 @@ export async function createPayableAction(_prev: FormResult, fd: FormData): Prom
   const workspaceId = ctx.workspace.id;
   let firstId: string;
   try {
+    // 1) Tudo validado antes de gravar: um erro não deixa série, fornecedor ou pagamento pela metade.
     const common = readCommon(fd);
     const refs = await resolveRefs(workspaceId, fd);
     const due = str(fd, "dueDate");
@@ -111,11 +138,14 @@ export async function createPayableAction(_prev: FormResult, fd: FormData): Prom
     const competence = str(fd, "competence") || due.slice(0, 7);
     if (!isMonthKey(competence)) throw new PayableError("competenceInvalid");
     const weekendRule = (oneOf(WEEKEND_RULES, str(fd, "weekendRule")) ? str(fd, "weekendRule") : "keep") as WeekendRule;
+    const alreadyPaid = fd.get("alreadyPaid") === "on";
+    const paidAt = alreadyPaid ? readPaidAt(fd) : null;
+    const attachment = await readAttachmentUpload(fd, "attachment");
 
     // Ocorrências: única, parcelada (valor total dividido) ou recorrente (mesmo valor em cada uma).
     const repeat = str(fd, "repeat");
     let occurrences: { due: string; competence: string; amountCents: number }[];
-    let series: { frequency: Frequency | null; installmentTotal: number | null } = { frequency: null, installmentTotal: null };
+    let series: { frequency: Frequency | null; installmentTotal: number | null; openEnded: boolean } = { frequency: null, installmentTotal: null, openEnded: false };
     if (repeat === "installments") {
       const n = Number(str(fd, "installments"));
       if (!Number.isInteger(n) || n < 2 || n > MAX_OCCURRENCES) throw new PayableError("installmentsInvalid");
@@ -123,7 +153,7 @@ export async function createPayableAction(_prev: FormResult, fd: FormData): Prom
       const amounts = splitInstallments(common.amountCents, n);
       // Parcelas de uma compra: a competência é a da compra; só o vencimento anda.
       occurrences = seriesDates(due, frequency, { count: n }).map((d, i) => ({ due: d, competence, amountCents: amounts[i] }));
-      series = { frequency, installmentTotal: n };
+      series = { frequency, installmentTotal: n, openEnded: false };
     } else if (repeat === "recurring") {
       const frequency = str(fd, "frequency");
       if (!oneOf(FREQUENCIES, frequency)) throw new PayableError("frequencyInvalid");
@@ -141,31 +171,27 @@ export async function createPayableAction(_prev: FormResult, fd: FormData): Prom
         // Sem fim: os próximos 12 meses agora; a tela da conta gera mais quando a série estiver acabando.
         dates = seriesDates(due, frequency, { until: addMonthsKey(due, 11) });
       }
-      const offset = (d: string) => {
-        const [y, m] = competence.split("-").map(Number);
-        const [dy, dm] = d.split("-").map(Number);
-        const [fy, fm] = due.split("-").map(Number);
-        const shift = (dy - fy) * 12 + (dm - fm);
-        const total = y * 12 + (m - 1) + shift;
-        return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, "0")}`;
-      };
       // Conta recorrente (aluguel, internet): cada ocorrência é da competência do seu mês.
-      occurrences = dates.map((d) => ({ due: d, competence: offset(d), amountCents: common.amountCents }));
-      series = { frequency, installmentTotal: null };
+      occurrences = dates.map((d) => ({ due: d, competence: shiftCompetence(competence, due, d), amountCents: common.amountCents }));
+      series = { frequency, installmentTotal: null, openEnded: end !== "until" && end !== "count" };
     } else {
       occurrences = [{ due, competence, amountCents: common.amountCents }];
     }
 
+    // 2) Gravação: fornecedor novo, contas e o pagamento da primeira na mesma transação.
     const seriesId = occurrences.length > 1 ? randomUUID() : null;
-    const created = await db.$transaction(
-      occurrences.map((o, i) =>
-        db.payable.create({
+    firstId = await db.$transaction(async (tx) => {
+      const supplierId = await createSupplierIfNew(tx, workspaceId, refs);
+      const ids: string[] = [];
+      for (const [i, o] of occurrences.entries()) {
+        const created = await tx.payable.create({
           data: {
             workspaceId,
             ...common,
-            ...refs,
+            categoryId: refs.categoryId,
+            supplierId,
             amountCents: o.amountCents,
-            // Ajuste de fim de semana/feriado vale para a série; a primeira data digitada também passa pela regra.
+            // Ajuste de fim de semana/feriado vale para todas, inclusive a primeira data digitada.
             dueDate: parseDateOnly(adjustToBusinessDay(o.due, weekendRule)),
             competenceDate: parseDateOnly(`${o.competence}-01`),
             barcode: i === 0 ? common.barcode : null,
@@ -175,32 +201,25 @@ export async function createPayableAction(_prev: FormResult, fd: FormData): Prom
             seriesIndex: seriesId ? i + 1 : null,
             installmentTotal: series.installmentTotal,
             frequency: series.frequency,
+            anchorDate: seriesId ? parseDateOnly(due) : null,
+            weekendRule: seriesId ? weekendRule : null,
+            seriesOpenEnded: series.openEnded,
+            paidCents: i === 0 && paidAt ? o.amountCents : 0,
             createdById: ctx.user.id,
           },
           select: { id: true },
-        }),
-      ),
-    );
-    firstId = created[0].id;
+        });
+        ids.push(created.id);
+      }
+      if (paidAt) {
+        await tx.payablePayment.create({
+          data: { workspaceId, payableId: ids[0], paidAt: parseDateOnly(paidAt), principalCents: occurrences[0].amountCents, method: common.method, createdById: ctx.user.id },
+        });
+      }
+      return ids[0];
+    });
 
-    await saveAttachment(workspaceId, firstId, fd, "attachment", str(fd, "attachmentKind"));
-
-    // "Já está paga": baixa da primeira ocorrência no valor cheio.
-    if (fd.get("alreadyPaid") === "on") {
-      const paidAt = str(fd, "paidAt") || dateKeySP();
-      if (!isDateKey(paidAt)) throw new PayableError("paidAtInvalid");
-      await db.payablePayment.create({
-        data: {
-          workspaceId,
-          payableId: firstId,
-          paidAt: parseDateOnly(paidAt),
-          principalCents: occurrences[0].amountCents,
-          method: common.method,
-          createdById: ctx.user.id,
-        },
-      });
-    }
-
+    await storeAttachment(workspaceId, firstId, attachment, str(fd, "attachmentKind"));
     await recordAudit({
       workspaceId,
       userId: ctx.user.id,
@@ -217,19 +236,26 @@ export async function createPayableAction(_prev: FormResult, fd: FormData): Prom
 }
 
 async function loadOwned(workspaceId: string, id: string) {
-  const p = await db.payable.findFirst({ where: { id, workspaceId }, include: { payments: true } });
+  const p = await db.payable.findFirst({ where: { id, workspaceId } });
   if (!p) throw new PayableError("notFound");
   return p;
 }
 
-// Ocorrências afetadas por "só esta" ou "esta e as próximas" (as próximas: mesma série, em aberto e não canceladas).
-async function scopeTargets(workspaceId: string, p: Awaited<ReturnType<typeof loadOwned>>, scope: string) {
+type Owned = Awaited<ReturnType<typeof loadOwned>>;
+
+// Ocorrências de "só esta" ou "esta e as próximas" (as próximas: mesma série, posição maior).
+// `open`: só as sem pagamento e não canceladas (editar, cancelar); senão, as canceladas (reabrir).
+async function scopeTargets(workspaceId: string, p: Owned, scope: string, mode: "open" | "cancelled" = "open") {
   if (scope !== "following" || !p.seriesId || p.seriesIndex === null) return [p];
   const rest = await db.payable.findMany({
-    where: { workspaceId, seriesId: p.seriesId, seriesIndex: { gt: p.seriesIndex }, cancelledAt: null },
-    include: { payments: true },
+    where: {
+      workspaceId,
+      seriesId: p.seriesId,
+      seriesIndex: { gt: p.seriesIndex },
+      ...(mode === "open" ? { cancelledAt: null, paidCents: 0 } : { cancelledAt: { not: null } }),
+    },
   });
-  return [p, ...rest.filter((r) => paidPrincipal(r.payments) === 0)];
+  return [p, ...rest];
 }
 
 export async function updatePayableAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
@@ -240,27 +266,29 @@ export async function updatePayableAction(_prev: FormResult, fd: FormData): Prom
     const p = await loadOwned(workspaceId, id);
     if (p.cancelledAt) throw new PayableError("cancelled");
     const common = readCommon(fd);
-    const refs = await resolveRefs(workspaceId, fd);
+    const refs = await resolveRefs(workspaceId, fd, p.categoryId);
     const due = str(fd, "dueDate");
     const competence = str(fd, "competence");
     if (!isDateKey(due)) throw new PayableError("dueDateRequired");
     if (!isMonthKey(competence)) throw new PayableError("competenceInvalid");
-    if (common.amountCents < paidPrincipal(p.payments)) throw new PayableError("amountBelowPaid");
+    if (common.amountCents < p.paidCents) throw new PayableError("amountBelowPaid");
 
     const scope = str(fd, "scope");
     const targets = await scopeTargets(workspaceId, p, scope);
-    // Nas próximas vão os dados de cadastro e o valor; vencimento, competência, boleto e Pix são só desta.
-    const shared = {
-      description: common.description,
-      method: common.method,
-      costCenter: common.costCenter,
-      notes: common.notes,
-      deductible: common.deductible,
-      ...refs,
-    };
     const sameAmountForFollowing = !p.installmentTotal;
-    await db.$transaction([
-      db.payable.update({
+    await db.$transaction(async (tx) => {
+      const supplierId = await createSupplierIfNew(tx, workspaceId, refs);
+      // Nas próximas vão os dados de cadastro e o valor; vencimento, competência, boleto e Pix são só desta.
+      const shared = {
+        description: common.description,
+        method: common.method,
+        costCenter: common.costCenter,
+        notes: common.notes,
+        deductible: common.deductible,
+        categoryId: refs.categoryId,
+        supplierId,
+      };
+      await tx.payable.update({
         where: { id: p.id },
         data: {
           ...shared,
@@ -271,13 +299,15 @@ export async function updatePayableAction(_prev: FormResult, fd: FormData): Prom
           barcode: common.barcode,
           pixCopyPaste: common.pixCopyPaste,
         },
-      }),
-      ...targets
-        .filter((t) => t.id !== p.id)
-        .map((t) =>
-          db.payable.update({ where: { id: t.id }, data: { ...shared, ...(sameAmountForFollowing ? { amountCents: common.amountCents } : {}) } }),
-        ),
-    ]);
+      });
+      const others = targets.filter((t) => t.id !== p.id).map((t) => t.id);
+      if (others.length) {
+        await tx.payable.updateMany({
+          where: { id: { in: others }, workspaceId },
+          data: { ...shared, ...(sameAmountForFollowing ? { amountCents: common.amountCents } : {}) },
+        });
+      }
+    });
     await recordAudit({
       workspaceId,
       userId: ctx.user.id,
@@ -298,14 +328,19 @@ export async function cancelPayableAction(_prev: FormResult, fd: FormData): Prom
   const workspaceId = ctx.workspace.id;
   try {
     const p = await loadOwned(workspaceId, str(fd, "id"));
-    if (paidPrincipal(p.payments) > 0) throw new PayableError("cancelHasPayments");
     const targets = await scopeTargets(workspaceId, p, str(fd, "scope"));
-    const reason = optional(fd, "reason");
-    await db.payable.updateMany({
-      where: { id: { in: targets.map((t) => t.id) }, workspaceId, cancelledAt: null },
-      data: { cancelledAt: new Date(), cancelReason: reason },
+    const ids = targets.map((t) => t.id);
+    await db.$transaction(async (tx) => {
+      await lock(tx, workspaceId, ids);
+      // Conferido com a conta travada: um pagamento que chegue junto não cai numa conta cancelada.
+      const paid = await tx.payable.count({ where: { id: p.id, paidCents: { gt: 0 } } });
+      if (paid) throw new PayableError("cancelHasPayments");
+      await tx.payable.updateMany({
+        where: { id: { in: ids }, workspaceId, cancelledAt: null, paidCents: 0 },
+        data: { cancelledAt: new Date(), cancelReason: optional(fd, "reason") },
+      });
     });
-    await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.cancel", entity: "Payable", entityId: p.id, metadata: { affected: targets.length } });
+    await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.cancel", entity: "Payable", entityId: p.id, metadata: { affected: ids.length } });
   } catch (e) {
     return fail(e);
   }
@@ -316,10 +351,15 @@ export async function cancelPayableAction(_prev: FormResult, fd: FormData): Prom
 
 export async function reopenPayableAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const ctx = await requirePayables();
-  const id = str(fd, "id");
-  const res = await db.payable.updateMany({ where: { id, workspaceId: ctx.workspace.id }, data: { cancelledAt: null, cancelReason: null } });
-  if (!res.count) return fail(new PayableError("notFound"));
-  await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "payable.reopen", entity: "Payable", entityId: id });
+  const workspaceId = ctx.workspace.id;
+  try {
+    const p = await loadOwned(workspaceId, str(fd, "id"));
+    const targets = await scopeTargets(workspaceId, p, str(fd, "scope"), "cancelled");
+    await db.payable.updateMany({ where: { id: { in: targets.map((t) => t.id) }, workspaceId }, data: { cancelledAt: null, cancelReason: null } });
+    await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.reopen", entity: "Payable", entityId: p.id, metadata: { affected: targets.length } });
+  } catch (e) {
+    return fail(e);
+  }
   revalidatePath(PATH);
   const t = await getTranslations("payables.detail");
   return { ok: t("reopened") };
@@ -338,8 +378,7 @@ export async function registerPaymentAction(_prev: FormResult, fd: FormData): Pr
   const workspaceId = ctx.workspace.id;
   const id = str(fd, "id");
   try {
-    const paidAt = str(fd, "paidAt");
-    if (!isDateKey(paidAt) || paidAt > dateKeySP()) throw new PayableError("paidAtInvalid");
+    const paidAt = readPaidAt(fd);
     const paid = parseMoneyToCents(str(fd, "paidAmount"));
     if (!paid || paid <= 0) throw new PayableError("amountInvalid");
     const interest = cents(fd, "interest");
@@ -348,14 +387,17 @@ export async function registerPaymentAction(_prev: FormResult, fd: FormData): Pr
     const principal = principalFromPaid(paid, interest, fine, discount);
     if (principal <= 0) throw new PayableError("principalInvalid");
     const method = str(fd, "method");
+    // Comprovante validado antes: arquivo recusado não deixa o pagamento gravado.
+    const receipt = await readAttachmentUpload(fd, "receipt");
     // Trava a conta durante a conferência do saldo: dois envios ao mesmo tempo não pagam além do valor.
-    const { p, payment } = await db.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT 1 FROM "Payable" WHERE "id" = ${id} AND "workspaceId" = ${workspaceId} FOR UPDATE`;
-      const p = await tx.payable.findFirst({ where: { id, workspaceId }, include: { payments: true } });
+    const payment = await db.$transaction(async (tx) => {
+      await lock(tx, workspaceId, [id]);
+      const p = await tx.payable.findFirst({ where: { id, workspaceId } });
       if (!p) throw new PayableError("notFound");
       if (p.cancelledAt) throw new PayableError("cancelled");
-      if (principal > p.amountCents - paidPrincipal(p.payments)) throw new PayableError("paymentAboveRemaining");
-      const payment = await tx.payablePayment.create({
+      if (principal > p.amountCents - p.paidCents) throw new PayableError("paymentAboveRemaining");
+      await tx.payable.update({ where: { id: p.id }, data: { paidCents: { increment: principal } } });
+      return tx.payablePayment.create({
         data: {
           workspaceId,
           payableId: p.id,
@@ -369,15 +411,14 @@ export async function registerPaymentAction(_prev: FormResult, fd: FormData): Pr
           createdById: ctx.user.id,
         },
       });
-      return { p, payment };
     });
-    await saveAttachment(workspaceId, p.id, fd, "receipt", "comprovante");
+    await storeAttachment(workspaceId, id, receipt, "comprovante");
     await recordAudit({
       workspaceId,
       userId: ctx.user.id,
       action: "payable.pay",
       entity: "Payable",
-      entityId: p.id,
+      entityId: id,
       metadata: { paymentId: payment.id, principal, interest, fine, discount },
     });
   } catch (e) {
@@ -394,25 +435,31 @@ export async function bulkPayAction(_prev: FormResult, fd: FormData): Promise<Fo
   const workspaceId = ctx.workspace.id;
   const t = await getTranslations("payables.list");
   const ids = fd.getAll("ids").map(String).slice(0, 200);
-  const paidAt = str(fd, "paidAt") || dateKeySP();
   if (!ids.length) return { erro: t("bulkNone") };
-  if (!isDateKey(paidAt) || paidAt > dateKeySP()) return fail(new PayableError("paidAtInvalid"));
+  let paidAt: string;
+  try {
+    paidAt = readPaidAt(fd);
+  } catch (e) {
+    return fail(e);
+  }
   const method = str(fd, "method");
-  // Mesma trava do pagamento individual: o saldo é lido com as contas travadas.
   const toPay = await db.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT 1 FROM "Payable" WHERE "id" = ANY(${ids}) AND "workspaceId" = ${workspaceId} FOR UPDATE`;
-    const rows = await tx.payable.findMany({ where: { id: { in: ids }, workspaceId, cancelledAt: null }, include: { payments: true } });
-    const open = rows.map((r) => ({ r, remaining: r.amountCents - paidPrincipal(r.payments) })).filter((x) => x.remaining > 0);
-    await tx.payablePayment.createMany({
-      data: open.map(({ r, remaining }) => ({
-        workspaceId,
-        payableId: r.id,
-        paidAt: parseDateOnly(paidAt),
-        principalCents: remaining,
-        method: oneOf(PAYMENT_METHODS, method) ? method : r.method,
-        createdById: ctx.user.id,
-      })),
-    });
+    await lock(tx, workspaceId, ids);
+    const rows = await tx.payable.findMany({ where: { id: { in: ids }, workspaceId, cancelledAt: null } });
+    const open = rows.map((r) => ({ r, remaining: r.amountCents - r.paidCents })).filter((x) => x.remaining > 0);
+    for (const { r, remaining } of open) {
+      await tx.payable.update({ where: { id: r.id }, data: { paidCents: r.amountCents } });
+      await tx.payablePayment.create({
+        data: {
+          workspaceId,
+          payableId: r.id,
+          paidAt: parseDateOnly(paidAt),
+          principalCents: remaining,
+          method: oneOf(PAYMENT_METHODS, method) ? method : r.method,
+          createdById: ctx.user.id,
+        },
+      });
+    }
     return open;
   });
   await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.bulk-pay", entity: "Payable", entityId: "lote", metadata: { count: toPay.length } });
@@ -422,10 +469,21 @@ export async function bulkPayAction(_prev: FormResult, fd: FormData): Promise<Fo
 
 export async function reversePaymentAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const ctx = await requirePayables();
+  const workspaceId = ctx.workspace.id;
   const paymentId = str(fd, "paymentId");
-  const res = await db.payablePayment.updateMany({ where: { id: paymentId, workspaceId: ctx.workspace.id, reversedAt: null }, data: { reversedAt: new Date() } });
-  if (!res.count) return fail(new PayableError("notFound"));
-  await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "payable.reverse", entity: "PayablePayment", entityId: paymentId });
+  try {
+    await db.$transaction(async (tx) => {
+      const pay = await tx.payablePayment.findFirst({ where: { id: paymentId, workspaceId, reversedAt: null } });
+      if (!pay) throw new PayableError("notFound");
+      await lock(tx, workspaceId, [pay.payableId]);
+      const res = await tx.payablePayment.updateMany({ where: { id: pay.id, reversedAt: null }, data: { reversedAt: new Date() } });
+      if (!res.count) throw new PayableError("notFound");
+      await tx.payable.update({ where: { id: pay.payableId }, data: { paidCents: { decrement: pay.principalCents } } });
+    });
+  } catch (e) {
+    return fail(e);
+  }
+  await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.reverse", entity: "PayablePayment", entityId: paymentId });
   revalidatePath(PATH);
   const t = await getTranslations("payables.detail");
   return { ok: t("paymentReversed") };
@@ -435,9 +493,10 @@ export async function addAttachmentAction(_prev: FormResult, fd: FormData): Prom
   const ctx = await requirePayables();
   try {
     const p = await loadOwned(ctx.workspace.id, str(fd, "id"));
-    const att = await saveAttachment(ctx.workspace.id, p.id, fd, "file", str(fd, "kind"));
-    if (!att) throw new PayableError("attachmentMissing");
-    await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "payable.attach", entity: "Payable", entityId: p.id, metadata: { kind: att.kind } });
+    const file = await readAttachmentUpload(fd, "file");
+    if (!file) throw new PayableError("attachmentMissing");
+    const att = await storeAttachment(ctx.workspace.id, p.id, file, str(fd, "kind"));
+    await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "payable.attach", entity: "Payable", entityId: p.id, metadata: { kind: att?.kind } });
   } catch (e) {
     return fail(e);
   }
@@ -458,50 +517,64 @@ export async function removeAttachmentAction(_prev: FormResult, fd: FormData): P
   return { ok: t("attachmentRemoved") };
 }
 
-// Série recorrente sem fim: gera as próximas 12 ocorrências a partir da última, com o mesmo dia âncora.
+// Série recorrente sem fim: gera as próximas ocorrências a partir da última, pelo dia âncora (a data digitada,
+// antes do ajuste de fim de semana) e com a mesma regra de fim de semana/feriado.
 export async function extendSeriesAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const ctx = await requirePayables();
   const workspaceId = ctx.workspace.id;
   const seriesId = str(fd, "seriesId");
-  const items = await db.payable.findMany({ where: { workspaceId, seriesId }, orderBy: { seriesIndex: "asc" } });
-  const first = items[0];
-  const last = items.at(-1);
-  if (!first || !last || !first.frequency || first.installmentTotal || !oneOf(FREQUENCIES, first.frequency)) return fail(new PayableError("notFound"));
-  const frequency = first.frequency as Frequency;
-  const firstDue = dateKeySP(first.dueDate);
-  const firstComp = dateKeySP(first.competenceDate).slice(0, 7);
-  const start = (last.seriesIndex ?? items.length) as number;
-  const next = Array.from({ length: frequency === "weekly" ? 52 : frequency === "biweekly" ? 26 : 12 }, (_, k) => start + k);
-  const template = last;
-  await db.$transaction(
-    next.map((i) => {
-      const due = occurrenceDate(firstDue, frequency, i);
-      const monthsAhead = (Number(due.slice(0, 4)) - Number(firstDue.slice(0, 4))) * 12 + (Number(due.slice(5, 7)) - Number(firstDue.slice(5, 7)));
-      return db.payable.create({
-        data: {
-          workspaceId,
-          description: template.description,
-          supplierId: template.supplierId,
-          categoryId: template.categoryId,
-          amountCents: template.amountCents,
-          method: template.method,
-          costCenter: template.costCenter,
-          notes: template.notes,
-          deductible: template.deductible,
-          dueDate: parseDateOnly(due),
-          competenceDate: parseDateOnly(`${addMonthsKey(`${firstComp}-01`, monthsAhead).slice(0, 7)}-01`),
-          seriesId,
-          seriesIndex: i + 1,
-          frequency,
-          createdById: ctx.user.id,
-        },
-      });
-    }),
-  );
-  await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.extend", entity: "Payable", entityId: last.id, metadata: { added: next.length } });
+  let added = 0;
+  try {
+    await db.$transaction(async (tx) => {
+      const first = await tx.payable.findFirst({ where: { workspaceId, seriesId }, orderBy: { seriesIndex: "asc" } });
+      if (!first) throw new PayableError("notFound");
+      // Trava a primeira da série: dois cliques ao mesmo tempo não geram a mesma posição duas vezes.
+      await lock(tx, workspaceId, [first.id]);
+      const last = await tx.payable.findFirst({ where: { workspaceId, seriesId }, orderBy: { seriesIndex: "desc" } });
+      if (!last || !first.seriesOpenEnded || !first.frequency || !oneOf(FREQUENCIES, first.frequency)) throw new PayableError("seriesNotExtendable");
+      // Série encerrada (cancelada desta em diante) não volta a crescer.
+      if (last.cancelledAt) throw new PayableError("seriesEnded");
+      const frequency = first.frequency as Frequency;
+      const anchor = dateKeySP(first.anchorDate ?? first.dueDate);
+      const firstComp = dateKeySP(first.competenceDate).slice(0, 7);
+      const rule = (oneOf(WEEKEND_RULES, first.weekendRule ?? "") ? first.weekendRule : "keep") as WeekendRule;
+      const start = last.seriesIndex ?? 1;
+      const count = frequency === "weekly" ? 52 : frequency === "biweekly" ? 26 : 12;
+      for (let k = 0; k < count; k++) {
+        const index = start + k; // posição 0-based da próxima ocorrência
+        const due = occurrenceDate(anchor, frequency, index);
+        await tx.payable.create({
+          data: {
+            workspaceId,
+            description: last.description,
+            supplierId: last.supplierId,
+            categoryId: last.categoryId,
+            amountCents: last.amountCents,
+            method: last.method,
+            costCenter: last.costCenter,
+            notes: last.notes,
+            deductible: last.deductible,
+            dueDate: parseDateOnly(adjustToBusinessDay(due, rule)),
+            competenceDate: parseDateOnly(`${shiftCompetence(firstComp, anchor, due)}-01`),
+            seriesId,
+            seriesIndex: index + 1,
+            frequency,
+            anchorDate: first.anchorDate,
+            weekendRule: rule,
+            seriesOpenEnded: true,
+            createdById: ctx.user.id,
+          },
+        });
+      }
+      added = count;
+    });
+  } catch (e) {
+    return fail(e);
+  }
+  await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.extend", entity: "Payable", entityId: seriesId, metadata: { added } });
   revalidatePath(PATH);
   const t = await getTranslations("payables.detail");
-  return { ok: t("seriesExtended", { count: next.length }) };
+  return { ok: t("seriesExtended", { count: added }) };
 }
 
 // ----------------------------- Fornecedores -----------------------------

@@ -228,7 +228,10 @@ export function PayableForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="costCenter">{t("costCenter")}</Label>
-            <Input id="costCenter" name="costCenter" maxLength={60} defaultValue={defaults.costCenter ?? ""} placeholder={t("costCenterPlaceholder")} />
+            <Input id="costCenter" name="costCenter" maxLength={60} defaultValue={defaults.costCenter ?? ""} placeholder={t("costCenterPlaceholder")} aria-describedby="cost-center-hint" />
+            <p id="cost-center-hint" className="text-xs text-muted-foreground">
+              {t("costCenterHint")}
+            </p>
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="notes">{t("notes")}</Label>

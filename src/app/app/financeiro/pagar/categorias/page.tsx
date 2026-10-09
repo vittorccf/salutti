@@ -16,7 +16,7 @@ import { ensureDefaultCategories, requirePayables } from "../_lib";
 export default async function CategoriesPage() {
   const ctx = await requirePayables();
   const wsId = ctx.workspace.id;
-  await ensureDefaultCategories(wsId);
+  await ensureDefaultCategories(ctx.workspace);
   const [t, tg, categories, usage] = await Promise.all([
     getTranslations("payables.categories"),
     getTranslations("payables.groups"),

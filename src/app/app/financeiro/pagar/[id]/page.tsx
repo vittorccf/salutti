@@ -9,6 +9,7 @@ import { ATTACHMENT_KINDS, centsToInput, paymentOutflow, PAYMENT_METHODS, remain
 import { getFormat, getTranslations } from "@/i18n/server";
 import { ActionForm } from "@/components/forms/action-form";
 import { CopyButton } from "@/components/copy-button";
+import { ConfirmSubmit } from "@/components/forms/confirm-submit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,8 @@ export default async function PayablePage({ params }: { params: Promise<{ id: st
       })
     : [];
   const isOpenRecurring = !!p.frequency && !p.installmentTotal;
+  // "Gerar as próximas" só em série sem fim cuja última ocorrência continua ativa.
+  const canExtend = p.seriesOpenEnded && series.length > 0 && !series[series.length - 1].cancelledAt;
   const outflow = p.payments.filter((x) => !x.reversedAt).reduce((s, x) => s + paymentOutflow(x), 0);
   const createdBy = p.createdById ? await db.user.findUnique({ where: { id: p.createdById }, select: { name: true } }) : null;
 
@@ -182,9 +185,14 @@ export default async function PayablePage({ params }: { params: Promise<{ id: st
                           ) : (
                             <ActionForm action={reversePaymentAction}>
                               <input type="hidden" name="paymentId" value={x.id} />
-                              <Button type="submit" variant="ghost" size="sm">
+                              <ConfirmSubmit
+                                variant="ghost"
+                                size="sm"
+                                confirmText={t("reverseConfirm", { amount: f.money(paymentOutflow(x) / 100), date: f.date(x.paidAt) })}
+                                aria-label={t("reverseLabel", { amount: f.money(paymentOutflow(x) / 100), date: f.date(x.paidAt) })}
+                              >
                                 {t("reverse")}
-                              </Button>
+                              </ConfirmSubmit>
                             </ActionForm>
                           )}
                         </TD>
@@ -232,7 +240,7 @@ export default async function PayablePage({ params }: { params: Promise<{ id: st
                     })}
                   </TBody>
                 </Table>
-                {isOpenRecurring ? (
+                {canExtend ? (
                   <ActionForm action={extendSeriesAction} className="space-y-2 p-4">
                     <input type="hidden" name="seriesId" value={p.seriesId ?? ""} />
                     <Button type="submit" variant="outline" size="sm">
@@ -322,9 +330,9 @@ export default async function PayablePage({ params }: { params: Promise<{ id: st
                       </a>
                       <ActionForm action={removeAttachmentAction}>
                         <input type="hidden" name="attachmentId" value={a.id} />
-                        <Button type="submit" variant="ghost" size="sm" aria-label={t("removeAttachment", { name: a.fileName })}>
+                        <ConfirmSubmit variant="ghost" size="sm" confirmText={t("removeConfirm", { name: a.fileName })} aria-label={t("removeAttachment", { name: a.fileName })}>
                           {t("remove")}
-                        </Button>
+                        </ConfirmSubmit>
                       </ActionForm>
                     </li>
                   ))}
@@ -364,8 +372,20 @@ export default async function PayablePage({ params }: { params: Promise<{ id: st
             </CardHeader>
             <CardContent>
               {p.cancelledAt ? (
-                <ActionForm action={reopenPayableAction}>
+                <ActionForm action={reopenPayableAction} className="space-y-3">
                   <input type="hidden" name="id" value={p.id} />
+                  {p.seriesId ? (
+                    <div className="space-y-1 text-sm">
+                      <label className="flex items-center gap-2">
+                        <input type="radio" name="scope" value="one" defaultChecked className="h-4 w-4 accent-primary" />
+                        {t("scopeOne")}
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input type="radio" name="scope" value="following" className="h-4 w-4 accent-primary" />
+                        {t("scopeFollowingCancelled")}
+                      </label>
+                    </div>
+                  ) : null}
                   <Button type="submit" variant="outline">
                     {t("reopen")}
                   </Button>

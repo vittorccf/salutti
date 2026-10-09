@@ -13,7 +13,7 @@ export default async function NewPayablePage({ searchParams }: { searchParams: P
   const ctx = await requirePayables();
   const t = await getTranslations("payables.new");
   const { de } = await searchParams;
-  const { categories, suppliers } = await formOptions(ctx.workspace.id);
+  const { categories, suppliers } = await formOptions(ctx.workspace);
   const source = de ? await db.payable.findFirst({ where: { id: de, workspaceId: ctx.workspace.id } }) : null;
   const today = dateKeySP();
   const defaults: PayableDefaults = source

@@ -419,6 +419,14 @@ model Payable {
   seriesIndex    Int?
   installmentTotal Int?
   frequency      String?
+  // Recorrência: data digitada (dia âncora, antes do ajuste de fim de semana), regra de fim de semana/feriado e
+  // se a série não tem fim (só essas ganham "Gerar as próximas").
+  anchorDate     DateTime?
+  weekendRule    String?
+  seriesOpenEnded Boolean  @default(false)
+  // Principal já pago (soma dos pagamentos não estornados), mantido junto com cada baixa e estorno:
+  // permite filtrar "em aberto" e "pagas" no banco.
+  paidCents      Int       @default(0)
   cancelledAt    DateTime?
   cancelReason   String?
   createdById    String?
@@ -434,6 +442,7 @@ model Payable {
   @@index([workspaceId, dueDate])
   @@index([workspaceId, competenceDate])
   @@index([workspaceId, seriesId])
+  @@unique([seriesId, seriesIndex])
 }
 
 // Baixa (total ou parcial). principalCents abate a conta; o que saiu do caixa = principal + juros + multa - desconto.

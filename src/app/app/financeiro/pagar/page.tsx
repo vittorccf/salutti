@@ -29,7 +29,7 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
     getTranslations("payables.methods"),
     getFormat(),
   ]);
-  await ensureDefaultCategories(wsId);
+  await ensureDefaultCategories(ctx.workspace);
   const today = dateKeySP();
   const in7 = addDaysKey(today, 7);
   const monthStart = startOfMonthSP();
@@ -53,7 +53,7 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
   const cards = [
     { key: "overdue", ...sum((d) => d < today), tone: "text-destructive-strong", href: "?status=overdue" },
     { key: "dueToday", ...sum((d) => d === today), tone: "text-warning-strong", href: `?status=open&from=${today}&to=${today}` },
-    { key: "next7", ...sum((d) => d > today && d <= in7), tone: "", href: "?status=next7" },
+    { key: "next7", ...sum((d) => d > today && d <= in7), tone: "", href: `?status=open&from=${addDaysKey(today, 1)}&to=${in7}` },
     { key: "paidMonth", cents: paidMonth.reduce((s, p) => s + paymentOutflow(p), 0), count: paidMonth.length, tone: "text-success-strong", href: "?status=paid" },
   ];
 

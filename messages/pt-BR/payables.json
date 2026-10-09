@@ -78,7 +78,10 @@
     "attachmentFormat": "Formato não aceito. Envie PDF, JPG, PNG ou WebP.",
     "documentInvalid": "CPF tem 11 dígitos e CNPJ tem 14.",
     "categoryNameRequired": "Digite o nome da categoria (2 a 80 caracteres).",
-    "groupInvalid": "Escolha o grupo da categoria."
+    "groupInvalid": "Escolha o grupo da categoria.",
+    "seriesConflict": "Outra pessoa acabou de gerar as próximas contas desta série. Atualize a página.",
+    "seriesNotExtendable": "Só séries recorrentes sem data para terminar ganham novas contas.",
+    "seriesEnded": "Esta série foi encerrada (a última conta está cancelada). Reabra antes de gerar mais."
   },
   "form": {
     "sectionMain": "Conta",
@@ -97,7 +100,7 @@
     "weekendHint": "Cai no fim de semana. Boleto costuma poder ser pago no próximo dia útil.",
     "holidayHint": "Cai em feriado bancário nacional. Boleto costuma poder ser pago no próximo dia útil.",
     "competence": "Competência",
-    "competenceHint": "Mês a que a despesa pertence (usado na DRE). Ex.: o aluguel de outubro pago em novembro.",
+    "competenceHint": "Mês a que a despesa se refere, mesmo que seja paga em outro mês (usado na DRE). Ex.: aluguel de outubro pago em novembro.",
     "method": "Forma de pagamento",
     "noMethod": "Ainda não definida",
     "sectionPayment": "Dados para pagar",
@@ -148,7 +151,8 @@
     "scopeFollowing": "Nesta e nas próximas em aberto da série",
     "scopeHint": "Nas próximas mudam descrição, fornecedor, categoria, forma, observações e, em contas recorrentes, o valor. Vencimento, boleto e Pix mudam só nesta.",
     "submitCreate": "Lançar conta",
-    "submitEdit": "Salvar alterações"
+    "submitEdit": "Salvar alterações",
+    "costCenterHint": "Use se você atende em mais de um lugar (ex.: sala do Centro e online). Pode deixar em branco."
   },
   "list": {
     "title": "Contas a pagar",
@@ -286,7 +290,11 @@
     "paymentReversed": "Pagamento estornado.",
     "attachmentAdded": "Anexo enviado.",
     "attachmentRemoved": "Anexo removido.",
-    "seriesExtended": "{count, plural, one {# conta gerada.} other {# contas geradas.}}"
+    "seriesExtended": "{count, plural, one {# conta gerada.} other {# contas geradas.}}",
+    "reverseConfirm": "Estornar o pagamento de {amount} feito em {date}? O valor volta para o saldo da conta.",
+    "reverseLabel": "Estornar pagamento de {amount} em {date}",
+    "removeConfirm": "Remover o anexo {name}? Não dá para desfazer.",
+    "scopeFollowingCancelled": "Esta e as próximas canceladas da série"
   },
   "suppliers": {
     "back": "Contas a pagar",
@@ -315,7 +323,7 @@
     "title": "Plano de contas",
     "description": "Categorias das despesas, agrupadas como na DRE. Ajuste os nomes ao seu consultório.",
     "newTitle": "Nova categoria",
-    "deductibleHint": "\"Dedutível\" é a sugestão para o Livro-Caixa do carnê-leão (pessoa física). A Receita aceita despesas de custeio necessárias à atividade, como aluguel, condomínio, água, luz, telefone, material de consumo, conselho e salários com encargos. Não aceita equipamentos, depreciação e transporte. Confirme com seu contador.",
+    "deductibleHint": "\"Dedutível\" é a sugestão para o Livro-Caixa do carnê-leão (pessoa física). A Receita aceita despesas de custeio necessárias à atividade, como aluguel, condomínio, água, luz, telefone, material de consumo, conselho e salários com encargos; IPTU e contas de imóvel residencial só na proporção usada no atendimento. Não aceita equipamentos, depreciação e transporte. O INSS que você paga como autônomo não entra no Livro-Caixa, mas é deduzido direto no carnê-leão. Nas categorias discutíveis (supervisão, cursos, software) deixamos \"não\": confirme com seu contador.",
     "name": "Nome",
     "group": "Grupo",
     "deductible": "Dedutível",
@@ -335,14 +343,15 @@
     "costCenter": "Centro de custo",
     "document": "Documento",
     "amount": "Valor",
-    "paid": "Pago",
+    "paid": "Abatido",
     "remaining": "Saldo",
     "status": "Situação",
     "method": "Forma de pagamento",
     "lastPayment": "Último pagamento",
     "deductible": "Dedutível",
     "yes": "Sim",
-    "no": "Não"
+    "no": "Não",
+    "outflow": "Saiu do caixa"
   },
   "reports": {
     "title": "Relatórios financeiros",
@@ -354,7 +363,7 @@
     "viewNav": "Relatório",
     "views": {
       "cashflow": "Fluxo de caixa",
-      "dre": "DRE simplificada",
+      "dre": "Resultado do mês (DRE)",
       "categories": "Despesas por categoria",
       "livro": "Livro-Caixa"
     },
@@ -377,13 +386,13 @@
     "empty": "Nenhuma despesa neste ano.",
     "bySupplier": "Maiores fornecedores",
     "bySupplierDescription": "Os 15 com mais despesas no ano.",
-    "livroDescription": "Para quem atende como pessoa física: receitas recebidas e despesas dedutíveis pagas no mês. A dedução fica limitada à receita do mês; o que sobra passa para os meses seguintes, só até dezembro.",
+    "livroDescription": "Livro-Caixa é o registro de receitas e despesas que reduz o imposto de quem atende como pessoa física. Aqui: receitas recebidas e despesas dedutíveis pagas no mês. A dedução fica limitada à receita do mês; o que sobra passa para os meses seguintes, só até dezembro. Não é a base final do carnê-leão: tire as receitas de clínicas, convênios e empresas (pessoa jurídica, que já têm imposto retido) e deduza o INSS pago e os dependentes.",
     "income": "Receitas",
     "deductibleExpenses": "Despesas dedutíveis",
     "carriedIn": "Vindo do mês anterior",
     "deducted": "Deduzido",
     "carriedOut": "Para o próximo mês",
-    "taxable": "Base do carnê-leão",
+    "taxable": "Receita menos deduções",
     "livroEntries": "Lançamentos de despesa",
     "livroEntriesDescription": "Despesas pagas marcadas como dedutíveis. Juros e multas ficam de fora; o desconto reduz o valor.",
     "livroEmpty": "Nenhuma despesa dedutível paga neste ano.",
@@ -394,7 +403,8 @@
     "value": "Valor",
     "group": "Grupo",
     "supplier": "Fornecedor",
-    "livroDisclaimer": "Apoio para o preenchimento do carnê-leão no e-CAC. A receita considera as cobranças marcadas como pagas na Salutti. Confirme com seu contador antes de declarar e guarde os comprovantes por 5 anos."
+    "livroDisclaimer": "Apoio para o preenchimento do carnê-leão no e-CAC. A receita considera as cobranças marcadas como pagas na Salutti. Confirme com seu contador antes de declarar e guarde os comprovantes por 5 anos.",
+    "livroLimited": "Em algum mês a dedução foi limitada pela receita registrada na Salutti. Se você também recebeu por fora (dinheiro, Pix direto), a receita real é maior e a dedução pode ser maior: confira com seu contador."
   },
   "dashboard": {
     "title": "Contas a pagar",
