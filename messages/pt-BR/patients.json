@@ -103,7 +103,8 @@
     "fullNameRequired": "Informe o nome completo.",
     "tooLong": "Um dos campos passou do tamanho máximo. Encurte o texto e tente de novo.",
     "birthDateInvalid": "Data de nascimento inválida.",
-    "invalid": "Confira os dados do formulário e tente de novo."
+    "invalid": "Confira os dados do formulário e tente de novo.",
+    "contractLimit": "O contrato deste consultório permite até {max, plural, one {# paciente ativo} other {# pacientes ativos}}. Fale com o suporte para ampliar."
   },
   "records": {
     "title": "Prontuário",

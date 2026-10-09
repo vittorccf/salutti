@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MessagesSquare } from "lucide-react";
 import { db } from "@/lib/db";
-import { requireClinicalContext } from "@/lib/permissions";
+import { requirePortalModule } from "@/lib/permissions";
 import { portalPatientScope } from "@/lib/portal";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { ActionForm } from "@/components/forms/action-form";
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 // Caixa de entrada do portal: conversas (não lidas primeiro), pedidos de remarcação e o aviso de horário de resposta.
 export default async function PortalInboxPage() {
-  const ctx = await requireClinicalContext();
+  const ctx = await requirePortalModule();
   const wsId = ctx.workspace.id;
   const [t, f] = await Promise.all([getTranslations("portal.pro.inbox"), getFormat()]);
   const scope = portalPatientScope(ctx);

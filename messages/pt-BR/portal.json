@@ -28,7 +28,8 @@
     "messageLong": "A mensagem pode ter até {max} caracteres.",
     "tooMany": "Muitas tentativas. Espere {minutes} minutos e tente de novo.",
     "identityMismatch": "Os dados não conferem com o cadastro. Confira e tente de novo.",
-    "tooManyMessages": "Você mandou muitas mensagens na última hora. Espere um pouco: a conversa é para recados, não para tempo real."
+    "tooManyMessages": "Você mandou muitas mensagens na última hora. Espere um pouco: a conversa é para recados, não para tempo real.",
+    "portalOff": "O portal está desligado para este consultório. Fale com quem atende você."
   },
   "login": {
     "metaTitle": "Entrar no portal do paciente",

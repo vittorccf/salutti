@@ -17,7 +17,7 @@ import { canSeeClinical } from "@/lib/permissions";
 import { mediaUrl } from "@/lib/media";
 import { Avatar } from "@/components/ui/avatar";
 import type { Metadata } from "next";
-import { AREAS, areaOf, moduleEnabled, type Module } from "@/lib/areas";
+import { AREAS, areaOf, enabledModules } from "@/lib/areas";
 import { listClientTickets } from "@/lib/support";
 import { TZ } from "@/lib/dates";
 import { getLocale } from "@/i18n/server";
@@ -48,7 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const area = areaOf(ctx.workspace.area);
   // Com banner ou foto no lugar do logo, a marca da área aparece em texto logo abaixo.
   const customBrand = (brand === "banner" && bannerUrl) || (brand === "photo" && avatarUrl);
-  const modules = (Object.keys(AREAS[area].modules) as Module[]).filter((m) => moduleEnabled(area, m));
+  const modules = enabledModules(ctx.workspace);
 
   // Chamados do botão de suporte (só o que o cliente pode ver: sem notas internas nem eventos da equipe).
   const when = new Intl.DateTimeFormat(await getLocale(), { dateStyle: "short", timeStyle: "short", timeZone: TZ });
@@ -94,7 +94,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav clinical={canSeeClinical(ctx.role)} modules={modules} portalPending={canSeeClinical(ctx.role) ? await portalPendingCount(ctx) : 0} />
+        <SidebarNav
+          clinical={canSeeClinical(ctx)}
+          modules={modules}
+          perms={[...ctx.permissions]}
+          portalPending={canSeeClinical(ctx) && modules.includes("portal") ? await portalPendingCount(ctx) : 0}
+        />
       </div>
       {trialDays !== null ? (
         <>

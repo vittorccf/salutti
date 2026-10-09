@@ -26,7 +26,7 @@ type Search = { status?: string; categoria?: string; prioridade?: string; q?: st
 const PAGE_SIZE = 50;
 
 export default async function TicketsPage({ searchParams }: { searchParams: Search }) {
-  const me = await requireBackoffice();
+  const me = await requireBackoffice({ perm: "chamados.ver" });
   // Padrão: só os que ainda pedem ação. "todos" mostra também resolvidos e fechados.
   const status = searchParams.status ?? "abertos";
   const q = searchParams.q?.trim();

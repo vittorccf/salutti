@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Circle, ExternalLink } from "lucide-react";
 import { db } from "@/lib/db";
-import { requireClinicalContext } from "@/lib/permissions";
+import { moduleEnabled } from "@/lib/areas";
+import { requirePortalModule } from "@/lib/permissions";
 import { addDaysKey } from "@/lib/payables";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import { HIGHLIGHT_KINDS, MESSAGE_MAX, portalPatientScope } from "@/lib/portal";
@@ -26,7 +27,7 @@ import { addHighlightAction, archiveHighlightAction, replyMessageAction, revokeP
 export const dynamic = "force-dynamic";
 
 export default async function PatientPortalAdminPage({ params }: { params: Promise<{ id: string }> }) {
-  const ctx = await requireClinicalContext();
+  const ctx = await requirePortalModule();
   const { id } = await params;
   const patient = await db.patient.findFirst({
     where: { id, workspaceId: ctx.workspace.id, deletedAt: null, ...portalPatientScope(ctx) },
@@ -273,7 +274,9 @@ export default async function PatientPortalAdminPage({ params }: { params: Promi
             </CardContent>
           </Card>
 
-          {/* Check-ins */}
+          {moduleEnabled(ctx.workspace, "cartao_diario") ? (
+        <>
+{/* Check-ins */}
           <Card>
             <CardHeader>
               <CardTitle>{t("checkinsTitle")}</CardTitle>
@@ -299,7 +302,10 @@ export default async function PatientPortalAdminPage({ params }: { params: Promi
               </CardContent>
             ) : null}
           </Card>
-        </div>
+        </>
+      ) : null}
+
+              </div>
       </div>
     </div>
   );

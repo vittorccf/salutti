@@ -3,6 +3,7 @@ import { CalendarPlus, CheckCircle2, ExternalLink, FileText, ListTodo, MapPin, M
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal-auth";
 import { canJoin, JOIN_WINDOW_MINUTES, safeUrl } from "@/lib/portal";
+import { moduleEnabled } from "@/lib/areas";
 import { addDaysKey } from "@/lib/payables";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import { meetingPlatform } from "@/lib/providers/video";
@@ -150,7 +151,9 @@ export default async function PortalWeekPage() {
         </Card>
       )}
 
-      {/* Check-in de 30 segundos */}
+      {moduleEnabled(patient.workspace, "cartao_diario") ? (
+        <>
+{/* Check-in de 30 segundos */}
       <Card>
         <CardHeader>
           <CardTitle>{t("checkinTitle")}</CardTitle>
@@ -177,6 +180,8 @@ export default async function PortalWeekPage() {
           </div>
         </CardContent>
       </Card>
+        </>
+      ) : null}
 
       {/* Destaques da semana publicados pelo profissional */}
       <section aria-labelledby="highlights" className="space-y-3">

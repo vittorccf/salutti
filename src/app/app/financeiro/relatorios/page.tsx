@@ -54,7 +54,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         </div>
       </header>
 
-      <FinanceTabs role={ctx.role} active="reports" />
+      <FinanceTabs ctx={ctx} active="reports" />
 
       <nav aria-label={t("viewNav")} className="flex flex-wrap gap-2">
         {views.map((v) => (

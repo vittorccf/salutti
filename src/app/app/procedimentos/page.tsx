@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProceduresPage() {
   const ctx = await requireProceduresContext();
-  const canEdit = canSeeClinical(ctx.role);
+  const canEdit = canSeeClinical(ctx);
   const [t, tc, f] = await Promise.all([getTranslations("aesthetics.list"), getTranslations("aesthetics.categories"), getFormat()]);
   const procedures = await db.procedure.findMany({
     where: { workspaceId: ctx.workspace.id },

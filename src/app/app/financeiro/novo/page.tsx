@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { pix } from "@/lib/providers/pix";
 import { recordAudit } from "@/lib/audit";
@@ -25,7 +26,7 @@ const schema = z.object({
 
 async function createChargeAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const data = schema.parse(Object.fromEntries(formData.entries()));
   await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId });
 
@@ -78,7 +79,7 @@ export default async function NewChargePage({
 }: {
   searchParams: Promise<{ patientId?: string }>;
 }) {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const t = await getTranslations("finance.new");
   const label = labeler(await getTranslations("common.labels"));
   const params = await searchParams;

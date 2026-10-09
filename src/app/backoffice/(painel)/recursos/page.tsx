@@ -68,7 +68,7 @@ function Fact({ label, value, hint }: { label: string; value: React.ReactNode; h
 type Alert = { level: UsageLevel | "info"; title: string; text: string };
 
 export default async function ResourcesPage() {
-  await requireBackoffice({ role: "admin" });
+  await requireBackoffice({ perm: "recursos.ver" });
   const runtime = loadRuntimeInfo();
   const [dbStats, usage, neon] = await Promise.all([loadDatabaseStats(), loadAppUsage(), loadNeonConsumption()]);
 

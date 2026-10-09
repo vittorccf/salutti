@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,13 +40,13 @@ const schema = z.object({
 
 async function createAppointmentAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const data = schema.parse(Object.fromEntries(formData.entries()));
   await assertInWorkspace(ctx.workspace.id, { patientId: data.patientId, professionalId: data.professionalId });
   // Área sem módulo de convênios (estética): só particular, mesmo que o formulário traga outro valor.
-  const insurancePlanId = data.billing !== "particular" && moduleEnabled(ctx.workspace.area, "convenios") ? data.billing : null;
+  const insurancePlanId = data.billing !== "particular" && moduleEnabled(ctx.workspace, "convenios") ? data.billing : null;
   if (insurancePlanId) await assertInsurancePlan(ctx.workspace.id, insurancePlanId);
-  const procedureId = moduleEnabled(ctx.workspace.area, "procedimentos") && data.procedureId ? data.procedureId : null;
+  const procedureId = moduleEnabled(ctx.workspace, "procedimentos") && data.procedureId ? data.procedureId : null;
   if (procedureId && (await db.procedure.count({ where: { id: procedureId, workspaceId: ctx.workspace.id } })) === 0) notFound();
   // Pelo convênio, vale o valor contratado com a operadora.
   const plan = insurancePlanId ? await db.insurancePlan.findUnique({ where: { id: insurancePlanId } }) : null;
@@ -138,13 +139,13 @@ export default async function NewAppointmentPage({
 }: {
   searchParams: Promise<{ patientId?: string; procedureId?: string; startsAt?: string }>;
 }) {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const t = await getTranslations("schedule.form");
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));
   const params = await searchParams;
   // Salutti Estética: campo "Procedimento" e pré-preenchimento do retorno (paciente, procedimento e data).
-  const aesthetic = moduleEnabled(ctx.workspace.area, "procedimentos");
+  const aesthetic = moduleEnabled(ctx.workspace, "procedimentos");
   const procedures = aesthetic
     ? await db.procedure.findMany({
         where: { workspaceId: ctx.workspace.id, active: true },

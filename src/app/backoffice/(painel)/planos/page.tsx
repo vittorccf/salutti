@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
+import { boCan } from "@/lib/backoffice/permissions";
 import { formatPlanPrice, intervalLabel } from "@/lib/backoffice/labels";
 import { billing, billingConfigured, stripeMode, syncStripe } from "@/lib/providers/billing";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
@@ -30,7 +31,7 @@ const schema = z.object({
 
 async function updatePlanAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
-  const me = await requireBackoffice({ role: "admin" });
+  const me = await requireBackoffice({ perm: "planos.editar" });
   const parsed = schema.safeParse({
     id: formData.get("id"),
     name: formData.get("name"),
@@ -94,7 +95,7 @@ async function updatePlanAction(_prev: FormResult, formData: FormData): Promise<
 // Cria (ou reaproveita) no Stripe os preços dos planos pagos, liga cada um ao seu plano e confere webhook e portal.
 async function syncStripeAction(): Promise<FormResult> {
   "use server";
-  const me = await requireBackoffice({ role: "admin" });
+  const me = await requireBackoffice({ perm: "planos.editar" });
   if (!billingConfigured()) return { erro: "Configure a STRIPE_SECRET_KEY na Vercel antes de sincronizar." };
   const appUrl = process.env.APP_URL?.replace(/\/$/, "");
   if (!appUrl) return { erro: "Configure a APP_URL na Vercel (ex.: https://salutti.vercel.app): o webhook e o portal usam esse endereço." };
@@ -143,13 +144,13 @@ async function syncStripeAction(): Promise<FormResult> {
 }
 
 export default async function PlansPage() {
-  const me = await requireBackoffice();
+  const me = await requireBackoffice({ perm: "planos.ver" });
   const [plans, counts] = await Promise.all([
     db.platformPlan.findMany({ orderBy: { sortOrder: "asc" } }),
     db.workspace.groupBy({ by: ["planTier"], _count: { _all: true } }),
   ]);
   const countOf = (code: string) => counts.find((c) => c.planTier === code)?._count._all ?? 0;
-  const isAdmin = me.role === "admin";
+  const isAdmin = boCan(me, "planos.editar");
 
   return (
     <div className="space-y-6">

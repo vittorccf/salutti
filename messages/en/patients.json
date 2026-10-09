@@ -103,7 +103,8 @@
     "fullNameRequired": "Enter the full name.",
     "tooLong": "One of the fields is too long. Shorten the text and try again.",
     "birthDateInvalid": "Invalid date of birth.",
-    "invalid": "Check the form details and try again."
+    "invalid": "Check the form details and try again.",
+    "contractLimit": "This practice's contract allows up to {max, plural, one {# active patient} other {# active patients}}. Contact support to increase it."
   },
   "records": {
     "title": "Clinical records",

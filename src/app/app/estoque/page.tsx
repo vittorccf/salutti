@@ -48,8 +48,8 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
     getFormat(),
   ]);
   const ta = await getTranslations("stock.alerts");
-  const canManage = canManageStock(ctx.role);
-  const canOpen = canViewStockDetail(ctx.role);
+  const canManage = canManageStock(ctx);
+  const canOpen = canViewStockDetail(ctx);
 
   const rows = products
     .map((p) => ({ p, s: productSummary(p.lots, p, now) }))

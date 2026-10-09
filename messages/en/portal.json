@@ -28,7 +28,8 @@
     "messageLong": "The message can have up to {max} characters.",
     "tooMany": "Too many attempts. Wait {minutes} minutes and try again.",
     "identityMismatch": "The details don't match our records. Check them and try again.",
-    "tooManyMessages": "You sent many messages in the last hour. Wait a bit: the conversation is for notes, not real-time chat."
+    "tooManyMessages": "You sent many messages in the last hour. Wait a bit: the conversation is for notes, not real-time chat.",
+    "portalOff": "The portal is turned off for this practice. Contact your professional."
   },
   "login": {
     "metaTitle": "Sign in to the patient portal",

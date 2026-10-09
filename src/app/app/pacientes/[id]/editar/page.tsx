@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { getTranslations } from "@/i18n/server";
 export const dynamic = "force-dynamic";
 
 export default async function EditPatientPage({ params }: { params: Promise<{ id: string }> }) {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("pacientes.gerenciar");
   // Acesso de suporte é somente leitura e o formulário mostra as observações livres do paciente.
   if (ctx.support) notFound();
   const { id } = await params;

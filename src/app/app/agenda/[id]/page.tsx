@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
 import { moduleEnabled } from "@/lib/areas";
-import { canSeeClinical } from "@/lib/permissions";
+import { canSeeClinical, requirePermission } from "@/lib/permissions";
 import { SessionProcedure } from "@/app/app/procedimentos/_components/session-procedure";
 import { CopyButton } from "@/components/copy-button";
 
@@ -29,7 +29,7 @@ const APPOINTMENT_STATUSES = ["scheduled", "confirmed", "done", "no_show", "canc
 
 async function setStatusAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const id = formData.get("id") as string;
   const status = String(formData.get("status"));
   if (!APPOINTMENT_STATUSES.includes(status as (typeof APPOINTMENT_STATUSES)[number])) notFound();
@@ -57,7 +57,7 @@ async function setStatusAction(formData: FormData) {
 
 async function createMeetingAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const id = formData.get("id") as string;
   const appt = await db.appointment.findFirst({ where: { id, workspaceId: ctx.workspace.id, modality: "online" } });
   if (!appt) notFound();
@@ -93,7 +93,7 @@ async function createMeetingAction(formData: FormData) {
 
 async function sendReminderAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const id = formData.get("id") as string;
   const appt = await db.appointment.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
@@ -158,7 +158,7 @@ export default async function AppointmentDetailPage({
           {appt.patientResponse ? (
             <p className={`mt-1 text-sm ${appt.patientResponse === "confirmed" ? "text-success-strong" : "text-warning-strong"}`}>
               {(await getTranslations("portal.pro.response"))(appt.patientResponse)}
-              {appt.patientResponseNote && canSeeClinical(ctx.role) ? `: “${appt.patientResponseNote}”` : ""}
+              {appt.patientResponseNote && canSeeClinical(ctx) ? `: “${appt.patientResponseNote}”` : ""}
             </p>
           ) : null}
         </div>
@@ -267,7 +267,7 @@ export default async function AppointmentDetailPage({
       </div>
 
       {/* Salutti Estética: procedimento, termo, insumos aplicados, margem e retorno (só equipe clínica). */}
-      {moduleEnabled(ctx.workspace.area, "procedimentos") && canSeeClinical(ctx.role) && appt.procedureId ? (
+      {moduleEnabled(ctx.workspace, "procedimentos") && canSeeClinical(ctx) && appt.procedureId ? (
         <SessionProcedure appt={appt} recorded={registrado === "1"} reversed={estornado === "1"} />
       ) : null}
     </div>

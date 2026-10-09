@@ -33,7 +33,7 @@ const replySchema = z.object({
 
 async function replyAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
-  const me = await requireBackoffice();
+  const me = await requireBackoffice({ perm: "chamados.responder" });
   const parsed = replySchema.safeParse({
     ticketId: formData.get("ticketId"),
     message: formData.get("message"),
@@ -87,7 +87,7 @@ const manageSchema = z.object({
 
 async function manageAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
-  const me = await requireBackoffice();
+  const me = await requireBackoffice({ perm: "chamados.responder" });
   const parsed = manageSchema.safeParse({
     ticketId: formData.get("ticketId"),
     status: formData.get("status"),
@@ -129,7 +129,7 @@ async function manageAction(_prev: FormResult, formData: FormData): Promise<Form
 }
 
 export default async function TicketPage({ params }: { params: { id: string } }) {
-  const me = await requireBackoffice();
+  const me = await requireBackoffice({ perm: "chamados.ver" });
   const ticket = await db.supportTicket.findUnique({
     where: { id: params.id },
     include: {

@@ -1,6 +1,7 @@
 import { SUPPORT_EMAIL, supportMailto } from "@/lib/contact";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { media } from "@/lib/providers/media";
 import { recordAudit } from "@/lib/audit";
@@ -22,7 +23,7 @@ const rights = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"] as const;
 
 async function exportDataAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext({ allowExpired: true });
+  const ctx = await requirePermission("lgpd.gerenciar", { allowExpired: true });
   const patientId = formData.get("patientId") as string;
   await assertInWorkspace(ctx.workspace.id, { patientId });
   await recordAudit({
@@ -50,7 +51,7 @@ async function removeClinicalPhotos(workspaceId: string, patientId: string) {
 
 async function anonymizeAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext({ allowExpired: true });
+  const ctx = await requirePermission("lgpd.gerenciar", { allowExpired: true });
   const patientId = formData.get("patientId") as string;
   // Texto livre do portal (mensagens, comentários de tarefa, recados de remarcação) pode citar nome e contato.
   await db.portalMessage.deleteMany({ where: { workspaceId: ctx.workspace.id, patientId } });
@@ -97,7 +98,7 @@ async function anonymizeAction(formData: FormData) {
 
 async function softDeleteAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext({ allowExpired: true });
+  const ctx = await requirePermission("lgpd.gerenciar", { allowExpired: true });
   const patientId = formData.get("patientId") as string;
   const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
   ensureAffected(
@@ -119,7 +120,7 @@ async function softDeleteAction(formData: FormData) {
 }
 
 export default async function LgpdPage() {
-  const ctx = await requireContext({ allowExpired: true });
+  const ctx = await requirePermission("lgpd.gerenciar", { allowExpired: true });
   // Consentimentos e auditoria do consultório (procedimentos, termos, fotos) ficam fora do acesso de suporte.
   if (ctx.support) notFound();
   const [auditLog, consents, patients] = await Promise.all([

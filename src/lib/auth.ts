@@ -10,6 +10,7 @@ import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 import { getLiveGrant, SUPPORT_ROLE } from "./support-access";
 import { LEGAL_VERSION } from "./legal";
 import { SESSION_COOKIE } from "./session-cookie";
+import { effectiveAppPermissions, type AppPermission } from "./app-permissions";
 import { accessExpired } from "@/lib/plan-access";
 
 // Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
@@ -190,6 +191,8 @@ export const getCurrentContext = async () => {
     user: { id: user.id, email: user.email, name: user.name, birthDate: user.birthDate, showPatientBirthdays: user.showPatientBirthdays, avatarId: user.avatarId, locale: user.locale, termsVersion: user.termsVersion },
     workspace: membership.workspace,
     role: membership.role,
+    // Permissões efetivas do membro (papel + ajustes do dono/administrador).
+    permissions: effectiveAppPermissions(membership.role, membership.permsGranted, membership.permsDenied),
     allWorkspaces: user.memberships.map((m) => m.workspace),
     support: null as { grantId: string; expiresAt: Date } | null,
   };
@@ -207,6 +210,8 @@ const getSupportContext = async (session: SessionPayload) => {
     user: { id: user.id, email: user.email, name: user.name, birthDate: null, showPatientBirthdays: false, avatarId: null, locale: user.locale, termsVersion: LEGAL_VERSION },
     workspace: grant.workspace,
     role: SUPPORT_ROLE,
+    // Suporte: só o que a recepção vê (nada clínico); a escrita já é bloqueada no Prisma.
+    permissions: new Set<AppPermission>(["financeiro.receber", "fiscal.ver"]),
     allWorkspaces: [grant.workspace],
     support: { grantId: grant.id, expiresAt: grant.expiresAt },
   };

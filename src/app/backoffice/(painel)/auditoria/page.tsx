@@ -28,7 +28,7 @@ const ACTIONS: Record<string, string> = {
 };
 
 export default async function AuditPage() {
-  await requireBackoffice({ role: "admin" });
+  await requireBackoffice({ perm: "auditoria.ver" });
   const events = await db.backofficeAuditLog.findMany({
     orderBy: { createdAt: "desc" },
     take: 200,

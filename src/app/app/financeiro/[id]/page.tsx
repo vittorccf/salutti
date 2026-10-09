@@ -2,6 +2,7 @@ import Link from "next/link";
 import { appOrigin } from "@/lib/app-url";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { whatsapp } from "@/lib/providers/whatsapp";
@@ -22,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 async function markPaidAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const id = formData.get("id") as string;
   ensureAffected(
     await db.charge.updateMany({
@@ -42,7 +43,7 @@ async function markPaidAction(formData: FormData) {
 
 async function sendChargeReminder(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const id = formData.get("id") as string;
   const charge = await db.charge.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
@@ -76,7 +77,7 @@ async function sendChargeReminder(formData: FormData) {
 
 async function issueReceiptAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const id = formData.get("id") as string;
   const charge = await db.charge.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
@@ -139,7 +140,7 @@ async function issueReceiptAction(formData: FormData) {
 }
 
 export default async function ChargeDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const t = await getTranslations("finance.charge");
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));

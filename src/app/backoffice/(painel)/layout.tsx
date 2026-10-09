@@ -4,12 +4,14 @@ import { LogOut } from "lucide-react";
 import { db } from "@/lib/db";
 import { destroyBackofficeSession, recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
 import { backofficeRoleLabel } from "@/lib/backoffice/labels";
+import { effectiveBoPermissions } from "@/lib/backoffice/permissions";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Separator } from "@/components/ui/separator";
 import { APP_VERSION_FULL } from "@/lib/version";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/app/app/_components/mobile-nav";
 import { BackofficeNav } from "../_components/backoffice-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata = { title: "Backoffice · Salutti", robots: { index: false, follow: false } };
 
@@ -35,7 +37,7 @@ export default async function BackofficeLayout({ children }: { children: React.R
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <BackofficeNav isAdmin={user.role === "admin"} unreadTickets={unreadTickets} />
+        <BackofficeNav perms={[...effectiveBoPermissions(user)]} unreadTickets={unreadTickets} />
       </div>
       <Separator />
       <div className="space-y-2 p-4 text-sm">
@@ -53,6 +55,7 @@ export default async function BackofficeLayout({ children }: { children: React.R
             </Button>
           </form>
         </div>
+        <ThemeToggle darkLabel="Tema escuro" lightLabel="Tema claro" />
         <p className="text-[11px] text-muted-foreground/80">Versão {APP_VERSION_FULL}</p>
       </div>
     </>

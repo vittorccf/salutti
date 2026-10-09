@@ -23,7 +23,8 @@ import { assertInWorkspace } from "@/lib/tenant";
 import { revalidatePath } from "next/cache";
 import { PhoneInput } from "@/components/forms/phone-input";
 import { InviteForm } from "./_components/invite-form";
-import { changeRoleAction, removeMemberAction, revokeInviteAction } from "../_actions/team";
+import { changeRoleAction, removeMemberAction, revokeInviteAction, saveMemberPermissionsAction } from "../_actions/team";
+import { APP_PERMISSIONS, effectiveAppPermissions, lockedFor } from "@/lib/app-permissions";
 import { rolesFor } from "@/lib/invitations";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 import { ALL_COUNCILS, ALL_PROFESSIONAL_TYPES, AREAS, areaOf, professionalDefaults } from "@/lib/areas";
@@ -43,7 +44,7 @@ const schema = z.object({
   userId: z.string().optional(),
 });
 
-const canManage = (role: string) => role === "owner" || role === "admin";
+const canManage = (ctx: { permissions: Set<string> }) => ctx.permissions.has("equipe.gerenciar");
 
 const activeCount = (workspaceId: string) => db.professional.count({ where: { workspaceId, active: true } });
 
@@ -51,11 +52,15 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
   "use server";
   const ctx = await requireContext();
   const t = await getTranslations("settings.team");
-  if (!canManage(ctx.role)) return { erro: t("noPermission") };
+  if (!canManage(ctx)) return { erro: t("noPermission") };
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { erro: t("errors.invalid") };
   const data = parsed.data;
   if (ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) return { erro: t("autonomoLimit") };
+  // Limite do contrato (definido no backoffice).
+  if (ctx.workspace.maxProfessionals !== null && (await activeCount(ctx.workspace.id)) >= ctx.workspace.maxProfessionals) {
+    return { erro: t("contractLimit", { max: ctx.workspace.maxProfessionals }) };
+  }
   // Vínculo com um usuário da Salutti (o Meet nasce na conta Google dele): precisa ser membro e não ter outro cadastro ativo.
   let userId: string | null = null;
   if (data.userId) {
@@ -104,12 +109,16 @@ async function createProfessionalAction(_prev: FormResult, formData: FormData): 
 async function toggleProfessionalAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
-  if (!canManage(ctx.role)) redirect("/app/equipe?aviso=sem-permissao");
+  if (!canManage(ctx)) redirect("/app/equipe?aviso=sem-permissao");
   const professionalId = String(formData.get("professionalId"));
   await assertInWorkspace(ctx.workspace.id, { professionalId });
   const current = await db.professional.findFirstOrThrow({ where: { id: professionalId, workspaceId: ctx.workspace.id } });
   if (!current.active && ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) {
     redirect("/app/equipe?aviso=limite");
+  }
+  // Reativar também respeita o limite do contrato.
+  if (!current.active && ctx.workspace.maxProfessionals !== null && (await activeCount(ctx.workspace.id)) >= ctx.workspace.maxProfessionals) {
+    redirect("/app/equipe?aviso=limite-contrato");
   }
   await db.professional.updateMany({
     where: { id: professionalId, workspaceId: ctx.workspace.id },
@@ -139,7 +148,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
     await db.membership.findMany({ where: { workspaceId: ctx.workspace.id }, include: { user: { select: { id: true, name: true, email: true } } } })
   ).filter((m) => !linked.has(m.user.id));
   const active = professionals.filter((p) => p.active).length;
-  const manage = canManage(ctx.role);
+  const manage = canManage(ctx);
   const canAdd = manage && (!autonomo || active === 0);
   const t = await getTranslations("settings.team");
   const f = await getFormat();
@@ -174,9 +183,9 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
           {autonomo ? t("introAutonomo") : t("introClinic")}
         </p>
       </header>
-      {aviso === "limite" || aviso === "sem-permissao" ? (
+      {aviso === "limite" || aviso === "sem-permissao" || aviso === "limite-contrato" ? (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
-          {aviso === "limite" ? t("autonomoLimit") : t("noPermission")}
+          {aviso === "limite" ? t("autonomoLimit") : aviso === "limite-contrato" ? t("contractLimit", { max: ctx.workspace.maxProfessionals ?? 0 }) : t("noPermission")}
         </p>
       ) : null}
 
@@ -390,6 +399,35 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                               {ta("remove")}
                             </Button>
                           </form>
+                          {/* Permissões do membro: padrão do papel + ajustes. Só o que você tem pode ser dado ou retirado. */}
+                          <details className="w-full rounded-md border bg-muted/30 p-3">
+                            <summary className="cursor-pointer text-xs font-medium text-brand">{ta("permissions.open", { name: m.user.name })}</summary>
+                            <ActionForm action={saveMemberPermissionsAction} className="mt-3 space-y-3">
+                              <input type="hidden" name="membershipId" value={m.id} />
+                              <fieldset className="grid gap-2 sm:grid-cols-2">
+                                <legend className="sr-only">{ta("permissions.legend", { name: m.user.name })}</legend>
+                                {APP_PERMISSIONS.map((perm) => {
+                                  const has = effectiveAppPermissions(m.role, m.permsGranted, m.permsDenied).has(perm);
+                                  const fixed = lockedFor(m.role, perm);
+                                  const notMine = !ctx.permissions.has(perm);
+                                  return (
+                                    <label key={perm} className={`flex items-start gap-2 text-xs ${fixed || notMine ? "opacity-60" : ""}`}>
+                                      <input type="checkbox" name="perm" value={perm} defaultChecked={has} disabled={fixed || notMine} className="mt-0.5 h-4 w-4 accent-primary" />
+                                      {/* Desabilitado não vai no formulário: repete o valor atual para não perder. */}
+                                      {(fixed || notMine) && has ? <input type="hidden" name="perm" value={perm} /> : null}
+                                      <span>
+                                        {ta(`permissions.items.${perm.replace(".", "_")}`)}
+                                        {fixed ? <span className="block text-muted-foreground">{ta("permissions.clinicalFixed")}</span> : null}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </fieldset>
+                              <Button type="submit" size="sm" variant="outline">
+                                {ta("permissions.save")}
+                              </Button>
+                            </ActionForm>
+                          </details>
                         </>
                       )}
                     </li>

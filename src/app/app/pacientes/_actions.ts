@@ -4,6 +4,7 @@ import { getTranslations } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { parseDateOnly } from "@/lib/dates";
@@ -76,12 +77,20 @@ const fail = async (e: unknown): Promise<FormResult> => {
 };
 
 export async function createPatientAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("pacientes.gerenciar");
   let data: Awaited<ReturnType<typeof readPatient>>;
   try {
     data = await readPatient(formData, ctx.workspace.id);
   } catch (e) {
     return fail(e);
+  }
+  // Limite do contrato (definido no backoffice): pacientes ativos.
+  if (ctx.workspace.maxPatients !== null) {
+    const active = await db.patient.count({ where: { workspaceId: ctx.workspace.id, deletedAt: null, active: true } });
+    if (active >= ctx.workspace.maxPatients) {
+      const tl = await getTranslations("patients.errors");
+      return { erro: tl("contractLimit", { max: ctx.workspace.maxPatients }) };
+    }
   }
   let photo: StagedImage;
   try {
@@ -119,7 +128,7 @@ export async function createPatientAction(_prev: FormResult, formData: FormData)
 }
 
 export async function updatePatientAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("pacientes.gerenciar");
   const patientId = String(formData.get("patientId"));
   await assertInWorkspace(ctx.workspace.id, { patientId });
   const previous = await db.patient.findFirst({

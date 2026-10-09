@@ -28,7 +28,8 @@
     "messageLong": "El mensaje puede tener hasta {max} caracteres.",
     "tooMany": "Demasiados intentos. Espera {minutes} minutos y vuelve a intentarlo.",
     "identityMismatch": "Los datos no coinciden con el registro. Revísalos e inténtalo de nuevo.",
-    "tooManyMessages": "Enviaste muchos mensajes en la última hora. Espera un poco: la conversación es para avisos, no en tiempo real."
+    "tooManyMessages": "Enviaste muchos mensajes en la última hora. Espera un poco: la conversación es para avisos, no en tiempo real.",
+    "portalOff": "El portal está desactivado para este consultorio. Habla con tu profesional."
   },
   "login": {
     "metaTitle": "Entrar al portal del paciente",

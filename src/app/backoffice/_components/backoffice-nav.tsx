@@ -4,23 +4,24 @@ import { usePathname } from "next/navigation";
 import { CreditCard, Gauge, History, LayoutDashboard, LifeBuoy, ShieldCheck, Store, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Cada item aparece só para quem tem a permissão (src/lib/backoffice/permissions.ts).
 const items = [
-  { href: "/backoffice", label: "Visão geral", icon: LayoutDashboard },
-  { href: "/backoffice/chamados", label: "Chamados", icon: LifeBuoy, badge: "tickets" },
-  { href: "/backoffice/clientes", label: "Clientes", icon: Store },
-  { href: "/backoffice/usuarios", label: "Usuários", icon: Users },
-  { href: "/backoffice/planos", label: "Planos", icon: CreditCard },
-  { href: "/backoffice/equipe", label: "Equipe", icon: ShieldCheck, adminOnly: true },
-  { href: "/backoffice/recursos", label: "Gestão de Recursos", icon: Gauge, adminOnly: true },
-  { href: "/backoffice/auditoria", label: "Auditoria", icon: History, adminOnly: true },
+  { href: "/backoffice", label: "Visão geral", icon: LayoutDashboard, perm: null },
+  { href: "/backoffice/chamados", label: "Chamados", icon: LifeBuoy, badge: "tickets", perm: "chamados.ver" },
+  { href: "/backoffice/clientes", label: "Clientes", icon: Store, perm: "clientes.ver" },
+  { href: "/backoffice/usuarios", label: "Usuários", icon: Users, perm: "clientes.ver" },
+  { href: "/backoffice/planos", label: "Planos", icon: CreditCard, perm: "planos.ver" },
+  { href: "/backoffice/equipe", label: "Equipe e permissões", icon: ShieldCheck, perm: "equipe.gerenciar" },
+  { href: "/backoffice/recursos", label: "Gestão de Recursos", icon: Gauge, perm: "recursos.ver" },
+  { href: "/backoffice/auditoria", label: "Auditoria", icon: History, perm: "auditoria.ver" },
 ] as const;
 
-export function BackofficeNav({ isAdmin, unreadTickets }: { isAdmin: boolean; unreadTickets: number }) {
+export function BackofficeNav({ perms, unreadTickets }: { perms: string[]; unreadTickets: number }) {
   const pathname = usePathname();
   return (
     <nav className="space-y-1" aria-label="Backoffice">
       {items
-        .filter((item) => isAdmin || !("adminOnly" in item))
+        .filter((item) => item.perm === null || perms.includes(item.perm))
         .map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/backoffice" && pathname.startsWith(`${item.href}/`));

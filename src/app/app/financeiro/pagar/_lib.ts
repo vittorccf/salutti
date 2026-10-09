@@ -4,13 +4,15 @@ import type { Prisma } from "@prisma/client";
 import { requireContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { canManagePayables } from "@/lib/permissions";
+import { moduleEnabled } from "@/lib/areas";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import { addDaysKey, categoryProfile, defaultCategoriesFor, payableStatus, type PayableStatus } from "@/lib/payables";
 
 // Sem permissão, a tela não existe (404), como no resto do app.
 export async function requirePayables() {
   const ctx = await requireContext();
-  if (!canManagePayables(ctx.role)) notFound();
+  // Módulo liberado para o cliente (backoffice) e permissão do membro.
+  if (!moduleEnabled(ctx.workspace, "contas_pagar") || !canManagePayables(ctx)) notFound();
   return ctx;
 }
 
