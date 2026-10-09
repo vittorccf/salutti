@@ -100,4 +100,9 @@ test("lista de espera: cadastro manual, vaga que combina, formulário público, 
   await expect(page.getByText("Formulário público salvo.")).toBeVisible();
   const res = await page.request.get(`/espera/${slug}`);
   expect(res.status()).toBe(404);
+
+  // Conta autônoma tem um profissional ativo só: desativa a Dra. Lia para não travar os outros testes.
+  await page.goto("/app/equipe");
+  await page.getByRole("button", { name: `Desativar Dra. Lia ${tag}` }).click();
+  await expect(page.getByRole("button", { name: `Desativar Dra. Lia ${tag}` })).toHaveCount(0);
 });
