@@ -85,7 +85,7 @@ export default async function FinancialPage() {
         </div>
       </header>
 
-      <FinanceTabs role={ctx} active="receivables" />
+      <FinanceTabs ctx={ctx} active="receivables" />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

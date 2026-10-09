@@ -288,15 +288,15 @@
       "saved": "Permisos guardados.",
       "clinicalFixed": "Solo para roles clínicos (confidencialidad de la historia clínica).",
       "items": {
-        "agenda.gerenciar": "Agendar y modificar sesiones",
-        "pacientes.gerenciar": "Registrar y editar pacientes",
-        "clinico.ver": "Ver historia clínica, portal y tarjeta diaria",
-        "financeiro.receber": "Cobros y pagos recibidos",
-        "financeiro.pagar": "Cuentas por pagar e informes financieros",
-        "fiscal.ver": "Fiscal (facturas y recibos)",
-        "estoque.gerenciar": "Gestionar inventario",
-        "equipe.gerenciar": "Gestionar equipo y accesos",
-        "lgpd.gerenciar": "LGPD (exportar, anonimizar y eliminar datos)"
+        "agenda_gerenciar": "Agendar y modificar sesiones",
+        "pacientes_gerenciar": "Registrar y editar pacientes",
+        "clinico_ver": "Ver historia clínica, portal y tarjeta diaria",
+        "financeiro_receber": "Cobros y pagos recibidos",
+        "financeiro_pagar": "Cuentas por pagar e informes financieros",
+        "fiscal_ver": "Fiscal (facturas y recibos)",
+        "estoque_gerenciar": "Gestionar inventario",
+        "equipe_gerenciar": "Gestionar equipo y accesos",
+        "lgpd_gerenciar": "LGPD (exportar, anonimizar y eliminar datos)"
       },
       "errors": {
         "self": "No puedes cambiar tus propios permisos.",

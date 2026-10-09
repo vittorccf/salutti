@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
-import { canSeeClinical } from "@/lib/permissions";
+import { canSeeClinical, requirePermission } from "@/lib/permissions";
 
 const CLINICAL_CONSENT_PURPOSES = new Set(["procedimento", "foto_clinica", "foto_divulgacao"]);
 import { db } from "@/lib/db";
@@ -30,7 +30,7 @@ export const dynamic = "force-dynamic";
 
 async function updateInsuranceAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("pacientes.gerenciar");
   const patientId = String(formData.get("patientId"));
   const insurancePlanId = String(formData.get("insurancePlanId") ?? "") || null;
   const card = String(formData.get("insuranceCardNumber") ?? "").trim().slice(0, 20) || null;
@@ -211,7 +211,7 @@ export default async function PatientPage({
           ) : null}
         </CardHeader>
         <CardContent>
-          {!clinical ? null : patient.dailyCards.length === 0 ? (
+          {!clinical || !moduleEnabled(ctx.workspace, "cartao_diario") ? null : patient.dailyCards.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("dailyCardsEmpty")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
@@ -335,11 +335,14 @@ export default async function PatientPage({
           </div>
           <div className="text-xs text-muted-foreground">
             {t.rich("rights", {
-              link: (chunks) => (
-                <Link className="text-brand underline-offset-4 hover:underline" href="/app/lgpd">
-                  {chunks}
-                </Link>
-              ),
+              link: (chunks) =>
+                ctx.permissions.has("lgpd.gerenciar") ? (
+                  <Link className="text-brand underline-offset-4 hover:underline" href="/app/lgpd">
+                    {chunks}
+                  </Link>
+                ) : (
+                  <>{chunks}</>
+                ),
             })}
           </div>
         </CardContent>

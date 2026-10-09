@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { SUPPORT_USER_EMAIL } from "@/lib/support-access";
 import { requireBackoffice } from "@/lib/backoffice/auth";
+import { boCan } from "@/lib/backoffice/permissions";
 import { OPEN_STATUSES } from "@/lib/support";
 import {
   areaLabel,
@@ -20,7 +21,9 @@ const DAY = 24 * 60 * 60 * 1000;
 
 export default async function BackofficeHome() {
   // Visão geral: qualquer pessoa ativa da equipe (é para onde volta quem não tem uma permissão).
-  await requireBackoffice();
+  const me = await requireBackoffice();
+  const canTickets = boCan(me, "chamados.ver");
+  const canClients = boCan(me, "clientes.ver");
   const now = new Date();
   const [workspaces, users, newWorkspaces, trialsActive, trialsEnding, byPlan, openTickets, unread, urgent, plans, recentTickets, recentSignups] =
     await Promise.all([
@@ -76,6 +79,7 @@ export default async function BackofficeHome() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
+        {canTickets ? (
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Chamados recentes</CardTitle>
@@ -105,6 +109,7 @@ export default async function BackofficeHome() {
             )}
           </CardContent>
         </Card>
+        ) : null}
 
         <Card>
           <CardHeader>
@@ -128,6 +133,7 @@ export default async function BackofficeHome() {
         </Card>
       </div>
 
+      {canClients ? (
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Cadastros recentes</CardTitle>
@@ -159,6 +165,7 @@ export default async function BackofficeHome() {
           </Table>
         </CardContent>
       </Card>
+      ) : null}
     </div>
   );
 }

@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { PhoneText } from "@/components/ui/phone";
 import { moduleEnabled } from "@/lib/areas";
-import { canSeeClinical } from "@/lib/permissions";
+import { canSeeClinical, requirePermission } from "@/lib/permissions";
 import { SessionProcedure } from "@/app/app/procedimentos/_components/session-procedure";
 import { CopyButton } from "@/components/copy-button";
 
@@ -29,7 +29,7 @@ const APPOINTMENT_STATUSES = ["scheduled", "confirmed", "done", "no_show", "canc
 
 async function setStatusAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const id = formData.get("id") as string;
   const status = String(formData.get("status"));
   if (!APPOINTMENT_STATUSES.includes(status as (typeof APPOINTMENT_STATUSES)[number])) notFound();
@@ -57,7 +57,7 @@ async function setStatusAction(formData: FormData) {
 
 async function createMeetingAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const id = formData.get("id") as string;
   const appt = await db.appointment.findFirst({ where: { id, workspaceId: ctx.workspace.id, modality: "online" } });
   if (!appt) notFound();
@@ -93,7 +93,7 @@ async function createMeetingAction(formData: FormData) {
 
 async function sendReminderAction(formData: FormData) {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("agenda.gerenciar");
   const id = formData.get("id") as string;
   const appt = await db.appointment.findFirst({
     where: { id, workspaceId: ctx.workspace.id },

@@ -10,6 +10,10 @@ import { createInvitation, isInviteRole, rolesFor } from "@/lib/invitations";
 import type { FormResult } from "@/components/forms/action-form";
 import { APP_PERMISSIONS, appDiffFromRole, appGrantProblem, effectiveAppPermissions, isAppPermission, type AppPermission } from "@/lib/app-permissions";
 
+// Papel que quem age pode dar: só se já tem todas as permissões padrão dele (inclui o clínico).
+const canGiveAppRole = (ctx: { role: string; permissions: Set<AppPermission> }, role: string) =>
+  ctx.role === "owner" || [...effectiveAppPermissions(role)].every((p) => ctx.permissions.has(p));
+
 // Gestão de acessos: só dono ou administrador. O dono não pode ser removido nem rebaixado por aqui.
 async function managerContext() {
   const ctx = await requireContext();
@@ -29,6 +33,7 @@ export async function inviteMemberAction(_prev: FormResult, formData: FormData):
   if (!isInviteRole(role) || !rolesFor(ctx.workspace.accountType).includes(role)) return { erro: t("errors.role") };
   // Só o dono convida administradores.
   if (role === "admin" && ctx.role !== "owner") return { erro: t("errors.adminOnlyOwner") };
+  if (!canGiveAppRole(ctx, role)) return { erro: t("permissions.errors.escalation") };
   const already = await db.membership.findFirst({ where: { workspaceId: ctx.workspace.id, user: { email: email.data } } });
   if (already) return { erro: t("errors.alreadyMember") };
 
@@ -66,8 +71,11 @@ export async function changeRoleAction(formData: FormData) {
   const role = formData.get("role");
   if (!isInviteRole(role) || !rolesFor(ctx.workspace.accountType).includes(role)) return;
   if (role === "admin" && ctx.role !== "owner") return;
+  if (!canGiveAppRole(ctx, role)) return;
   const m = await db.membership.findFirst({ where: { id: membershipId, workspaceId: ctx.workspace.id } });
-  if (!m || m.role === "owner" || m.userId === ctx.user.id) return;
+  // Dono não muda; ninguém muda a si mesmo; administrador só pelo dono; quem tem permissões que você não tem também não.
+  if (!m || m.role === "owner" || m.userId === ctx.user.id || (m.role === "admin" && ctx.role !== "owner")) return;
+  if (![...effectiveAppPermissions(m.role, m.permsGranted, m.permsDenied)].every((p) => ctx.permissions.has(p))) return;
   await db.membership.update({ where: { id: m.id }, data: { role, permsGranted: [], permsDenied: [] } });
   await recordAudit({
     workspaceId: ctx.workspace.id,

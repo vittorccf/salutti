@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireClinicalContext } from "@/lib/permissions";
+import { requireModule } from "@/lib/modules";
 import { db } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { SALUTTIN_ENABLED } from "@/lib/features";
 export const dynamic = "force-dynamic";
 
 export default async function ProntuarioListPage() {
-  const ctx = await requireClinicalContext();
+  const ctx = await requireModule("prontuario", { clinical: true });
   const notes = await db.clinicalNote.findMany({
     where: { workspaceId: ctx.workspace.id },
     include: { patient: true, professional: true },

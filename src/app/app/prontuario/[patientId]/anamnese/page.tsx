@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { requireClinicalContext } from "@/lib/permissions";
+import { requireModule } from "@/lib/modules";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,7 @@ type AnamnesisSchema = {
 
 async function applyAnamnesisAction(formData: FormData) {
   "use server";
-  const ctx = await requireClinicalContext();
+  const ctx = await requireModule("prontuario", { clinical: true });
   const patientId = formData.get("patientId") as string;
   const templateId = formData.get("templateId") as string;
   const professionalId = formData.get("professionalId") as string;
@@ -78,7 +78,7 @@ export default async function AnamnesisPage({
 }: {
   params: Promise<{ patientId: string }>;
 }) {
-  const ctx = await requireClinicalContext();
+  const ctx = await requireModule("prontuario", { clinical: true });
   const { patientId } = await params;
   const [patient, templates, professionals] = await Promise.all([
     db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null } }),

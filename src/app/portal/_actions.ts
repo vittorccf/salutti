@@ -22,6 +22,7 @@ import {
   throttleKeys,
 } from "@/lib/portal-auth";
 import { MESSAGE_MAX } from "@/lib/portal";
+import { moduleEnabled } from "@/lib/areas";
 import { getTranslations } from "@/i18n/server";
 import type { FormResult } from "@/components/forms/action-form";
 
@@ -73,6 +74,8 @@ export async function loginAction(_prev: FormResult, fd: FormData): Promise<Form
     return err("loginInvalid");
   }
   await clearThrottle(keys.cpfIp);
+  const ws = await db.workspace.findUnique({ where: { id: match.patient.workspaceId } });
+  if (!ws || !moduleEnabled(ws, "portal")) return err("portalOff");
   await db.patientPortalAccess.update({ where: { id: match.id }, data: { lastLoginAt: new Date() } });
   await createPortalSession(match, match.patient.workspaceId);
   redirect("/portal");
@@ -89,6 +92,8 @@ export async function redeemInviteAction(_prev: FormResult, fd: FormData): Promi
   });
   if (!access || access.patient.deletedAt) return err("inviteInvalid");
   const patient = access.patient;
+  const ws = await db.workspace.findUnique({ where: { id: patient.workspaceId } });
+  if (!ws || !moduleEnabled(ws, "portal")) return err("portalOff");
   // Cadastro sem data de nascimento nem CPF: o convite não vale (quem tivesse o link escolheria o login).
   if (!patient.birthDate && !cpfDigits(patient.cpf)) return err("inviteInvalid");
   const ip = clientIp();
@@ -163,6 +168,7 @@ export async function changePasswordAction(_prev: FormResult, fd: FormData): Pro
 // Check-in do dia (humor obrigatório; ansiedade, sono e nota opcionais).
 export async function checkinAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const access = await requirePortalAction();
+  if (!moduleEnabled(access.patient.workspace, "cartao_diario")) return err("generic");
   const mood = Number(str(fd, "mood"));
   if (!Number.isInteger(mood) || mood < 1 || mood > 5) return err("moodRequired");
   const anxietyRaw = str(fd, "anxiety");

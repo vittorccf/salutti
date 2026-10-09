@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Circle, ExternalLink } from "lucide-react";
 import { db } from "@/lib/db";
+import { moduleEnabled } from "@/lib/areas";
 import { requirePortalModule } from "@/lib/permissions";
 import { addDaysKey } from "@/lib/payables";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
@@ -273,7 +274,9 @@ export default async function PatientPortalAdminPage({ params }: { params: Promi
             </CardContent>
           </Card>
 
-          {/* Check-ins */}
+          {moduleEnabled(ctx.workspace, "cartao_diario") ? (
+        <>
+{/* Check-ins */}
           <Card>
             <CardHeader>
               <CardTitle>{t("checkinsTitle")}</CardTitle>
@@ -299,7 +302,10 @@ export default async function PatientPortalAdminPage({ params }: { params: Promi
               </CardContent>
             ) : null}
           </Card>
-        </div>
+        </>
+      ) : null}
+
+              </div>
       </div>
     </div>
   );

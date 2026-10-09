@@ -33,6 +33,11 @@ const professionalSchema = z.object({
 async function createFirstProfessionalAction(formData: FormData) {
   "use server";
   const ctx = await requireContext();
+  // Mesmas regras da tela de equipe: permissão e limite do contrato.
+  if (!ctx.permissions.has("equipe.gerenciar")) redirect("/app/primeiros-passos");
+  if (ctx.workspace.maxProfessionals !== null && (await db.professional.count({ where: { workspaceId: ctx.workspace.id, active: true } })) >= ctx.workspace.maxProfessionals) {
+    redirect("/app/equipe?aviso=limite-contrato");
+  }
   const data = professionalSchema.parse(Object.fromEntries(formData.entries()));
   // Autônomo: um profissional ativo (reenvio do formulário não cria um segundo).
   if (ctx.workspace.accountType === "autonomo" && (await db.professional.count({ where: { workspaceId: ctx.workspace.id, active: true } })) > 0) {

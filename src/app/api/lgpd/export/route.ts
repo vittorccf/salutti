@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentContext } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { media } from "@/lib/providers/media";
-import { canSeeClinical } from "@/lib/permissions";
+import { canSeeClinical, can } from "@/lib/permissions";
 
 // Margem para o JSON dos demais dados dentro dos 4,5 MB de resposta de uma função da Vercel.
 const IMAGE_BUDGET = 3_500_000;
@@ -11,7 +11,7 @@ export const GET = async (req: Request) => {
   const ctx = await getCurrentContext();
   if (!ctx) return NextResponse.json({ error: "unauth" }, { status: 401 });
   // A exportação leva prontuário e fotos clínicas (dados de saúde): só papéis clínicos.
-  if (!canSeeClinical(ctx)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!canSeeClinical(ctx) || !can(ctx, "lgpd.gerenciar") || ctx.support) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const url = new URL(req.url);
   const patientId = url.searchParams.get("patientId");
   if (!patientId) return NextResponse.json({ error: "missing patientId" }, { status: 400 });

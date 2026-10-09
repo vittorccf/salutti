@@ -85,3 +85,14 @@ describe("liberações por cliente", () => {
     expect(enabledModules({ area: "estetica" })).not.toContain("convenios");
   });
 });
+
+describe("textos das permissões", () => {
+  it("cada permissão do app tem rótulo nos 4 idiomas (chave sem ponto, que o next-intl leria como nível)", async () => {
+    const fs = await import("node:fs");
+    for (const l of ["pt-BR", "pt-PT", "es", "en"]) {
+      const items = JSON.parse(fs.readFileSync(`messages/${l}/settings.json`, "utf8")).access.permissions.items as Record<string, string>;
+      for (const k of Object.keys(items)) expect(k).not.toContain(".");
+      for (const p of APP_PERMISSIONS) expect(items[p.replace(".", "_")], `${l}: ${p}`).toBeTruthy();
+    }
+  });
+});

@@ -288,15 +288,15 @@
       "saved": "Permissions saved.",
       "clinicalFixed": "Clinical roles only (record confidentiality).",
       "items": {
-        "agenda.gerenciar": "Schedule and change sessions",
-        "pacientes.gerenciar": "Add and edit patients",
-        "clinico.ver": "See records, portal and daily card",
-        "financeiro.receber": "Charges and payments received",
-        "financeiro.pagar": "Bills to pay and financial reports",
-        "fiscal.ver": "Tax (invoices and receipts)",
-        "estoque.gerenciar": "Manage inventory",
-        "equipe.gerenciar": "Manage team and access",
-        "lgpd.gerenciar": "LGPD (export, anonymize and delete data)"
+        "agenda_gerenciar": "Schedule and change sessions",
+        "pacientes_gerenciar": "Add and edit patients",
+        "clinico_ver": "See records, portal and daily card",
+        "financeiro_receber": "Charges and payments received",
+        "financeiro_pagar": "Bills to pay and financial reports",
+        "fiscal_ver": "Tax (invoices and receipts)",
+        "estoque_gerenciar": "Manage inventory",
+        "equipe_gerenciar": "Manage team and access",
+        "lgpd_gerenciar": "LGPD (export, anonymize and delete data)"
       },
       "errors": {
         "self": "You can't change your own permissions.",

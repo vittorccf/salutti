@@ -10,7 +10,7 @@ export const isArea = (v: unknown): v is Area => v === "mental" || v === "esteti
 export const areaOf = (v: string | null | undefined): Area => (isArea(v) ? v : "mental");
 
 // Módulos que podem ser ligados ou desligados por área e, no backoffice, por cliente (o menu e as rotas consultam isto).
-export const MODULES = ["prontuario", "convenios", "procedimentos", "estoque", "portal", "contas_pagar", "lista_espera", "cartao_diario"] as const;
+export const MODULES = ["prontuario", "convenios", "procedimentos", "estoque", "portal", "contas_pagar", "cartao_diario"] as const;
 export type Module = (typeof MODULES)[number];
 export const isModule = (v: string): v is Module => (MODULES as readonly string[]).includes(v);
 
@@ -22,7 +22,6 @@ export const MODULE_LABELS: Record<Module, string> = {
   estoque: "Estoque",
   portal: "Portal do paciente",
   contas_pagar: "Contas a pagar e relatórios",
-  lista_espera: "Lista de espera",
   cartao_diario: "Cartão diário",
 };
 
@@ -52,7 +51,7 @@ export const AREAS: Record<Area, AreaConfig> = {
     publicPath: "/",
     loginPath: "/login",
     signupPath: "/signup",
-    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: true },
+    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false, portal: true, contas_pagar: true, cartao_diario: true },
     segments: { autonomo: ["solo_psicologo", "solo_psicanalista", "odonto"], clinica: ["clinica", "ubs", "odonto"] },
     professionalTypes: ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"],
     councils: ["CRP", "CRM", "CRO", "sem_registro"],
@@ -66,7 +65,7 @@ export const AREAS: Record<Area, AreaConfig> = {
     loginPath: "/estetica/login",
     signupPath: "/estetica/cadastro",
     // Procedimentos estéticos não são cobertos por convênio: o módulo de convênios/TISS fica desligado.
-    modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: false },
+    modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true, portal: true, contas_pagar: true, cartao_diario: false },
     segments: {
       autonomo: [
         "estetica_farmacia",

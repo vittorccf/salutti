@@ -288,15 +288,15 @@
       "saved": "Permissões salvas.",
       "clinicalFixed": "Só para papéis clínicos (sigilo do prontuário).",
       "items": {
-        "agenda.gerenciar": "Agendar e alterar sessões",
-        "pacientes.gerenciar": "Cadastrar e editar pacientes",
-        "clinico.ver": "Ver prontuário, portal e cartão diário",
-        "financeiro.receber": "Cobranças e recebimentos",
-        "financeiro.pagar": "Contas a pagar e relatórios financeiros",
-        "fiscal.ver": "Fiscal (notas e recibos)",
-        "estoque.gerenciar": "Gerenciar estoque",
-        "equipe.gerenciar": "Gerenciar equipe e acessos",
-        "lgpd.gerenciar": "LGPD (exportar, anonimizar e excluir dados)"
+        "agenda_gerenciar": "Agendar e alterar sessões",
+        "pacientes_gerenciar": "Cadastrar e editar pacientes",
+        "clinico_ver": "Ver prontuário, portal e cartão diário",
+        "financeiro_receber": "Cobranças e recebimentos",
+        "financeiro_pagar": "Contas a pagar e relatórios financeiros",
+        "fiscal_ver": "Fiscal (notas e recibos)",
+        "estoque_gerenciar": "Gerenciar estoque",
+        "equipe_gerenciar": "Gerenciar equipe e acessos",
+        "lgpd_gerenciar": "LGPD (exportar, anonimizar e excluir dados)"
       },
       "errors": {
         "self": "Você não pode mudar as próprias permissões.",

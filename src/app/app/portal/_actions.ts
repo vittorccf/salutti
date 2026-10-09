@@ -167,7 +167,7 @@ export async function clearResponseAction(_prev: FormResult, fd: FormData): Prom
 export async function saveNoticeAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const ctx = await requirePortalModule();
   const t = await getTranslations("portal.pro");
-  if (ctx.role !== "owner" && ctx.role !== "admin") return { erro: t("errors.onlyOwner") };
+  if (!ctx.permissions.has("equipe.gerenciar")) return { erro: t("errors.onlyOwner") };
   await db.workspace.update({ where: { id: ctx.workspace.id }, data: { portalMessageNotice: str(fd, "notice").slice(0, 200) || null } });
   await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "portal.notice", entity: "Workspace", entityId: ctx.workspace.id });
   revalidatePath("/app/portal");

@@ -10,7 +10,7 @@ import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 import { getLiveGrant, SUPPORT_ROLE } from "./support-access";
 import { LEGAL_VERSION } from "./legal";
 import { SESSION_COOKIE } from "./session-cookie";
-import { effectiveAppPermissions } from "./app-permissions";
+import { effectiveAppPermissions, type AppPermission } from "./app-permissions";
 import { accessExpired } from "@/lib/plan-access";
 
 // Fora de produção há um segredo padrão para o app rodar sem configuração. Em produção ele é
@@ -211,7 +211,7 @@ const getSupportContext = async (session: SessionPayload) => {
     workspace: grant.workspace,
     role: SUPPORT_ROLE,
     // Suporte: só o que a recepção vê (nada clínico); a escrita já é bloqueada no Prisma.
-    permissions: effectiveAppPermissions("receptionist"),
+    permissions: new Set<AppPermission>(["financeiro.receber", "fiscal.ver"]),
     allWorkspaces: [grant.workspace],
     support: { grantId: grant.id, expiresAt: grant.expiresAt },
   };

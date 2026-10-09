@@ -116,6 +116,10 @@ async function toggleProfessionalAction(formData: FormData) {
   if (!current.active && ctx.workspace.accountType === "autonomo" && (await activeCount(ctx.workspace.id)) >= 1) {
     redirect("/app/equipe?aviso=limite");
   }
+  // Reativar também respeita o limite do contrato.
+  if (!current.active && ctx.workspace.maxProfessionals !== null && (await activeCount(ctx.workspace.id)) >= ctx.workspace.maxProfessionals) {
+    redirect("/app/equipe?aviso=limite-contrato");
+  }
   await db.professional.updateMany({
     where: { id: professionalId, workspaceId: ctx.workspace.id },
     data: { active: !current.active },
@@ -179,9 +183,9 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
           {autonomo ? t("introAutonomo") : t("introClinic")}
         </p>
       </header>
-      {aviso === "limite" || aviso === "sem-permissao" ? (
+      {aviso === "limite" || aviso === "sem-permissao" || aviso === "limite-contrato" ? (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-strong">
-          {aviso === "limite" ? t("autonomoLimit") : t("noPermission")}
+          {aviso === "limite" ? t("autonomoLimit") : aviso === "limite-contrato" ? t("contractLimit", { max: ctx.workspace.maxProfessionals ?? 0 }) : t("noPermission")}
         </p>
       ) : null}
 
@@ -412,7 +416,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                                       {/* Desabilitado não vai no formulário: repete o valor atual para não perder. */}
                                       {(fixed || notMine) && has ? <input type="hidden" name="perm" value={perm} /> : null}
                                       <span>
-                                        {ta(`permissions.items.${perm}`)}
+                                        {ta(`permissions.items.${perm.replace(".", "_")}`)}
                                         {fixed ? <span className="block text-muted-foreground">{ta("permissions.clinicalFixed")}</span> : null}
                                       </span>
                                     </label>

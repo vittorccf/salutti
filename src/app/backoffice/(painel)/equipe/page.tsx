@@ -48,15 +48,21 @@ const canGiveRole = (me: Me, role: BoRole) => {
   return BO_ROLE_DEFAULTS[role].every((p) => mine.has(p));
 };
 
-// Sempre fica ao menos uma pessoa ativa que gerencia a equipe (senão ninguém mais dá permissões).
-async function stillHasManager(change: { id: string; active?: boolean; role?: string; permsGranted?: string[]; permsDenied?: string[] }) {
-  const staff = await db.backofficeUser.findMany({ where: { active: true } });
-  const after = staff
-    .map((u) => (u.id === change.id ? { ...u, ...change } : u))
-    .filter((u) => u.active !== false);
-  if (change.active === true && !staff.some((u) => u.id === change.id)) return true;
-  return after.some((u) => effectiveBoPermissions(u).has("equipe.gerenciar"));
+type StaffChange = { id: string; active?: boolean; role?: string; permsGranted?: string[]; permsDenied?: string[] };
+
+// Aplica a mudança só se continuar havendo ao menos uma pessoa ativa que gerencia a equipe (senão ninguém mais dá
+// permissões). Trava a equipe na transação: duas pessoas se desativando ao mesmo tempo não zeram os gerentes.
+async function applyKeepingManager(change: StaffChange, data: Parameters<typeof db.backofficeUser.update>[0]["data"]) {
+  return db.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT 1 FROM "BackofficeUser" WHERE "active" = true FOR UPDATE`;
+    const staff = await tx.backofficeUser.findMany({ where: { active: true } });
+    const after = staff.map((u) => (u.id === change.id ? { ...u, ...change } : u)).filter((u) => u.active !== false);
+    if (!after.some((u) => effectiveBoPermissions(u).has("equipe.gerenciar"))) return false;
+    await tx.backofficeUser.update({ where: { id: change.id }, data });
+    return true;
+  });
 }
+const NO_MANAGER = "Ficaria sem ninguém para gerenciar a equipe. Dê essa permissão a outra pessoa antes.";
 
 async function createStaffAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
@@ -110,35 +116,31 @@ async function updateStaffAction(_prev: FormResult, formData: FormData): Promise
   const before = effectiveBoPermissions(target);
   // Quem tem permissões que você não tem só pode ser alterado por alguém com pelo menos as mesmas.
   const mine = effectiveBoPermissions(me);
-  if (op !== "reset" && [...before].some((p) => !mine.has(p))) {
+  // Vale também para redefinir a senha: senão quem tem menos entraria como quem tem mais.
+  if ([...before].some((p) => !mine.has(p))) {
     return { erro: "Essa pessoa tem permissões que você não tem: peça a quem tem para mudar." };
   }
 
   let metadata: Record<string, unknown> = {};
   if (op === "toggle") {
-    if (target.active && !(await stillHasManager({ id, active: false }))) {
-      return { erro: "Ficaria sem ninguém para gerenciar a equipe. Dê essa permissão a outra pessoa antes." };
+    if (target.active) {
+      if (!(await applyKeepingManager({ id, active: false }, { active: false }))) return { erro: NO_MANAGER };
+    } else {
+      await db.backofficeUser.update({ where: { id }, data: { active: true } });
     }
-    await db.backofficeUser.update({ where: { id }, data: { active: !target.active } });
   } else if (op === "role") {
     const role = parsed.data.role;
     if (!role) return { erro: "Escolha o papel." };
     if (!canGiveRole(me, role)) return { erro: "Você não pode dar um papel com permissões que você não tem." };
-    if (!(await stillHasManager({ id, role, permsGranted: [], permsDenied: [] }))) {
-      return { erro: "Ficaria sem ninguém para gerenciar a equipe. Dê essa permissão a outra pessoa antes." };
-    }
     // Trocar o papel volta ao padrão do novo papel (os ajustes eram sobre o anterior).
-    await db.backofficeUser.update({ where: { id }, data: { role, permsGranted: [], permsDenied: [] } });
+    if (!(await applyKeepingManager({ id, role, permsGranted: [], permsDenied: [] }, { role, permsGranted: [], permsDenied: [] }))) return { erro: NO_MANAGER };
     metadata = { from: target.role, to: role };
   } else if (op === "perms") {
     const desired = new Set<BoPermission>(formData.getAll("perm").map(String).filter(isBoPermission));
     const problem = grantProblem(me, id, before, desired);
     if (problem) return { erro: problem === "self" ? "Você não pode mudar as próprias permissões." : "Você só pode dar ou retirar permissões que você mesmo tem." };
     const diff = diffFromRole(target.role as BoRole, desired);
-    if (!(await stillHasManager({ id, ...diff }))) {
-      return { erro: "Ficaria sem ninguém para gerenciar a equipe. Dê essa permissão a outra pessoa antes." };
-    }
-    await db.backofficeUser.update({ where: { id }, data: diff });
+    if (!(await applyKeepingManager({ id, ...diff }, diff))) return { erro: NO_MANAGER };
     metadata = {
       added: ALL_BO_PERMISSIONS.filter((p) => desired.has(p) && !before.has(p)),
       removed: ALL_BO_PERMISSIONS.filter((p) => before.has(p) && !desired.has(p)),
@@ -280,7 +282,7 @@ export default async function StaffPage() {
                   </ActionForm>
                 </details>
 
-                {!self ? (
+                {!self && !outranks ? (
                   <details>
                     <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">Redefinir senha</summary>
                     <ActionForm action={updateStaffAction} className="mt-2 flex items-center gap-2">

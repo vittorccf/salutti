@@ -144,16 +144,12 @@ test("acesso de suporte: senha de 15 min, uso único, somente leitura, sem pront
   const lgpd = await support.goto("/app/lgpd");
   expect(lgpd?.status()).toBe(404);
 
-  // Somente leitura: a Server Action é recusada e nada é gravado.
-  await support.goto("/app/pacientes/novo");
-  await support.locator("#fullName").fill("Paciente criado pelo suporte");
-  await support.getByRole("button", { name: "Cadastrar paciente" }).click();
-  // A action falha (erro de servidor); a navegação seguinte pode interromper a resposta dela: tenta de novo.
-  await expect(async () => {
-    await support.goto("/app/pacientes");
-    await expect(support.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 3000 });
-  }).toPass({ timeout: 30_000 });
-  await expect(support.getByText("Paciente criado pelo suporte")).toHaveCount(0);
+  // Somente leitura: o suporte não tem permissões de gerenciar (telas de cadastro dão 404); a escrita também é
+  // barrada no Prisma (src/lib/db.ts), coberto em tests/unit/support-readonly.test.ts.
+  expect((await support.goto("/app/pacientes/novo"))?.status()).toBe(404);
+  expect((await support.goto("/app/agenda/novo"))?.status()).toBe(404);
+  await support.goto("/app/pacientes");
+  await expect(support.getByRole("heading", { level: 1 })).toBeVisible();
 
   // Encerrar o acesso e tentar de novo com a mesma senha: uso único.
   await support.getByRole("button", { name: "Encerrar acesso" }).click();

@@ -1,7 +1,16 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Portal do paciente" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Permissões e tema escuro no backoffice" é a mais recente; as demais ficam como histórico.
 
+
+## Permissões e tema escuro no backoffice (2026-10-10) — branch `feat/backoffice-permissoes`
+
+- Backoffice: papéis Administrador, Suporte, Financeiro, Comercial + permissões por pessoa (tela Equipe e permissões), sem
+  escalonamento e sempre com um gerente; menu e visão geral por permissão; tema escuro.
+- Liberações por cliente (ficha do cliente): módulos liberados/bloqueados além do padrão da área e limites de profissionais e
+  pacientes, com motivo e auditoria.
+- App: permissões por membro (Profissionais → Acessos), clínico fixo só para papéis clínicos, dono sempre tudo; LGPD agora só
+  dono/admin. Detalhes: `docs/PERMISSOES.md`. Revisado por qualidade e advogado do diabo.
 
 ## Portal do paciente (2026-10-09) — branch `feat/portal-paciente`
 
