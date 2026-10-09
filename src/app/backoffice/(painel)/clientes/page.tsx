@@ -17,7 +17,7 @@ type Search = { q?: string; plano?: string; area?: string };
 const PAGE_SIZE = 100;
 
 export default async function ClientsPage({ searchParams }: { searchParams: Search }) {
-  await requireBackoffice();
+  await requireBackoffice({ perm: "clientes.ver" });
   const q = searchParams.q?.trim();
   const where: Prisma.WorkspaceWhereInput = {
     ...(searchParams.plano ? { planTier: searchParams.plano } : {}),

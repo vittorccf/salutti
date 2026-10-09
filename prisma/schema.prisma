@@ -61,6 +61,12 @@ model Workspace {
   accountType     String         @default("autonomo")
   // Aviso exibido no portal sobre as mensagens (ex.: "Respondo em até 2 dias úteis, de segunda a sexta").
   portalMessageNotice String?
+  // Liberações definidas no backoffice (src/lib/areas.ts): módulos além ou aquém do padrão da área e limites.
+  modulesAdded    String[]  @default([])
+  modulesRemoved  String[]  @default([])
+  maxProfessionals Int?
+  maxPatients     Int?
+  entitlementNote String?
   // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
   brandDisplay    String         @default("salutti")
   bannerId        String?
@@ -123,6 +129,9 @@ model Membership {
   userId       String
   workspaceId  String
   role         String     @default("owner") // owner | admin | professional | financial | receptionist
+  // Ajustes do dono/administrador sobre o papel (src/lib/permissions.ts): concedidas e negadas.
+  permsGranted String[]   @default([])
+  permsDenied  String[]   @default([])
   createdAt    DateTime   @default(now())
 
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -952,7 +961,10 @@ model BackofficeUser {
   username           String    @unique
   name               String
   passwordHash       String
-  role               String    @default("suporte") // admin | suporte
+  role               String    @default("suporte") // admin | suporte | financeiro | comercial (papel-base)
+  // Ajustes por pessoa sobre o papel (src/lib/backoffice/permissions.ts).
+  permsGranted       String[]  @default([])
+  permsDenied        String[]  @default([])
   active             Boolean   @default(true)
   // Senha criada por outra pessoa (ou a inicial admin/admin): troca obrigatória no primeiro acesso.
   mustChangePassword Boolean   @default(true)

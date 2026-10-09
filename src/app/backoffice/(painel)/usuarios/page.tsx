@@ -16,7 +16,7 @@ import { formatDateBR } from "@/lib/utils";
 const PAGE_SIZE = 100;
 
 export default async function UsersPage({ searchParams }: { searchParams: { q?: string } }) {
-  await requireBackoffice();
+  await requireBackoffice({ perm: "clientes.ver" });
   const q = searchParams.q?.trim();
   // O usuário oculto do suporte não é cliente: fica fora da lista.
   const where: Prisma.UserWhereInput = {

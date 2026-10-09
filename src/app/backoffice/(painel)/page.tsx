@@ -19,6 +19,7 @@ import { formatDateBR, formatDateTimeBR } from "@/lib/utils";
 const DAY = 24 * 60 * 60 * 1000;
 
 export default async function BackofficeHome() {
+  // Visão geral: qualquer pessoa ativa da equipe (é para onde volta quem não tem uma permissão).
   await requireBackoffice();
   const now = new Date();
   const [workspaces, users, newWorkspaces, trialsActive, trialsEnding, byPlan, openTickets, unread, urgent, plans, recentTickets, recentSignups] =

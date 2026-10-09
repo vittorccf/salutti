@@ -8,13 +8,14 @@ export const PRODUCT_KINDS = ["insumo", "revenda"] as const;
 export const LOSS_REASONS = ["vencido", "sobra_frasco", "quebra", "outro"] as const;
 
 // Dono, admin e profissional gerenciam; financeiro consulta (custos, lotes, histórico); recepção vê só a lista.
-export const canManageStock = (role: string) => role === "owner" || role === "admin" || role === "professional";
-export const canViewStockDetail = (role: string) => canManageStock(role) || role === "financial";
+type Who = { role: string; permissions?: Set<string> };
+export const canManageStock = (who: Who) => !!who.permissions?.has("estoque.gerenciar");
+export const canViewStockDetail = (who: Who) => canManageStock(who) || who.role === "financial";
 
 export async function requireStock(level: "list" | "view" | "manage" = "list") {
   const ctx = await requireModule("estoque");
-  if (level === "view" && !canViewStockDetail(ctx.role)) notFound();
-  if (level === "manage" && !canManageStock(ctx.role)) notFound();
+  if (level === "view" && !canViewStockDetail(ctx)) notFound();
+  if (level === "manage" && !canManageStock(ctx)) notFound();
   return ctx;
 }
 

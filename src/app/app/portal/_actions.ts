@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { appOrigin } from "@/lib/app-url";
 import { cpfDigits } from "@/lib/cpf";
-import { requireClinicalContext } from "@/lib/permissions";
+import { requirePortalModule } from "@/lib/permissions";
 import { parseDateOnly } from "@/lib/dates";
 import { HIGHLIGHT_KINDS, MESSAGE_MAX, portalPatientScope, safeUrl } from "@/lib/portal";
 import { clearThrottle, hashInviteToken, INVITE_HOURS, newInviteToken, throttleKeys } from "@/lib/portal-auth";
@@ -17,7 +17,7 @@ const isDateKey = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
 // Paciente do consultório ativo (e não excluído) que esta pessoa pode ver. Mensagens e tarefas são conteúdo
 // clínico: só papéis clínicos; na clínica, o profissional só vê os pacientes que atende.
 async function ownedPatient(patientId: string) {
-  const ctx = await requireClinicalContext();
+  const ctx = await requirePortalModule();
   const patient = await db.patient.findFirst({
     where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null, ...portalPatientScope(ctx) },
     include: { portalAccess: true },
@@ -136,7 +136,7 @@ export async function addHighlightAction(_prev: FormResult, fd: FormData): Promi
 }
 
 export async function archiveHighlightAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
-  const ctx = await requireClinicalContext();
+  const ctx = await requirePortalModule();
   const t = await getTranslations("portal.pro");
   const h = await db.portalHighlight.findFirst({
     where: { id: str(fd, "highlightId"), workspaceId: ctx.workspace.id, patient: portalPatientScope(ctx) },
@@ -150,7 +150,7 @@ export async function archiveHighlightAction(_prev: FormResult, fd: FormData): P
 
 // Pedido de remarcação tratado (sessão remarcada ou combinado com o paciente): sai das pendências.
 export async function clearResponseAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
-  const ctx = await requireClinicalContext();
+  const ctx = await requirePortalModule();
   const t = await getTranslations("portal.pro");
   const appointmentId = str(fd, "appointmentId");
   const res = await db.appointment.updateMany({
@@ -165,7 +165,7 @@ export async function clearResponseAction(_prev: FormResult, fd: FormData): Prom
 }
 
 export async function saveNoticeAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
-  const ctx = await requireClinicalContext();
+  const ctx = await requirePortalModule();
   const t = await getTranslations("portal.pro");
   if (ctx.role !== "owner" && ctx.role !== "admin") return { erro: t("errors.onlyOwner") };
   await db.workspace.update({ where: { id: ctx.workspace.id }, data: { portalMessageNotice: str(fd, "notice").slice(0, 200) || null } });

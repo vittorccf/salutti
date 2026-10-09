@@ -9,8 +9,22 @@ export const AREAS_LIST: Area[] = ["mental", "estetica"];
 export const isArea = (v: unknown): v is Area => v === "mental" || v === "estetica";
 export const areaOf = (v: string | null | undefined): Area => (isArea(v) ? v : "mental");
 
-// Módulos que podem ser ligados ou desligados por área (o menu e as rotas consultam isto).
-export type Module = "convenios" | "prontuario" | "procedimentos" | "estoque";
+// Módulos que podem ser ligados ou desligados por área e, no backoffice, por cliente (o menu e as rotas consultam isto).
+export const MODULES = ["prontuario", "convenios", "procedimentos", "estoque", "portal", "contas_pagar", "lista_espera", "cartao_diario"] as const;
+export type Module = (typeof MODULES)[number];
+export const isModule = (v: string): v is Module => (MODULES as readonly string[]).includes(v);
+
+// Nome do módulo no backoffice (pt-BR).
+export const MODULE_LABELS: Record<Module, string> = {
+  prontuario: "Prontuário",
+  convenios: "Convênios e TISS",
+  procedimentos: "Procedimentos estéticos",
+  estoque: "Estoque",
+  portal: "Portal do paciente",
+  contas_pagar: "Contas a pagar e relatórios",
+  lista_espera: "Lista de espera",
+  cartao_diario: "Cartão diário",
+};
 
 type AreaConfig = {
   name: string;
@@ -38,7 +52,7 @@ export const AREAS: Record<Area, AreaConfig> = {
     publicPath: "/",
     loginPath: "/login",
     signupPath: "/signup",
-    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false },
+    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: true },
     segments: { autonomo: ["solo_psicologo", "solo_psicanalista", "odonto"], clinica: ["clinica", "ubs", "odonto"] },
     professionalTypes: ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"],
     councils: ["CRP", "CRM", "CRO", "sem_registro"],
@@ -52,7 +66,7 @@ export const AREAS: Record<Area, AreaConfig> = {
     loginPath: "/estetica/login",
     signupPath: "/estetica/cadastro",
     // Procedimentos estéticos não são cobertos por convênio: o módulo de convênios/TISS fica desligado.
-    modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true },
+    modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: false },
     segments: {
       autonomo: [
         "estetica_farmacia",
@@ -76,7 +90,17 @@ export const AREAS: Record<Area, AreaConfig> = {
 export const ALL_PROFESSIONAL_TYPES = [...new Set(AREAS_LIST.flatMap((a) => AREAS[a].professionalTypes))] as [string, ...string[]];
 export const ALL_COUNCILS = [...new Set(AREAS_LIST.flatMap((a) => AREAS[a].councils))] as [string, ...string[]];
 
-export const moduleEnabled = (area: string | null | undefined, module: Module) => AREAS[areaOf(area)].modules[module];
+type WorkspaceModules = { area: string | null; modulesAdded?: string[] | null; modulesRemoved?: string[] | null };
+
+// Ligado = padrão da área + liberado pelo backoffice − bloqueado pelo backoffice. Aceita só a área (padrão) ou o consultório.
+export function moduleEnabled(ws: string | null | undefined | WorkspaceModules, module: Module) {
+  if (ws === null || ws === undefined || typeof ws === "string") return AREAS[areaOf(ws)].modules[module];
+  if (ws.modulesRemoved?.includes(module)) return false;
+  if (ws.modulesAdded?.includes(module)) return true;
+  return AREAS[areaOf(ws.area)].modules[module];
+}
+
+export const enabledModules = (ws: WorkspaceModules) => MODULES.filter((m) => moduleEnabled(ws, m));
 
 export const segmentsFor = (area: Area, type: AccountType) => AREAS[area].segments[type];
 

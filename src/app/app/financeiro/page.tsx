@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -16,7 +17,7 @@ import { isPastDue, startOfMonthSP, TZ } from "@/lib/dates";
 export const dynamic = "force-dynamic";
 
 export default async function FinancialPage() {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const t = await getTranslations("finance.list");
   const f = await getFormat();
   const label = labeler(await getTranslations("common.labels"));
@@ -84,7 +85,7 @@ export default async function FinancialPage() {
         </div>
       </header>
 
-      <FinanceTabs role={ctx.role} active="receivables" />
+      <FinanceTabs role={ctx} active="receivables" />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

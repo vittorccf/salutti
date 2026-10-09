@@ -175,7 +175,8 @@
     "errors": {
       "invalid": "Revisa el nombre, el tipo de profesional y el valor por hora.",
       "userLink": "No se puede vincular a este usuario (no es del equipo o ya tiene un registro activo)."
-    }
+    },
+    "contractLimit": "El contrato de este consultorio permite hasta {max, plural, one {# profesional activo} other {# profesionales activos}}. Habla con soporte para ampliarlo."
   },
   "lgpd": {
     "title": "LGPD y cumplimiento",
@@ -279,6 +280,30 @@
       "role": "Elige un rol disponible para esta cuenta.",
       "adminOnlyOwner": "Solo el titular de la cuenta invita administradores.",
       "alreadyMember": "Esa persona ya tiene acceso a esta cuenta."
+    },
+    "permissions": {
+      "open": "Permisos de {name}",
+      "legend": "Permisos de {name}",
+      "save": "Guardar permisos",
+      "saved": "Permisos guardados.",
+      "clinicalFixed": "Solo para roles clínicos (confidencialidad de la historia clínica).",
+      "items": {
+        "agenda.gerenciar": "Agendar y modificar sesiones",
+        "pacientes.gerenciar": "Registrar y editar pacientes",
+        "clinico.ver": "Ver historia clínica, portal y tarjeta diaria",
+        "financeiro.receber": "Cobros y pagos recibidos",
+        "financeiro.pagar": "Cuentas por pagar e informes financieros",
+        "fiscal.ver": "Fiscal (facturas y recibos)",
+        "estoque.gerenciar": "Gestionar inventario",
+        "equipe.gerenciar": "Gestionar equipo y accesos",
+        "lgpd.gerenciar": "LGPD (exportar, anonimizar y eliminar datos)"
+      },
+      "errors": {
+        "self": "No puedes cambiar tus propios permisos.",
+        "owner": "Los permisos del titular no cambian.",
+        "peer": "Solo el titular cambia los permisos de un administrador.",
+        "escalation": "Solo puedes dar o quitar permisos que tú también tienes."
+      }
     }
   }
 }

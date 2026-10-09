@@ -158,7 +158,7 @@ export default async function AppointmentDetailPage({
           {appt.patientResponse ? (
             <p className={`mt-1 text-sm ${appt.patientResponse === "confirmed" ? "text-success-strong" : "text-warning-strong"}`}>
               {(await getTranslations("portal.pro.response"))(appt.patientResponse)}
-              {appt.patientResponseNote && canSeeClinical(ctx.role) ? `: “${appt.patientResponseNote}”` : ""}
+              {appt.patientResponseNote && canSeeClinical(ctx) ? `: “${appt.patientResponseNote}”` : ""}
             </p>
           ) : null}
         </div>
@@ -267,7 +267,7 @@ export default async function AppointmentDetailPage({
       </div>
 
       {/* Salutti Estética: procedimento, termo, insumos aplicados, margem e retorno (só equipe clínica). */}
-      {moduleEnabled(ctx.workspace.area, "procedimentos") && canSeeClinical(ctx.role) && appt.procedureId ? (
+      {moduleEnabled(ctx.workspace, "procedimentos") && canSeeClinical(ctx) && appt.procedureId ? (
         <SessionProcedure appt={appt} recorded={registrado === "1"} reversed={estornado === "1"} />
       ) : null}
     </div>

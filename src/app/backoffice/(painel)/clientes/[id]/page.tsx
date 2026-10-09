@@ -5,6 +5,8 @@ import { z } from "zod";
 import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 import { recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
+import { boCan } from "@/lib/backoffice/permissions";
+import { AREAS, areaOf, isModule, MODULE_LABELS, MODULES, moduleEnabled } from "@/lib/areas";
 import {
   accountTypeLabel,
   areaLabel,
@@ -38,7 +40,7 @@ const grantSchema = z.object({
 // Gera a senha do "Suporte Salutti" para este consultório (só admin). A senha volta uma vez para a tela; o banco guarda o hash.
 async function grantAccessAction(_prev: GrantResult, formData: FormData): Promise<GrantResult> {
   "use server";
-  const me = await requireBackoffice({ role: "admin" });
+  const me = await requireBackoffice({ perm: "clientes.acesso_suporte" });
   const parsed = grantSchema.safeParse({
     workspaceId: formData.get("workspaceId"),
     reason: formData.get("reason"),
@@ -72,7 +74,7 @@ async function grantAccessAction(_prev: GrantResult, formData: FormData): Promis
 
 async function revokeAccessAction(formData: FormData) {
   "use server";
-  const me = await requireBackoffice({ role: "admin" });
+  const me = await requireBackoffice({ perm: "clientes.acesso_suporte" });
   const id = String(formData.get("grantId") ?? "");
   const grant = await db.supportAccessGrant.findUnique({ where: { id } });
   if (!grant) return;
@@ -90,7 +92,7 @@ const planSchema = z.object({
 // Mudança manual de plano (cortesia, ajuste, migração). Não cria nem cancela assinatura no Stripe.
 async function changePlanAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
   "use server";
-  const me = await requireBackoffice({ role: "admin" });
+  const me = await requireBackoffice({ perm: "clientes.editar" });
   const parsed = planSchema.safeParse({
     workspaceId: formData.get("workspaceId"),
     planTier: formData.get("planTier"),
@@ -124,8 +126,48 @@ async function changePlanAction(_prev: FormResult, formData: FormData): Promise<
   return { ok: "Plano atualizado." };
 }
 
+// Liberações do cliente: módulos além ou aquém do padrão da área e limites de uso. Grava só o que difere do padrão.
+async function saveEntitlementsAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  "use server";
+  const me = await requireBackoffice({ perm: "clientes.liberacoes" });
+  const id = String(formData.get("workspaceId") ?? "");
+  const ws = await db.workspace.findUnique({ where: { id } });
+  if (!ws) return { erro: "Cliente não encontrado." };
+  const on = new Set(formData.getAll("module").map(String).filter(isModule));
+  const defaults = AREAS[areaOf(ws.area)].modules;
+  const modulesAdded = MODULES.filter((m) => on.has(m) && !defaults[m]);
+  const modulesRemoved = MODULES.filter((m) => !on.has(m) && defaults[m]);
+  const limit = (key: string) => {
+    const raw = String(formData.get(key) ?? "").trim();
+    if (!raw) return null;
+    const n = Number(raw);
+    return Number.isInteger(n) && n >= 1 && n <= 100000 ? n : NaN;
+  };
+  const maxProfessionals = limit("maxProfessionals");
+  const maxPatients = limit("maxPatients");
+  if (Number.isNaN(maxProfessionals) || Number.isNaN(maxPatients)) return { erro: "Limites: números inteiros a partir de 1, ou em branco para sem limite." };
+  const note = String(formData.get("note") ?? "").trim().slice(0, 300) || null;
+  if ((modulesAdded.length || modulesRemoved.length || maxProfessionals || maxPatients) && !note) {
+    return { erro: "Escreva o motivo (ex.: piloto até dezembro, contrato especial). Fica na auditoria." };
+  }
+  await db.workspace.update({ where: { id }, data: { modulesAdded, modulesRemoved, maxProfessionals, maxPatients, entitlementNote: note } });
+  await recordBackofficeAudit({
+    userId: me.id,
+    action: "client.entitlements",
+    entity: "Workspace",
+    entityId: id,
+    metadata: {
+      from: { modulesAdded: ws.modulesAdded, modulesRemoved: ws.modulesRemoved, maxProfessionals: ws.maxProfessionals, maxPatients: ws.maxPatients },
+      to: { modulesAdded, modulesRemoved, maxProfessionals, maxPatients },
+      note,
+    },
+  });
+  revalidatePath(`/backoffice/clientes/${id}`);
+  return { ok: "Liberações salvas. Valem no próximo carregamento de página do cliente." };
+}
+
 export default async function ClientPage({ params, searchParams }: { params: { id: string }; searchParams: { chamado?: string } }) {
-  const me = await requireBackoffice();
+  const me = await requireBackoffice({ perm: "clientes.ver" });
   const workspace = await db.workspace.findUnique({
     where: { id: params.id },
     include: {
@@ -266,7 +308,7 @@ export default async function ClientPage({ params, searchParams }: { params: { i
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {me.role === "admin" ? (
+              {boCan(me, "clientes.acesso_suporte") ? (
                 <SupportAccessCard
                   action={grantAccessAction}
                   workspaceId={workspace.id}
@@ -286,7 +328,7 @@ export default async function ClientPage({ params, searchParams }: { params: { i
                       <p className="text-muted-foreground">
                         {g.backofficeUser?.name ?? "—"} · {g.reason}
                       </p>
-                      {grantIsLive(g) && me.role === "admin" ? (
+                      {grantIsLive(g) && boCan(me, "clientes.acesso_suporte") ? (
                         <form action={revokeAccessAction}>
                           <input type="hidden" name="grantId" value={g.id} />
                           <Button type="submit" size="sm" variant="outline">
@@ -301,13 +343,63 @@ export default async function ClientPage({ params, searchParams }: { params: { i
             </CardContent>
           </Card>
 
+          <Card id="liberacoes">
+            <CardHeader>
+              <CardTitle className="text-base">Liberações</CardTitle>
+              <CardDescription>
+                Módulos que este cliente pode usar e limites do contrato. O padrão vem da área ({areaLabel(workspace.area)}); marque ou desmarque
+                para liberar ou bloquear só para este cliente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ActionForm action={saveEntitlementsAction} className="space-y-4">
+                <input type="hidden" name="workspaceId" value={workspace.id} />
+                <fieldset className="grid gap-2 sm:grid-cols-2" disabled={!boCan(me, "clientes.liberacoes")}>
+                  <legend className="mb-1 text-sm font-medium">Módulos</legend>
+                  {MODULES.map((m) => {
+                    const def = AREAS[areaOf(workspace.area)].modules[m];
+                    const on = moduleEnabled(workspace, m);
+                    return (
+                      <label key={m} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="module" value={m} defaultChecked={on} className="h-4 w-4 accent-primary" />
+                        {MODULE_LABELS[m]}
+                        {on !== def ? <Badge variant="warning">{on ? "liberado" : "bloqueado"}</Badge> : null}
+                      </label>
+                    );
+                  })}
+                </fieldset>
+                <fieldset className="grid gap-3 sm:grid-cols-2" disabled={!boCan(me, "clientes.liberacoes")}>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="maxProfessionals">Máximo de profissionais ativos</Label>
+                    <Input id="maxProfessionals" name="maxProfessionals" type="number" min={1} defaultValue={workspace.maxProfessionals ?? ""} placeholder="Sem limite" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="maxPatients">Máximo de pacientes ativos</Label>
+                    <Input id="maxPatients" name="maxPatients" type="number" min={1} defaultValue={workspace.maxPatients ?? ""} placeholder="Sem limite" />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="note">Motivo</Label>
+                    <Input id="note" name="note" maxLength={300} defaultValue={workspace.entitlementNote ?? ""} placeholder="Ex.: piloto do portal até 31/12" />
+                  </div>
+                </fieldset>
+                {boCan(me, "clientes.liberacoes") ? (
+                  <Button type="submit" variant="outline">
+                    Salvar liberações
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Só quem tem a permissão de liberações muda isto.</p>
+                )}
+              </ActionForm>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Plano</CardTitle>
               <CardDescription>Ajuste manual (cortesia, extensão de teste). Não mexe na cobrança do Stripe: se o cliente tiver assinatura ativa lá, o próximo evento dela sobrescreve este ajuste.</CardDescription>
             </CardHeader>
             <CardContent>
-              {me.role === "admin" ? (
+              {boCan(me, "clientes.editar") ? (
                 <ActionForm action={changePlanAction} className="space-y-3">
                   <input type="hidden" name="workspaceId" value={workspace.id} />
                   <div className="space-y-1.5">

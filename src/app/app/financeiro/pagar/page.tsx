@@ -88,7 +88,7 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
         </div>
       </header>
 
-      <FinanceTabs role={ctx.role} active="payables" />
+      <FinanceTabs role={ctx} active="payables" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (

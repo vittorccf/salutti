@@ -8,6 +8,7 @@ import { cookies, headers } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/lib/db";
 import { secretKey } from "@/lib/auth";
+import { moduleEnabled } from "@/lib/areas";
 
 export const PORTAL_COOKIE = "salutti_portal";
 const PORTAL_AUDIENCE = "salutti-portal";
@@ -111,6 +112,8 @@ export async function getPortalSession() {
       include: { patient: { include: { workspace: true } } },
     });
     if (!access || access.patient.deletedAt || access.patient.workspaceId !== p.workspaceId) return null;
+    // Portal bloqueado para o consultório no backoffice: a sessão do paciente cai.
+    if (!moduleEnabled(access.patient.workspace, "portal")) return null;
     return access;
   } catch {
     return null;

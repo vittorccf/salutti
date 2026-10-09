@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { appOrigin } from "@/lib/app-url";
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { whatsapp } from "@/lib/providers/whatsapp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 async function runDunningAction() {
   "use server";
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const overdueCharges = await db.charge.findMany({
     where: {
       workspaceId: ctx.workspace.id,
@@ -52,7 +53,7 @@ export default async function DunningPage({
 }: {
   searchParams: Promise<{ sent?: string }>;
 }) {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("financeiro.receber");
   const t = await getTranslations("finance.dunning");
   const f = await getFormat();
   const params = await searchParams;

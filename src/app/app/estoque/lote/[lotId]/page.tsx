@@ -34,7 +34,7 @@ export default async function LotTracePage({ params }: { params: Promise<{ lotId
     orderBy: { createdAt: "desc" },
   });
   const uses = movements.filter((m) => m.kind === "uso");
-  const clinical = canSeeClinical(ctx.role);
+  const clinical = canSeeClinical(ctx);
   const patientIds = [...new Set(uses.map((m) => m.patientId).filter((v): v is string => Boolean(v)))];
   const appointmentIds = [...new Set(uses.map((m) => m.appointmentId).filter((v): v is string => Boolean(v)))];
 
@@ -90,7 +90,7 @@ export default async function LotTracePage({ params }: { params: Promise<{ lotId
       </div>
 
       {/* Correção da abertura (só quem gerencia e só produto com validade depois de aberto). */}
-      {lot.product.openShelfLifeHours && canManageStock(ctx.role) ? (
+      {lot.product.openShelfLifeHours && canManageStock(ctx) ? (
         <details className="rounded-xl border bg-card p-4 text-sm">
           <summary className="cursor-pointer font-medium text-brand">{t("correctOpened")}</summary>
           <ActionForm action={correctOpenedAtAction} className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">

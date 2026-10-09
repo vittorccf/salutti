@@ -170,3 +170,82 @@ test("acesso de suporte: senha de 15 min, uso único, somente leitura, sem pront
   await expect(owner.getByText("A equipe Salutti acessou sua conta")).toBeVisible();
   await expect(owner.getByText(/Teste e2e: investigar agenda/)).toBeVisible();
 });
+
+test("permissões: tema escuro, papel Comercial com ajuste, menu por permissão e liberação de módulo por cliente", async ({ page, browser }) => {
+  const tag = Date.now().toString().slice(-6);
+  await page.goto("/backoffice/login");
+  await page.locator("#username").fill("admin");
+  await page.locator("#password").fill(NEW_PASSWORD);
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible();
+
+  // Tema escuro no backoffice.
+  await page.getByRole("button", { name: "Tema escuro" }).click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await page.getByRole("button", { name: "Tema claro" }).click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+
+  // Cadastro com papel Comercial e uma permissão a mais (auditoria).
+  await page.getByRole("link", { name: "Equipe e permissões" }).click();
+  await page.locator("#name").fill(`Comercial ${tag}`);
+  await page.locator("#username").fill(`comercial${tag}`);
+  await page.locator("#role").selectOption("comercial");
+  await page.locator("#password").fill("provisoria-123");
+  await page.getByRole("button", { name: "Adicionar" }).click();
+  await expect(page.getByText(`Comercial ${tag} pode entrar`)).toBeVisible();
+  const card = page.locator("div.rounded-xl, [class*=card]").filter({ hasText: `comercial${tag}` }).first();
+  await card.getByText(/^Permissões · /).click();
+  await card.getByLabel("Ver a auditoria").check();
+  await card.getByRole("button", { name: "Salvar permissões" }).click();
+  await expect(page.getByText("Permissões salvas.")).toBeVisible();
+  // As próprias permissões não mudam pela própria conta.
+  await expect(page.getByText("Suas permissões só mudam por outra pessoa da equipe.")).toHaveCount(1);
+
+  // Quem é Comercial vê clientes e auditoria, mas não a equipe.
+  const ctxC = await browser.newContext({ locale: "pt-BR" });
+  const c = await ctxC.newPage();
+  await c.goto("/backoffice/login");
+  await c.locator("#username").fill(`comercial${tag}`);
+  await c.locator("#password").fill("provisoria-123");
+  await c.getByRole("button", { name: "Entrar" }).click();
+  await c.locator("#current").fill("provisoria-123");
+  await c.locator("#password").fill("comercial-seguro-456");
+  await c.locator("#confirm").fill("comercial-seguro-456");
+  await c.getByRole("button", { name: "Salvar senha" }).click();
+  const nav = c.getByRole("navigation", { name: "Backoffice" });
+  await expect(nav.getByRole("link", { name: "Clientes" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Auditoria" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Equipe e permissões" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Chamados" })).toHaveCount(0);
+  await c.goto("/backoffice/equipe");
+  await expect(c).toHaveURL(/\/backoffice$/);
+
+  // Comercial libera e bloqueia módulos: bloqueia o portal do Guilherme.
+  await c.goto("/backoffice/clientes");
+  await c.getByRole("link", { name: "Consultório Guilherme Quintino" }).click();
+  const lib = c.locator("#liberacoes");
+  await lib.getByLabel("Portal do paciente").uncheck();
+  await lib.getByRole("button", { name: "Salvar liberações" }).click();
+  await expect(c.getByText("Escreva o motivo")).toBeVisible();
+  await lib.locator("#note").fill("Teste e2e de bloqueio");
+  await lib.getByRole("button", { name: "Salvar liberações" }).click();
+  await expect(c.getByText("Liberações salvas.")).toBeVisible();
+
+  // No app, o portal some do menu e a rota não existe.
+  const ctxG = await browser.newContext({ locale: "pt-BR" });
+  const g = await ctxG.newPage();
+  await login(g, "guilherme");
+  await expect(g.getByRole("link", { name: "Portal do paciente" })).toHaveCount(0);
+  expect((await g.goto("/app/portal"))?.status()).toBe(404);
+
+  // Volta ao padrão (os outros testes usam o portal).
+  await c.reload();
+  await c.locator("#liberacoes").getByLabel("Portal do paciente").check();
+  await c.locator("#liberacoes").locator("#note").fill("");
+  await c.locator("#liberacoes").getByRole("button", { name: "Salvar liberações" }).click();
+  await expect(c.getByText("Liberações salvas.")).toBeVisible();
+  await g.goto("/app/portal");
+  await expect(g.getByRole("heading", { name: "Portal do paciente" })).toBeVisible();
+  await ctxC.close();
+  await ctxG.close();
+});

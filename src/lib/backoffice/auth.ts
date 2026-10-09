@@ -5,6 +5,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { secretKey } from "@/lib/auth";
+import { boCan, type BoPermission } from "./permissions";
 
 const COOKIE = "salutti_bo";
 const AUDIENCE = "salutti-backoffice";
@@ -12,7 +13,6 @@ const HOURS = 12;
 export const MAX_ATTEMPTS = 5;
 export const LOCK_MINUTES = 15;
 
-export type BackofficeRole = "admin" | "suporte";
 
 export const createBackofficeSession = async (userId: string) => {
   const token = await new SignJWT({})
@@ -50,11 +50,12 @@ export const getBackofficeUser = async () => {
 };
 
 // Toda página e action do backoffice passa por aqui. Senha provisória obriga a trocar antes de qualquer outra tela.
-export const requireBackoffice = async (opts: { role?: BackofficeRole; allowPendingPassword?: boolean } = {}) => {
+// `perm`: permissão exigida (src/lib/backoffice/permissions.ts). Sem ela, volta para a visão geral.
+export const requireBackoffice = async (opts: { perm?: BoPermission; allowPendingPassword?: boolean } = {}) => {
   const user = await getBackofficeUser();
   if (!user) redirect("/backoffice/login");
   if (user.mustChangePassword && !opts.allowPendingPassword) redirect("/backoffice/senha");
-  if (opts.role === "admin" && user.role !== "admin") redirect("/backoffice");
+  if (opts.perm && !boCan(user, opts.perm)) redirect("/backoffice");
   return user;
 };
 

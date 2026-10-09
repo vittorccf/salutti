@@ -1,4 +1,5 @@
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import { AlertCircle, Building2, FileSignature, Landmark, Receipt as ReceiptIcon
 export const dynamic = "force-dynamic";
 
 export default async function FiscalPage() {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("fiscal.ver");
   const t = await getTranslations("finance.tax");
   const f = await getFormat();
   const [receipts, invoices] = await Promise.all([

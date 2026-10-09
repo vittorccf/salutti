@@ -8,11 +8,12 @@ import { appOrigin } from "@/lib/app-url";
 import { emailSchema } from "@/lib/email";
 import { createInvitation, isInviteRole, rolesFor } from "@/lib/invitations";
 import type { FormResult } from "@/components/forms/action-form";
+import { APP_PERMISSIONS, appDiffFromRole, appGrantProblem, effectiveAppPermissions, isAppPermission, type AppPermission } from "@/lib/app-permissions";
 
 // Gestão de acessos: só dono ou administrador. O dono não pode ser removido nem rebaixado por aqui.
 async function managerContext() {
   const ctx = await requireContext();
-  if (ctx.role !== "owner" && ctx.role !== "admin") return null;
+  if (!ctx.permissions.has("equipe.gerenciar")) return null;
   return ctx;
 }
 
@@ -67,7 +68,7 @@ export async function changeRoleAction(formData: FormData) {
   if (role === "admin" && ctx.role !== "owner") return;
   const m = await db.membership.findFirst({ where: { id: membershipId, workspaceId: ctx.workspace.id } });
   if (!m || m.role === "owner" || m.userId === ctx.user.id) return;
-  await db.membership.update({ where: { id: m.id }, data: { role } });
+  await db.membership.update({ where: { id: m.id }, data: { role, permsGranted: [], permsDenied: [] } });
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -91,4 +92,35 @@ export async function removeMemberAction(formData: FormData) {
   await db.professional.updateMany({ where: { workspaceId: ctx.workspace.id, userId: m.userId }, data: { userId: null } });
   await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "team.remove", entity: "Membership", entityId: m.id });
   revalidatePath("/app/equipe");
+}
+
+// Permissões de um membro (dono ou administrador). Grava só o que difere do padrão do papel. Regras: ninguém edita
+// a si mesmo nem o dono; administrador não edita outro administrador; só concede ou retira o que tem; conteúdo
+// clínico nunca vai para recepção ou financeiro (regra fixa em app-permissions.ts).
+export async function saveMemberPermissionsAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const t = await getTranslations("settings.access");
+  const ctx = await managerContext();
+  if (!ctx) return { erro: t("errors.noPermission") };
+  const m = await db.membership.findFirst({ where: { id: String(formData.get("membershipId")), workspaceId: ctx.workspace.id } });
+  if (!m) return { erro: t("errors.noPermission") };
+  const desired = new Set<AppPermission>(formData.getAll("perm").map(String).filter(isAppPermission));
+  const before = effectiveAppPermissions(m.role, m.permsGranted, m.permsDenied);
+  const problem = appGrantProblem({ role: ctx.role, userId: ctx.user.id, perms: ctx.permissions }, { role: m.role, userId: m.userId }, before, desired);
+  if (problem) return { erro: t(`permissions.errors.${problem}`) };
+  const diff = appDiffFromRole(m.role, desired);
+  await db.membership.update({ where: { id: m.id }, data: diff });
+  const after = effectiveAppPermissions(m.role, diff.permsGranted, diff.permsDenied);
+  await recordAudit({
+    workspaceId: ctx.workspace.id,
+    userId: ctx.user.id,
+    action: "team.permissions",
+    entity: "Membership",
+    entityId: m.id,
+    metadata: {
+      added: APP_PERMISSIONS.filter((p) => after.has(p) && !before.has(p)),
+      removed: APP_PERMISSIONS.filter((p) => before.has(p) && !after.has(p)),
+    },
+  });
+  revalidatePath("/app/equipe");
+  return { ok: t("permissions.saved") };
 }

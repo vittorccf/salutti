@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { getTranslations } from "@/i18n/server";
 import { canManagePayables } from "@/lib/permissions";
+import { moduleEnabled } from "@/lib/areas";
 import { cn } from "@/lib/utils";
 
 // Abas do financeiro: receber (cobranças), pagar e relatórios. Pagar e relatórios mostram o custo do consultório:
 // só dono, administrador e financeiro.
-export async function FinanceTabs({ role, active }: { role: string; active: "receivables" | "payables" | "reports" }) {
-  if (!canManagePayables(role)) return null;
+type TabsCtx = { role: string; permissions: Set<string>; workspace: Parameters<typeof moduleEnabled>[0] };
+export async function FinanceTabs({ role, active }: { role: TabsCtx; active: "receivables" | "payables" | "reports" }) {
+  if (!moduleEnabled(role.workspace, "contas_pagar") || !canManagePayables(role as Parameters<typeof canManagePayables>[0])) return null;
   const t = await getTranslations("payables.tabs");
   const tabs = [
     { key: "receivables", href: "/app/financeiro" },

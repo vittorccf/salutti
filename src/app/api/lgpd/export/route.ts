@@ -11,7 +11,7 @@ export const GET = async (req: Request) => {
   const ctx = await getCurrentContext();
   if (!ctx) return NextResponse.json({ error: "unauth" }, { status: 401 });
   // A exportação leva prontuário e fotos clínicas (dados de saúde): só papéis clínicos.
-  if (!canSeeClinical(ctx.role)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!canSeeClinical(ctx)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const url = new URL(req.url);
   const patientId = url.searchParams.get("patientId");
   if (!patientId) return NextResponse.json({ error: "missing patientId" }, { status: 400 });

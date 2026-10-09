@@ -175,7 +175,8 @@
     "errors": {
       "invalid": "Confira o nome, o tipo de profissional e o valor da hora.",
       "userLink": "Esse usuário não pode ser vinculado (não é da equipe ou já tem cadastro ativo)."
-    }
+    },
+    "contractLimit": "O contrato deste consultório permite até {max, plural, one {# profissional ativo} other {# profissionais ativos}}. Fale com o suporte para ampliar."
   },
   "lgpd": {
     "title": "LGPD e conformidade",
@@ -279,6 +280,30 @@
       "role": "Escolha um papel disponível para esta conta.",
       "adminOnlyOwner": "Só o dono da conta convida administradores.",
       "alreadyMember": "Essa pessoa já tem acesso a esta conta."
+    },
+    "permissions": {
+      "open": "Permissões de {name}",
+      "legend": "Permissões de {name}",
+      "save": "Salvar permissões",
+      "saved": "Permissões salvas.",
+      "clinicalFixed": "Só para papéis clínicos (sigilo do prontuário).",
+      "items": {
+        "agenda.gerenciar": "Agendar e alterar sessões",
+        "pacientes.gerenciar": "Cadastrar e editar pacientes",
+        "clinico.ver": "Ver prontuário, portal e cartão diário",
+        "financeiro.receber": "Cobranças e recebimentos",
+        "financeiro.pagar": "Contas a pagar e relatórios financeiros",
+        "fiscal.ver": "Fiscal (notas e recibos)",
+        "estoque.gerenciar": "Gerenciar estoque",
+        "equipe.gerenciar": "Gerenciar equipe e acessos",
+        "lgpd.gerenciar": "LGPD (exportar, anonimizar e excluir dados)"
+      },
+      "errors": {
+        "self": "Você não pode mudar as próprias permissões.",
+        "owner": "As permissões do dono não mudam.",
+        "peer": "Só o dono muda as permissões de um administrador.",
+        "escalation": "Você só pode dar ou retirar permissões que você mesmo tem."
+      }
     }
   }
 }

@@ -59,11 +59,11 @@ export default async function PatientPage({
 }) {
   const ctx = await requireContext();
   // Recepção e financeiro veem cadastro, sessões e cobranças, mas não conteúdo clínico (src/lib/permissions.ts).
-  const clinical = canSeeClinical(ctx.role);
+  const clinical = canSeeClinical(ctx);
   const { id } = await params;
   const { foto } = await searchParams;
   // Salutti Estética: histórico de procedimentos e fotos clínicas (só equipe clínica).
-  const aesthetic = moduleEnabled(ctx.workspace.area, "procedimentos");
+  const aesthetic = moduleEnabled(ctx.workspace, "procedimentos");
   const patient = await db.patient.findFirst({
     where: { id, workspaceId: ctx.workspace.id, deletedAt: null },
     include: {
@@ -204,7 +204,7 @@ export default async function PatientPage({
                   : t("portalNotGranted")}
             </CardDescription>
           </div>
-          {clinical ? (
+          {clinical && moduleEnabled(ctx.workspace, "portal") ? (
             <Button size="sm" variant="outline" asChild>
               <Link href={`/app/pacientes/${patient.id}/portal`}>{t("portalOpen")}</Link>
             </Button>

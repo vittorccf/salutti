@@ -120,7 +120,7 @@ export default async function DashboardPage() {
   const onboarding = await onboardingProgress(wsId);
 
   // Alertas de estoque (área com o módulo ligado): abaixo do mínimo, vencendo em 30 dias, vencido ou aberto vencido.
-  const stock = moduleEnabled(ctx.workspace.area, "estoque") ? await stockAlerts(wsId, now) : null;
+  const stock = moduleEnabled(ctx.workspace, "estoque") ? await stockAlerts(wsId, now) : null;
   const stockCounts = stock
     ? {
         low: stock.low.length,
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
   const stockTotal = stockCounts ? stockCounts.low + stockCounts.expiring + stockCounts.expired : 0;
 
   // Contas a pagar vencidas e que vencem em 7 dias (só para quem cuida do financeiro).
-  const payables = canManagePayables(ctx.role) ? await payablesDue(wsId) : null;
+  const payables = canManagePayables(ctx) && moduleEnabled(ctx.workspace, "contas_pagar") ? await payablesDue(wsId) : null;
 
   // Garante insights ao menos uma vez (auto-seed lazy)
   let liveInsights = insights;

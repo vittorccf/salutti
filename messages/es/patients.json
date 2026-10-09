@@ -103,7 +103,8 @@
     "fullNameRequired": "Ingresa el nombre completo.",
     "tooLong": "Uno de los campos superó el tamaño máximo. Acorta el texto e inténtalo de nuevo.",
     "birthDateInvalid": "Fecha de nacimiento no válida.",
-    "invalid": "Revisa los datos del formulario e inténtalo de nuevo."
+    "invalid": "Revisa los datos del formulario e inténtalo de nuevo.",
+    "contractLimit": "El contrato de este consultorio permite hasta {max, plural, one {# paciente activo} other {# pacientes activos}}. Habla con soporte para ampliarlo."
   },
   "records": {
     "title": "Historia clínica",

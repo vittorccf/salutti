@@ -18,7 +18,7 @@ export const ticketStatusVariant = (s: string): Variant =>
 export const ticketPriorityVariant = (p: string): Variant =>
   ({ urgente: "destructive", alta: "warning", normal: "muted", baixa: "secondary" })[p] as Variant ?? "muted";
 
-export const BACKOFFICE_ROLES = { admin: "Administrador", suporte: "Suporte" } as const;
+export const BACKOFFICE_ROLES = { admin: "Administrador", suporte: "Suporte", financeiro: "Financeiro", comercial: "Comercial" } as const;
 export const backofficeRoleLabel = (r: string) => pick(BACKOFFICE_ROLES, r);
 
 export const MEMBER_ROLES = {

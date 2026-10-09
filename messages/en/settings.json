@@ -175,7 +175,8 @@
     "errors": {
       "invalid": "Check the name, professional type and hourly rate.",
       "userLink": "This user can't be linked (not on the team or already has an active profile)."
-    }
+    },
+    "contractLimit": "This practice's contract allows up to {max, plural, one {# active professional} other {# active professionals}}. Contact support to increase it."
   },
   "lgpd": {
     "title": "LGPD and compliance",
@@ -279,6 +280,30 @@
       "role": "Choose a role available for this account.",
       "adminOnlyOwner": "Only the account owner can invite admins.",
       "alreadyMember": "This person already has access to this account."
+    },
+    "permissions": {
+      "open": "{name}'s permissions",
+      "legend": "{name}'s permissions",
+      "save": "Save permissions",
+      "saved": "Permissions saved.",
+      "clinicalFixed": "Clinical roles only (record confidentiality).",
+      "items": {
+        "agenda.gerenciar": "Schedule and change sessions",
+        "pacientes.gerenciar": "Add and edit patients",
+        "clinico.ver": "See records, portal and daily card",
+        "financeiro.receber": "Charges and payments received",
+        "financeiro.pagar": "Bills to pay and financial reports",
+        "fiscal.ver": "Tax (invoices and receipts)",
+        "estoque.gerenciar": "Manage inventory",
+        "equipe.gerenciar": "Manage team and access",
+        "lgpd.gerenciar": "LGPD (export, anonymize and delete data)"
+      },
+      "errors": {
+        "self": "You can't change your own permissions.",
+        "owner": "The owner's permissions don't change.",
+        "peer": "Only the owner changes an admin's permissions.",
+        "escalation": "You can only give or remove permissions you have yourself."
+      }
     }
   }
 }

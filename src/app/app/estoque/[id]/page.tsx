@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     orderBy: { createdAt: "desc" },
     take: 100,
   });
-  const clinical = canSeeClinical(ctx.role);
+  const clinical = canSeeClinical(ctx);
   const patientIds = [...new Set(movements.map((m) => m.patientId).filter((v): v is string => Boolean(v)))];
   const userIds = [...new Set(movements.map((m) => m.userId).filter((v): v is string => Boolean(v)))];
   const [patients, users, t, tk, tu, tm, tr, f] = await Promise.all([
@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const now = new Date();
   const summary = productSummary(product.lots, product, now);
-  const canManage = canManageStock(ctx.role);
+  const canManage = canManageStock(ctx);
   const q = (n: number) => formatQty(f, tu, n, product.unit);
   const withBalance = product.lots.filter((l) => l.quantity > 0);
   const lotOption = (l: (typeof product.lots)[number]) =>

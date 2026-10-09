@@ -23,34 +23,46 @@ import { AREAS, type Module } from "@/lib/areas";
 import { SALUTTIN_ENABLED } from "@/lib/features";
 
 // `module`: item que só aparece quando o módulo está ligado na área do consultório (src/lib/areas.ts).
-const nav: { href: string; label: string; icon: typeof Users; module?: Module }[] = [
+const nav: { href: string; label: string; icon: typeof Users; module?: Module; perm?: string }[] = [
   { href: "/app", label: "dashboard", icon: LayoutDashboard },
   { href: "/app/pacientes", label: "patients", icon: Users },
   { href: "/app/agenda", label: "schedule", icon: CalendarDays },
   { href: "/app/procedimentos", label: "procedures", icon: Syringe, module: "procedimentos" },
   { href: "/app/estoque", label: "stock", icon: Package, module: "estoque" },
   { href: "/app/prontuario", label: "records", icon: ClipboardList, module: "prontuario" },
-  { href: "/app/portal", label: "portal", icon: MessagesSquare },
-  { href: "/app/financeiro", label: "finance", icon: Banknote },
+  { href: "/app/portal", label: "portal", icon: MessagesSquare, module: "portal", perm: "clinico.ver" },
+  { href: "/app/financeiro", label: "finance", icon: Banknote, perm: "financeiro.receber" },
   { href: "/app/convenios", label: "insurance", icon: Handshake, module: "convenios" },
-  { href: "/app/fiscal", label: "tax", icon: FileSignature },
+  { href: "/app/fiscal", label: "tax", icon: FileSignature, perm: "fiscal.ver" },
   ...(SALUTTIN_ENABLED ? [{ href: "/app/saluttin", label: "saluttin", icon: Sparkles }] : []),
   { href: "/app/comunicacao", label: "communication", icon: MessageSquareText },
   { href: "/app/equipe", label: "team", icon: Stethoscope },
-  { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck },
+  { href: "/app/lgpd", label: "lgpd", icon: ShieldCheck, perm: "lgpd.gerenciar" },
 ];
 
 // `modules`: módulos ligados na área do consultório ativo. Sem a lista, vale o menu da Salutti.
 const MENTAL_MODULES = (Object.keys(AREAS.mental.modules) as Module[]).filter((m) => AREAS.mental.modules[m]);
 
 // `portalPending`: mensagens não lidas e pedidos de remarcação do portal do paciente (badge no item).
-export const SidebarNav = ({ clinical = true, modules = MENTAL_MODULES, portalPending = 0 }: { clinical?: boolean; modules?: Module[]; portalPending?: number }) => {
+// `perms`: permissões do membro (sem a lista, mostra tudo o que o módulo permite).
+export const SidebarNav = ({
+  clinical = true,
+  modules = MENTAL_MODULES,
+  portalPending = 0,
+  perms,
+}: {
+  clinical?: boolean;
+  modules?: Module[];
+  portalPending?: number;
+  perms?: string[];
+}) => {
   const pathname = usePathname();
   const t = useTranslations("common.nav");
   return (
     <nav className="space-y-1">
       {nav
         .filter((item) => !item.module || modules.includes(item.module))
+        .filter((item) => !item.perm || !perms || perms.includes(item.perm))
         // Prontuário e portal (mensagens e tarefas do paciente) são conteúdo clínico.
         .filter((item) => clinical || (item.href !== "/app/prontuario" && item.href !== "/app/portal"))
         .map((item) => {

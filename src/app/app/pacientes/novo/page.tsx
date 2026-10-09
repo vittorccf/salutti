@@ -1,4 +1,5 @@
 import { requireContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { createPatientAction } from "../_actions";
 import { getTranslations } from "@/i18n/server";
 
 export default async function NewPatientPage() {
-  const ctx = await requireContext();
+  const ctx = await requirePermission("pacientes.gerenciar");
   const plans = await db.insurancePlan.findMany({ where: { workspaceId: ctx.workspace.id, active: true }, orderBy: { name: "asc" } });
   const t = await getTranslations("patients.new");
   return (

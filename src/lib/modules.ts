@@ -7,7 +7,7 @@ import { canSeeClinical } from "./permissions";
 
 export async function requireModule(module: Module, { clinical = false } = {}) {
   const ctx = await requireContext();
-  if (!moduleEnabled(ctx.workspace.area, module)) notFound();
-  if (clinical && !canSeeClinical(ctx.role)) notFound();
+  if (!moduleEnabled(ctx.workspace, module)) notFound();
+  if (clinical && !canSeeClinical(ctx)) notFound();
   return ctx;
 }
