@@ -9,7 +9,17 @@ const recordAudit = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/db", () => ({ db, assertNotSupportSession: async () => {} }));
 vi.mock("@/lib/audit", () => ({ recordAudit }));
 
-import { billing, billingConfigured, priceMismatch, verifyStripeSignature } from "@/lib/providers/billing";
+import {
+  billing,
+  billingConfigured,
+  lookupKeyFor,
+  missingEvents,
+  priceMismatch,
+  stripeMode,
+  syncStripe,
+  verifyStripeSignature,
+  WEBHOOK_EVENTS,
+} from "@/lib/providers/billing";
 import { accessExpired } from "@/lib/plan-access";
 import { POST as webhook } from "@/app/api/stripe/webhook/route";
 
@@ -188,5 +198,101 @@ describe("webhook", () => {
     db.workspace.findUnique.mockResolvedValue(null);
     await call({ id: "e", type: "checkout.session.completed", data: { object: { payment_status: "paid", metadata: { workspaceId: "x", plan: "basico" } } } });
     expect(db.workspace.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("sincronização com o Stripe", () => {
+  const PLANS = [
+    { code: "trial", name: "Teste grátis", priceCents: 0, interval: "trial", stripePriceId: null, active: true },
+    { code: "basico", name: "Básico", priceCents: 4990, interval: "mensal", stripePriceId: "price_ok", active: true },
+    { code: "anual", name: "Anual", priceCents: 74990, interval: "anual", stripePriceId: null, active: true },
+    { code: "velho", name: "Velho", priceCents: 1990, interval: "mensal", stripePriceId: null, active: false },
+  ];
+  const recurring = (interval: string) => ({ interval, interval_count: 1 });
+  const PRICES: Record<string, object> = {
+    price_ok: { id: "price_ok", product: "prod_basico", active: true, currency: "brl", unit_amount: 4990, recurring: recurring("month") },
+    price_novo_anual: { id: "price_novo_anual", product: "prod_anual", active: true, currency: "brl", unit_amount: 74990, recurring: recurring("year") },
+    price_novo_velho: { id: "price_novo_velho", product: "prod_velho", active: true, currency: "brl", unit_amount: 1990, recurring: recurring("month") },
+  };
+
+  // API do Stripe falsa, por rota; `endpoints` é a lista de webhooks já cadastrados.
+  const fakeStripe = (endpoints: object[], portals: object[] = []) => {
+    const calls: { method: string; path: string; body: URLSearchParams }[] = [];
+    const json = (v: unknown) => new Response(JSON.stringify(v));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string, init: RequestInit) => {
+        const url = new URL(input);
+        const path = url.pathname.replace("/v1/", "");
+        const method = init.method ?? "GET";
+        const body = new URLSearchParams(method === "POST" ? String(init.body) : url.search);
+        calls.push({ method, path, body });
+        if (method === "GET" && path.startsWith("prices/")) return json(PRICES[path.slice(7)] ?? {});
+        if (method === "GET" && path === "prices") return json({ data: [] });
+        if (path === "products/search") return json({ data: [] });
+        if (method === "POST" && path === "products") return json({ id: `prod_${body.get("metadata[planCode]")}` });
+        if (method === "POST" && path === "prices") return json({ id: `price_novo_${body.get("metadata[planCode]")}` });
+        if (method === "GET" && path === "webhook_endpoints") return json({ data: endpoints });
+        if (method === "POST" && path === "webhook_endpoints") return json({ id: "we_1", secret: "whsec_novo" });
+        if (method === "GET" && path === "billing_portal/configurations") return json({ data: portals });
+        return json({ id: "ok" });
+      }),
+    );
+    return calls;
+  };
+
+  it("chaves e eventos", () => {
+    expect(lookupKeyFor({ code: "anual", priceCents: 74990, interval: "anual" })).toBe("salutti_anual_74990_year");
+    expect(missingEvents(["*"])).toEqual([]);
+    expect(missingEvents(["checkout.session.completed"])).toEqual(WEBHOOK_EVENTS.slice(1));
+    process.env.STRIPE_SECRET_KEY = "sk_live_1";
+    expect(stripeMode()).toBe("produção");
+    process.env.STRIPE_SECRET_KEY = "sk_test_1";
+    expect(stripeMode()).toBe("teste");
+  });
+
+  it("reaproveita o preço que bate, cria os que faltam, cria o webhook e o portal só com planos ativos", async () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_1";
+    const calls = fakeStripe([]);
+    const report = await syncStripe(PLANS, "https://salutti.vercel.app");
+
+    expect(report.mode).toBe("teste");
+    expect(report.prices.map((p) => [p.code, p.priceId, p.created])).toEqual([
+      ["basico", "price_ok", false],
+      ["anual", "price_novo_anual", true],
+      ["velho", "price_novo_velho", true],
+    ]);
+    const anual = calls.find((c) => c.method === "POST" && c.path === "prices" && c.body.get("metadata[planCode]") === "anual")!;
+    expect(anual.body.get("currency")).toBe("brl");
+    expect(anual.body.get("unit_amount")).toBe("74990");
+    expect(anual.body.get("recurring[interval]")).toBe("year");
+    expect(anual.body.get("lookup_key")).toBe("salutti_anual_74990_year");
+
+    expect(report.webhook).toEqual({ url: "https://salutti.vercel.app/api/stripe/webhook", status: "criado", secret: "whsec_novo" });
+    const hook = calls.find((c) => c.method === "POST" && c.path === "webhook_endpoints")!;
+    expect([0, 1, 2].map((i) => hook.body.get(`enabled_events[${i}]`))).toEqual(WEBHOOK_EVENTS);
+
+    expect(report.portal).toBe("criado");
+    const portal = calls.find((c) => c.method === "POST" && c.path === "billing_portal/configurations")!;
+    expect(portal.body.get("features[subscription_cancel][mode]")).toBe("at_period_end");
+    expect(portal.body.get("features[subscription_update][products][0][prices][0]")).toBe("price_ok");
+    expect(portal.body.get("features[subscription_update][products][1][prices][0]")).toBe("price_novo_anual");
+    expect(portal.body.get("features[subscription_update][products][2][product]")).toBeNull();
+    expect(portal.body.get("default_return_url")).toBe("https://salutti.vercel.app/app/assinatura");
+  });
+
+  it("webhook existente: só acrescenta os eventos que faltam e atualiza o portal padrão", async () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_1";
+    const calls = fakeStripe(
+      [{ id: "we_9", url: "https://salutti.vercel.app/api/stripe/webhook", enabled_events: ["checkout.session.completed"], status: "enabled" }],
+      [{ id: "bpc_1" }],
+    );
+    const report = await syncStripe(PLANS.slice(0, 2), "https://salutti.vercel.app");
+    expect(report.webhook).toEqual({ url: "https://salutti.vercel.app/api/stripe/webhook", status: "eventos adicionados" });
+    const update = calls.find((c) => c.method === "POST" && c.path === "webhook_endpoints/we_9")!;
+    expect([0, 1, 2].map((i) => update.body.get(`enabled_events[${i}]`))).toEqual(WEBHOOK_EVENTS);
+    expect(calls.some((c) => c.method === "POST" && c.path === "webhook_endpoints")).toBe(false);
+    expect(report.portal).toBe("atualizado");
+    expect(calls.some((c) => c.method === "POST" && c.path === "billing_portal/configurations/bpc_1")).toBe(true);
   });
 });

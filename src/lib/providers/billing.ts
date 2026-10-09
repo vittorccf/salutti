@@ -106,6 +106,120 @@ export const billing = {
   },
 };
 
+// Eventos que o webhook (/api/stripe/webhook) trata.
+export const WEBHOOK_EVENTS = ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"];
+
+export const stripeMode = () => ((process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_live_") ? "produção" : "teste");
+
+// Chave estável do preço no Stripe: muda com o valor ou a recorrência, então um preço novo nunca reaproveita um antigo.
+export const lookupKeyFor = (plan: { code: string; priceCents: number; interval: string }) =>
+  `salutti_${plan.code}_${plan.priceCents}_${INTERVALS[plan.interval] ?? plan.interval}`;
+
+export const missingEvents = (enabled: string[]) =>
+  enabled.includes("*") ? [] : WEBHOOK_EVENTS.filter((e) => !enabled.includes(e));
+
+type SyncPlan = { code: string; name: string; priceCents: number; interval: string; stripePriceId: string | null; active: boolean };
+type WebhookEndpoint = { id: string; url: string; enabled_events: string[]; status: string; secret?: string };
+
+export type StripeSyncReport = {
+  mode: string;
+  prices: { code: string; name: string; active: boolean; priceId: string; created: boolean }[];
+  webhook: { url: string; status: "ok" | "eventos adicionados" | "criado" | "desativado"; secret?: string };
+  portal: "criado" | "atualizado";
+};
+
+// Preço que cobra o plano: o já vinculado, se ainda bate; senão um ativo com a mesma lookup key; senão um novo.
+async function ensurePrice(plan: SyncPlan) {
+  if (plan.stripePriceId) {
+    const current = await stripe<StripePrice>("GET", `prices/${encodeURIComponent(plan.stripePriceId)}`).catch(() => null);
+    if (current && !priceMismatch(current, plan)) return { priceId: current.id, created: false };
+  }
+  const lookupKey = lookupKeyFor(plan);
+  const found = await stripe<{ data: StripePrice[] }>("GET", "prices", { lookup_keys: [lookupKey], active: true });
+  const usable = found.data.find((p) => !priceMismatch(p, plan));
+  if (usable) return { priceId: usable.id, created: false };
+
+  const products = await stripe<{ data: { id: string }[] }>("GET", "products/search", {
+    query: `metadata['planCode']:'${plan.code}' AND active:'true'`,
+  });
+  const productId =
+    products.data[0]?.id ??
+    (await stripe<{ id: string }>("POST", "products", { name: `Salutti ${plan.name}`, metadata: { planCode: plan.code } })).id;
+  const price = await stripe<{ id: string }>("POST", "prices", {
+    product: productId,
+    currency: "brl",
+    unit_amount: plan.priceCents,
+    recurring: { interval: INTERVALS[plan.interval] },
+    lookup_key: lookupKey,
+    transfer_lookup_key: true,
+    metadata: { planCode: plan.code },
+  });
+  return { priceId: price.id, created: true };
+}
+
+async function ensureWebhook(appUrl: string): Promise<StripeSyncReport["webhook"]> {
+  const url = `${appUrl}/api/stripe/webhook`;
+  const list = await stripe<{ data: WebhookEndpoint[] }>("GET", "webhook_endpoints", { limit: 100 });
+  const endpoint = list.data.find((e) => e.url === url);
+  if (!endpoint) {
+    // O segredo só aparece na criação: vai para a STRIPE_WEBHOOK_SECRET na Vercel.
+    const created = await stripe<WebhookEndpoint>("POST", "webhook_endpoints", {
+      url,
+      enabled_events: WEBHOOK_EVENTS,
+      description: "Salutti: assinatura dos consultórios",
+    });
+    return { url, status: "criado", secret: created.secret };
+  }
+  const missing = missingEvents(endpoint.enabled_events);
+  if (missing.length) {
+    await stripe("POST", `webhook_endpoints/${endpoint.id}`, { enabled_events: [...endpoint.enabled_events, ...missing] });
+  }
+  if (endpoint.status !== "enabled") return { url, status: "desativado" };
+  return { url, status: missing.length ? "eventos adicionados" : "ok" };
+}
+
+// Portal do cliente: trocar de plano entre os do catálogo, atualizar cartão, ver faturas e cancelar no fim do período.
+async function ensurePortal(appUrl: string, prices: { priceId: string }[]): Promise<StripeSyncReport["portal"]> {
+  const withProduct = await Promise.all(
+    prices.map((p) => stripe<{ id: string; product: string }>("GET", `prices/${encodeURIComponent(p.priceId)}`)),
+  );
+  const config = {
+    business_profile: { privacy_policy_url: `${appUrl}/privacidade`, terms_of_service_url: `${appUrl}/termos` },
+    default_return_url: `${appUrl}/app/assinatura`,
+    features: {
+      customer_update: { enabled: true, allowed_updates: ["email", "name", "tax_id", "address"] },
+      invoice_history: { enabled: true },
+      payment_method_update: { enabled: true },
+      subscription_cancel: { enabled: true, mode: "at_period_end" },
+      subscription_update: {
+        enabled: withProduct.length > 0,
+        default_allowed_updates: ["price"],
+        proration_behavior: "create_prorations",
+        products: withProduct.map((p) => ({ product: p.product, prices: [p.id] })),
+      },
+    },
+  };
+  const current = await stripe<{ data: { id: string }[] }>("GET", "billing_portal/configurations", { is_default: true, active: true });
+  if (current.data[0]) {
+    await stripe("POST", `billing_portal/configurations/${current.data[0].id}`, config);
+    return "atualizado";
+  }
+  await stripe("POST", "billing_portal/configurations", config);
+  return "criado";
+}
+
+// Liga o catálogo ao Stripe: preços dos planos pagos, endpoint do webhook e portal do cliente. Pode rodar de novo à vontade.
+export async function syncStripe(plans: SyncPlan[], appUrl: string): Promise<StripeSyncReport> {
+  const prices = [];
+  for (const plan of plans.filter((p) => p.interval !== "trial" && p.priceCents > 0)) {
+    prices.push({ code: plan.code, name: plan.name, active: plan.active, ...(await ensurePrice(plan)) });
+  }
+  const webhook = await ensureWebhook(appUrl);
+  // No portal, o cliente só troca para planos disponíveis a novos clientes.
+  const portal = await ensurePortal(appUrl, prices.filter((p) => p.active));
+  return { mode: stripeMode(), prices, webhook, portal };
+}
+
 export function priceMismatch(price: StripePrice, plan: { priceCents: number; interval: string }): string | null {
   if (!price.active) return "Esse preço está arquivado no Stripe.";
   if (!price.recurring) return "Esse preço não é recorrente. Crie um preço de assinatura no Stripe.";

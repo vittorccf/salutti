@@ -1,7 +1,14 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Instagram @salutti_app" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Sincronizar com o Stripe" é a mais recente; as demais ficam como histórico.
 
+
+## Sincronizar com o Stripe (2026-10-09) — branch `feat/stripe-sincronizar`
+
+- Botão **Sincronizar com o Stripe** em `/backoffice/planos` (admin): cria ou reaproveita os preços dos planos pagos e grava o `price_…`,
+  confere ou cria o webhook e configura o portal do cliente. Detalhes em `docs/BACKOFFICE.md`. Testes em `tests/unit/billing.test.ts`.
+- **Pendente do dono:** clicar no botão depois do deploy (e de novo ao passar para a chave `sk_live_`); se o webhook for criado, copiar o
+  segredo mostrado para `STRIPE_WEBHOOK_SECRET` e publicar de novo; Revenue recovery cancelando; `LEGAL_ENTITY` antes de cobrar de verdade.
 
 ## Instagram @salutti_app (2026-10-08) — branch `feat/instagram-salutti`
 
