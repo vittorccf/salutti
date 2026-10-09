@@ -9,6 +9,7 @@ import {
   Handshake,
   LayoutDashboard,
   MessageSquareText,
+  MessagesSquare,
   Package,
   ShieldCheck,
   Sparkles,
@@ -29,6 +30,7 @@ const nav: { href: string; label: string; icon: typeof Users; module?: Module }[
   { href: "/app/procedimentos", label: "procedures", icon: Syringe, module: "procedimentos" },
   { href: "/app/estoque", label: "stock", icon: Package, module: "estoque" },
   { href: "/app/prontuario", label: "records", icon: ClipboardList, module: "prontuario" },
+  { href: "/app/portal", label: "portal", icon: MessagesSquare },
   { href: "/app/financeiro", label: "finance", icon: Banknote },
   { href: "/app/convenios", label: "insurance", icon: Handshake, module: "convenios" },
   { href: "/app/fiscal", label: "tax", icon: FileSignature },
@@ -41,14 +43,16 @@ const nav: { href: string; label: string; icon: typeof Users; module?: Module }[
 // `modules`: módulos ligados na área do consultório ativo. Sem a lista, vale o menu da Salutti.
 const MENTAL_MODULES = (Object.keys(AREAS.mental.modules) as Module[]).filter((m) => AREAS.mental.modules[m]);
 
-export const SidebarNav = ({ clinical = true, modules = MENTAL_MODULES }: { clinical?: boolean; modules?: Module[] }) => {
+// `portalPending`: mensagens não lidas e pedidos de remarcação do portal do paciente (badge no item).
+export const SidebarNav = ({ clinical = true, modules = MENTAL_MODULES, portalPending = 0 }: { clinical?: boolean; modules?: Module[]; portalPending?: number }) => {
   const pathname = usePathname();
   const t = useTranslations("common.nav");
   return (
     <nav className="space-y-1">
       {nav
         .filter((item) => !item.module || modules.includes(item.module))
-        .filter((item) => clinical || item.href !== "/app/prontuario")
+        // Prontuário e portal (mensagens e tarefas do paciente) são conteúdo clínico.
+        .filter((item) => clinical || (item.href !== "/app/prontuario" && item.href !== "/app/portal"))
         .map((item) => {
         const Icon = item.icon;
         const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(`${item.href}/`));
@@ -65,6 +69,12 @@ export const SidebarNav = ({ clinical = true, modules = MENTAL_MODULES }: { clin
           >
             <Icon className={cn("h-5 w-5 shrink-0", active ? "text-brand" : "text-muted-foreground")} />
             {t(item.label)}
+            {item.href === "/app/portal" && portalPending > 0 ? (
+              <span className="ml-auto rounded-full bg-highlight px-2 py-0.5 text-xs font-semibold tabular-nums text-highlight-foreground">
+                <span className="sr-only">{t("portalPending", { count: portalPending })}</span>
+                <span aria-hidden>{portalPending > 99 ? "99+" : portalPending}</span>
+              </span>
+            ) : null}
           </Link>
         );
       })}

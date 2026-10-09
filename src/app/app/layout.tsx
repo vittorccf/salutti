@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
 import { SidebarNav } from "./_components/sidebar-nav";
+import { portalPendingCount } from "@/lib/portal";
 import { UserMenu } from "./_components/user-menu";
 import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
@@ -93,7 +94,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav clinical={canSeeClinical(ctx.role)} modules={modules} />
+        <SidebarNav clinical={canSeeClinical(ctx.role)} modules={modules} portalPending={canSeeClinical(ctx.role) ? await portalPendingCount(ctx) : 0} />
       </div>
       {trialDays !== null ? (
         <>

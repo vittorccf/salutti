@@ -155,6 +155,12 @@ export default async function AppointmentDetailPage({
             {t("when", { start: f.dateTime(appt.startsAt), end: f.time(appt.endsAt) })} ·{" "}
             <StatusBadge kind="appointment" status={appt.status} />
           </p>
+          {appt.patientResponse ? (
+            <p className={`mt-1 text-sm ${appt.patientResponse === "confirmed" ? "text-success-strong" : "text-warning-strong"}`}>
+              {(await getTranslations("portal.pro.response"))(appt.patientResponse)}
+              {appt.patientResponseNote && canSeeClinical(ctx.role) ? `: “${appt.patientResponseNote}”` : ""}
+            </p>
+          ) : null}
         </div>
         <div className="flex gap-2 flex-wrap">
           {appt.meetingUrl ? (

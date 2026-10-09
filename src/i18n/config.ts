@@ -14,6 +14,6 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 };
 
 // Arquivos de mensagens por área: messages/<idioma>/<namespace>.json
-export const NAMESPACES = ["common", "auth", "public", "dashboard", "settings", "patients", "schedule", "finance", "stock", "aesthetics", "support", "payables"] as const;
+export const NAMESPACES = ["common", "auth", "public", "dashboard", "settings", "patients", "schedule", "finance", "stock", "aesthetics", "support", "payables", "portal"] as const;
 
 export const isLocale = (v: unknown): v is Locale => typeof v === "string" && (LOCALES as readonly string[]).includes(v);

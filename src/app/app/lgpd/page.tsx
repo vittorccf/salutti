@@ -44,12 +44,18 @@ async function removeClinicalPhotos(workspaceId: string, patientId: string) {
   const signed = await db.consentRecord.findMany({ where: { workspaceId, patientId, signatureId: { not: null } }, select: { signatureId: true } });
   for (const c of signed) await media.remove(c.signatureId);
   await db.consentRecord.updateMany({ where: { workspaceId, patientId, signatureId: { not: null } }, data: { signatureId: null } });
+  // Acesso ao portal guarda CPF e senha: sai. As mensagens ficam como registro do atendimento (como as evoluções).
+  await db.patientPortalAccess.deleteMany({ where: { patientId, patient: { workspaceId } } });
 }
 
 async function anonymizeAction(formData: FormData) {
   "use server";
   const ctx = await requireContext({ allowExpired: true });
   const patientId = formData.get("patientId") as string;
+  // Texto livre do portal (mensagens, comentários de tarefa, recados de remarcação) pode citar nome e contato.
+  await db.portalMessage.deleteMany({ where: { workspaceId: ctx.workspace.id, patientId } });
+  await db.portalHighlight.updateMany({ where: { workspaceId: ctx.workspace.id, patientId }, data: { patientNote: null } });
+  await db.appointment.updateMany({ where: { workspaceId: ctx.workspace.id, patientId }, data: { patientResponseNote: null } });
   const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
   // Tudo o que identifica a pessoa sai: contato, documentos, endereço completo, nascimento e foto.
   const anonymized = await db.patient.updateMany({

@@ -1,7 +1,25 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Contas a pagar e relatórios financeiros" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Portal do paciente" é a mais recente; as demais ficam como histórico.
 
+
+## Portal do paciente (2026-10-09) — branch `feat/portal-paciente`
+
+- **Acesso:**
+  - O profissional gera um convite de uso único (72h) e o envia pelo próprio WhatsApp.
+  - O paciente confirma a data de nascimento e/ou o CPF do cadastro e cria a senha; depois entra com **CPF + senha**.
+  - Custo zero, sem e-mail nem SMS.
+  - Limite de tentativas por CPF + IP e por IP, JWT com audiência própria e versão de sessão.
+- **Paciente:**
+  - Semana: próxima sessão com "entrar" 15 minutos antes, .ics, confirmar ou remarcar, check-in de 30 segundos e destaques/tarefas.
+  - Mensagens, com aviso de emergência.
+  - Conta: recibos e senha.
+- **Profissional:**
+  - "Portal do paciente" no menu, com contador de pendências.
+  - Portal de cada paciente: conversa, destaques, acesso, respostas e check-ins.
+  - A agenda mostra a resposta do paciente.
+- Os links antigos de `/portal/<token>` deixam de abrir o portal. A caixa de entrada lista quem precisa de convite novo.
+- Detalhes e pendências: `docs/PORTAL-PACIENTE.md`. Revisado por qualidade, advogado do diabo e psicólogo.
 
 ## Contas a pagar e relatórios financeiros (2026-10-09) — branch `feat/contas-a-pagar`
 

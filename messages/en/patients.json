@@ -76,10 +76,7 @@
     "card": "Member ID",
     "saveInsurance": "Save health plan",
     "portalTitle": "Patient portal · Daily cards",
-    "portalLink": "Access link:",
-    "portalNotGranted": "The portal hasn’t been enabled for this patient yet.",
-    "portalRenew": "Renew link",
-    "portalGenerate": "Create portal link",
+    "portalNotGranted": "The portal hasn't been enabled for this patient yet.",
     "dailyCardsEmpty": "No daily cards yet. When the patient logs their mood in the portal, it shows up here.",
     "anxiety": "Anxiety {value}/5",
     "sessionsTitle": "Session history",
@@ -97,7 +94,10 @@
     "consentRecord": "Legal basis: {basis} · {state} · {date}",
     "granted": "granted",
     "revoked": "revoked",
-    "rights": "To exercise the 9 data subject rights (access, portability, deletion, etc.), open the <link>LGPD</link> page."
+    "rights": "To exercise the 9 data subject rights (access, portability, deletion, etc.), open the <link>LGPD</link> page.",
+    "portalActive": "Portal active: the patient signs in with CPF and password.",
+    "portalInvited": "Invitation sent, waiting for the patient to create a password.",
+    "portalOpen": "Open patient portal"
   },
   "errors": {
     "fullNameRequired": "Enter the full name.",

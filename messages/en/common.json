@@ -16,7 +16,9 @@
     "lgpd": "LGPD",
     "settings": "Settings",
     "procedures": "Procedures",
-    "stock": "Inventory"
+    "stock": "Inventory",
+    "portal": "Patient portal",
+    "portalPending": "{count, plural, one {# pending} other {# pending}}"
   },
   "layout": {
     "home": "Home",

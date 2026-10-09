@@ -59,6 +59,8 @@ model Workspace {
   // Área de atuação (marca): mental (Salutti) | estetica (Salutti Estética). Ver src/lib/areas.ts.
   area            String         @default("mental")
   accountType     String         @default("autonomo")
+  // Aviso exibido no portal sobre as mensagens (ex.: "Respondo em até 2 dias úteis, de segunda a sexta").
+  portalMessageNotice String?
   // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
   brandDisplay    String         @default("salutti")
   bannerId        String?
@@ -112,6 +114,8 @@ model Workspace {
   payables        Payable[]
   payablePayments PayablePayment[]
   payableAttachments PayableAttachment[]
+  portalMessages  PortalMessage[]
+  portalHighlights PortalHighlight[]
 }
 
 model Membership {
@@ -201,12 +205,17 @@ model Patient {
   consentRecords ConsentRecord[]
   dailyCards    DailyCard[]
   portalAccess  PatientPortalAccess?
+  portalMessages PortalMessage[]
+  portalHighlights PortalHighlight[]
 
   @@index([workspaceId])
   @@index([workspaceId, fullName])
 }
 
 // Token para acesso do paciente ao portal (App do Paciente)
+// Acesso do paciente ao portal. O profissional gera um convite (link de uso único, com prazo) e manda pelo WhatsApp;
+// o paciente confirma a data de nascimento, informa o CPF (login) e cria a senha. Depois entra com CPF + senha.
+// `token` é o link antigo (antes da senha): ao ser aberto, vira convite para criar a senha.
 model PatientPortalAccess {
   id          String   @id @default(cuid())
   patientId   String   @unique
@@ -214,8 +223,76 @@ model PatientPortalAccess {
   pinHash     String?
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
+  // Login: CPF só com dígitos (copiado do cadastro na ativação) e senha (bcrypt).
+  cpfDigits   String?
+  passwordHash String?
+  activatedAt DateTime?
+  // Convite ou redefinição: só o hash (SHA-256) do token fica no banco.
+  inviteTokenHash String?  @unique
+  inviteExpiresAt DateTime?
+  // Sessões emitidas antes da última troca de senha deixam de valer.
+  passwordChangedAt DateTime?
+  failedAttempts Int      @default(0)
+  lockedUntil    DateTime?
+  lastLoginAt    DateTime?
+  // O profissional pode desligar as mensagens deste paciente (o resto do portal continua).
+  messagesEnabled Boolean @default(true)
+  // Sobe a cada troca de senha, convite usado ou revogação: sessões com versão anterior deixam de valer.
+  sessionVersion  Int     @default(0)
 
   patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([cpfDigits])
+}
+
+// Limite de tentativas do portal (login, convite): chave "cpfip:<hash>" (CPF + IP), "ip:<hash>" ou "access:<id>".
+// Guardado também para CPF que não existe, para a resposta não revelar quem é paciente.
+model PortalThrottle {
+  key         String   @id
+  failures    Int      @default(0)
+  windowStart DateTime @default(now())
+}
+
+// Mensagem do portal (paciente ↔ consultório). Não é canal de emergência; fica como registro do atendimento.
+model PortalMessage {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  patientId    String
+  fromPatient  Boolean
+  // Quem respondeu pelo consultório (null quando é do paciente).
+  authorUserId String?
+  body         String
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, patientId, createdAt])
+  @@index([workspaceId, fromPatient, readAt])
+}
+
+// Destaque da semana publicado pelo profissional no portal: tarefa entre sessões, lembrete ou material (link).
+model PortalHighlight {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  patientId    String
+  authorUserId String?
+  kind         String    // task | note | material
+  title        String
+  body         String?
+  url          String?
+  dueDate      DateTime?
+  // Tarefa: o paciente marca como feita e pode deixar um comentário.
+  doneAt       DateTime?
+  patientNote  String?
+  archivedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, patientId, createdAt])
 }
 
 // ----------------------- AGENDA -------------------------------------
@@ -243,6 +320,10 @@ model Appointment {
   price           Float
   notes           String?
   reminderSentAt  DateTime?
+  // Resposta do paciente pelo portal: confirmed (vou) ou reschedule (preciso remarcar, com recado).
+  patientResponse     String?
+  patientResponseAt   DateTime?
+  patientResponseNote String?
   // Sessão faturada por convênio (sem cobrança particular); vira guia TISS depois de realizada.
   insurancePlanId String?
   createdAt       DateTime      @default(now())

@@ -18,6 +18,7 @@ export function formatters(locale: string = DEFAULT_LOCALE) {
     dateTime: (d: Date | string) => df({ dateStyle: "short", timeStyle: "short" }).format(new Date(d)),
     time: (d: Date | string) => df({ timeStyle: "short" }).format(new Date(d)),
     weekdayDay: (d: Date | string) => df({ weekday: "long", day: "numeric" }).format(new Date(d)),
+    weekdayShort: (d: Date | string) => df({ weekday: "short" }).format(new Date(d)).replace(".", ""),
     monthYear: (d: Date | string) => df({ month: "long", year: "numeric" }).format(new Date(d)),
     // Hora em São Paulo (0-23), para saudações.
     hour: (d: Date = new Date()) => Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: TZ }).format(d)),

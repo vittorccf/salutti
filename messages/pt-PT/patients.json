@@ -76,10 +76,7 @@
     "card": "Cartão",
     "saveInsurance": "Guardar seguro",
     "portalTitle": "Portal do paciente · Cartões diários",
-    "portalLink": "Link de acesso:",
     "portalNotGranted": "O portal ainda não foi disponibilizado a este paciente.",
-    "portalRenew": "Renovar link",
-    "portalGenerate": "Gerar link do portal",
     "dailyCardsEmpty": "Ainda não há cartões diários. Quando o paciente registar o humor no portal, aparecem aqui.",
     "anxiety": "Ansiedade {value}/5",
     "sessionsTitle": "Histórico de sessões",
@@ -97,7 +94,10 @@
     "consentRecord": "Base legal: {basis} · {state} · {date}",
     "granted": "concedido",
     "revoked": "revogado",
-    "rights": "Para exercer os 9 direitos do titular (acesso, portabilidade, eliminação, etc.), abra o ecrã <link>LGPD</link>."
+    "rights": "Para exercer os 9 direitos do titular (acesso, portabilidade, eliminação, etc.), abra o ecrã <link>LGPD</link>.",
+    "portalActive": "Portal ativo: o paciente entra com CPF e palavra-passe.",
+    "portalInvited": "Convite enviado, a aguardar que o paciente crie a palavra-passe.",
+    "portalOpen": "Abrir portal do paciente"
   },
   "errors": {
     "fullNameRequired": "Indique o nome completo.",
