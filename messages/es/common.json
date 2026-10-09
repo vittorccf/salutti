@@ -18,7 +18,9 @@
     "procedures": "Procedimientos",
     "stock": "Inventario",
     "portal": "Portal del paciente",
-    "portalPending": "{count, plural, one {# pendiente} other {# pendientes}}"
+    "portalPending": "{count, plural, one {# pendiente} other {# pendientes}}",
+    "waitlist": "Lista de espera",
+    "waitlistUrgent": "{count, plural, one {# inscripción urgente} other {# inscripciones urgentes}}"
   },
   "layout": {
     "home": "Inicio",

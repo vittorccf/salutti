@@ -67,6 +67,11 @@ model Workspace {
   maxProfessionals Int?
   maxPatients     Int?
   entitlementNote String?
+  // Lista de espera: formulário público (/espera/<slug>) ligado ou não, previsão de espera e texto de abertura.
+  waitlistPublic   Boolean  @default(false)
+  waitlistSlug     String?  @unique
+  waitlistEstimate String?
+  waitlistIntro    String?
   // O que aparece no topo do menu no lugar da marca Salutti: salutti | photo (foto de quem está usando) | banner.
   brandDisplay    String         @default("salutti")
   bannerId        String?
@@ -122,6 +127,7 @@ model Workspace {
   payableAttachments PayableAttachment[]
   portalMessages  PortalMessage[]
   portalHighlights PortalHighlight[]
+  waitlist        WaitlistEntry[]
 }
 
 model Membership {
@@ -252,6 +258,41 @@ model PatientPortalAccess {
   patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([cpfDigits])
+}
+
+// Pessoa aguardando vaga. Dados mínimos (antes do vínculo): contato, preferências e um motivo curto opcional.
+// Quem sai da lista (desistiu, sem retorno, encaminhado, expirado) é anonimizado depois de 6 meses.
+model WaitlistEntry {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  fullName        String
+  phone           String?   // E.164
+  email           String?
+  isMinor         Boolean   @default(false)
+  guardianName    String?
+  reason          String?   // motivo curto, opcional (só papéis clínicos veem)
+  modality        String    @default("indiferente") // online | presencial | indiferente
+  preferredDays   String[]  @default([])           // seg | ter | qua | qui | sex | sab
+  preferredShifts String[]  @default([])           // manha | tarde | noite
+  professionalId  String?
+  priceNote       String?   // faixa de valor ou convênio
+  source          String    @default("outro")      // instagram | indicacao | google | site | outro
+  priority        Int       @default(0)            // 0 normal | 1 alta
+  urgent          Boolean   @default(false)        // marcou "preciso de ajuda urgente" no formulário
+  status          String    @default("aguardando") // aguardando | contatado | agendado | desistiu | sem_retorno | encaminhado | expirado
+  notes           String?   // observações internas
+  contactAttempts Int       @default(0)
+  lastContactAt   DateTime?
+  statusChangedAt DateTime  @default(now())
+  convertedPatientId String?
+  createdVia      String    @default("manual")     // manual | formulario
+  consentAt       DateTime?
+  anonymizedAt    DateTime?
+  createdAt       DateTime  @default(now())
+
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status, createdAt])
 }
 
 // Limite de tentativas do portal (login, convite): chave "cpfip:<hash>" (CPF + IP), "ip:<hash>" ou "access:<id>".

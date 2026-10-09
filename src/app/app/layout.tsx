@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
 import { SidebarNav } from "./_components/sidebar-nav";
 import { portalPendingCount } from "@/lib/portal";
+import { db } from "@/lib/db";
 import { UserMenu } from "./_components/user-menu";
 import { MobileNav } from "./_components/mobile-nav";
 import { differenceInDays } from "date-fns";
@@ -99,6 +100,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           modules={modules}
           perms={[...ctx.permissions]}
           portalPending={canSeeClinical(ctx) && modules.includes("portal") ? await portalPendingCount(ctx) : 0}
+          waitlistUrgent={
+            modules.includes("lista_espera") && ctx.permissions.has("pacientes.gerenciar")
+              ? await db.waitlistEntry.count({ where: { workspaceId: ctx.workspace.id, urgent: true, status: "aguardando", anonymizedAt: null } })
+              : 0
+          }
         />
       </div>
       {trialDays !== null ? (

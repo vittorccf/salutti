@@ -1,7 +1,16 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Permissões e tema escuro no backoffice" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Lista de espera" é a mais recente; as demais ficam como histórico.
 
+
+## Lista de espera (2026-10-10) — branch `feat/lista-espera` (depois do #44)
+
+- `/app/lista-espera`: métricas, abas, "Abriu uma vaga?" por dia/turno/modalidade, WhatsApp discreto, registrar contato,
+  virar paciente (transação, limite do contrato) e sugestão de alternativas depois de 30 dias. Contador de urgentes no menu.
+- `/espera/<endereço>`: formulário público com quem atende e o registro no conselho, aviso de crise (CVV 188 / SAMU 192),
+  consentimento específico, responsável obrigatório para menor, limites por IP e por consultório.
+- Retenção de 6 meses com cron diário (`vercel.json`). **Pendente do dono:** criar `CRON_SECRET` na Vercel.
+- Detalhes: `docs/LISTA-ESPERA.md`. Revisado por qualidade, advogado do diabo e psicólogo.
 
 ## Permissões e tema escuro no backoffice (2026-10-10) — branch `feat/backoffice-permissoes`
 
