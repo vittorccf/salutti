@@ -14,3 +14,8 @@ export async function requireClinicalContext() {
   if (!canSeeClinical(ctx.role)) notFound();
   return ctx;
 }
+
+// Contas a pagar mostram o custo do consultório (aluguel, salários, impostos): dono, administrador e financeiro.
+// Profissional e recepção não veem.
+export const FINANCE_ADMIN_ROLES = ["owner", "admin", "financial"] as const;
+export const canManagePayables = (role: string) => (FINANCE_ADMIN_ROLES as readonly string[]).includes(role);

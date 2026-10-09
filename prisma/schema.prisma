@@ -107,6 +107,11 @@ model Workspace {
   clinicalPhotos  ClinicalPhoto[]
   supportTickets  SupportTicket[]
   supportAccessGrants SupportAccessGrant[]
+  suppliers       Supplier[]
+  financeCategories FinanceCategory[]
+  payables        Payable[]
+  payablePayments PayablePayment[]
+  payableAttachments PayableAttachment[]
 }
 
 model Membership {
@@ -345,6 +350,139 @@ model Subscription {
   createdAt     DateTime @default(now())
 
   workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ----------------------- CONTAS A PAGAR ------------------------------
+// Valores em centavos (Int). Datas só de dia gravadas como 00:00 em São Paulo (src/lib/dates.ts).
+
+// Fornecedor ou favorecido (locador, contador, conselho, prefeitura, supervisor...).
+model Supplier {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  document    String?   // CPF ou CNPJ, só dígitos
+  email       String?
+  phone       String?
+  pixKey      String?
+  notes       String?
+  defaultCategoryId String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  defaultCategory FinanceCategory? @relation(fields: [defaultCategoryId], references: [id], onDelete: SetNull)
+  payables    Payable[]
+
+  @@index([workspaceId, name])
+}
+
+// Plano de contas (categorias de despesa). O padrão é criado no primeiro acesso; cada consultório ajusta o seu.
+model FinanceCategory {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  group       String    // ocupacao | pessoal | profissional | administrativo | marketing | materiais | impostos | financeiro | outros
+  // Sugestão para o Livro-Caixa do carnê-leão (despesa de custeio dedutível); cada lançamento pode mudar.
+  deductible  Boolean   @default(false)
+  // Código da categoria padrão (null nas criadas pelo consultório).
+  systemKey   String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  payables    Payable[]
+  suppliers   Supplier[]
+
+  @@unique([workspaceId, systemKey])
+  @@index([workspaceId, group])
+}
+
+model Payable {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  description    String
+  supplierId     String?
+  categoryId     String
+  amountCents    Int
+  // Competência (mês a que a despesa pertence, para a DRE) e vencimento (para o caixa).
+  competenceDate DateTime
+  dueDate        DateTime
+  method         String?   // boleto | pix | transferencia | cartao_credito | cartao_debito | debito_automatico | dinheiro
+  documentNumber String?   // nº da nota, do boleto ou do contrato
+  barcode        String?   // linha digitável (só dígitos)
+  pixCopyPaste   String?
+  costCenter     String?
+  notes          String?
+  deductible     Boolean   @default(false)
+  // Série: parcelamento (installmentTotal > 0) ou recorrência (frequency). Nº desta ocorrência na série.
+  seriesId       String?
+  seriesIndex    Int?
+  installmentTotal Int?
+  frequency      String?
+  // Recorrência: data digitada (dia âncora, antes do ajuste de fim de semana), regra de fim de semana/feriado e
+  // se a série não tem fim (só essas ganham "Gerar as próximas").
+  anchorDate     DateTime?
+  weekendRule    String?
+  seriesOpenEnded Boolean  @default(false)
+  // Principal já pago (soma dos pagamentos não estornados), mantido junto com cada baixa e estorno:
+  // permite filtrar "em aberto" e "pagas" no banco.
+  paidCents      Int       @default(0)
+  cancelledAt    DateTime?
+  cancelReason   String?
+  createdById    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  supplier       Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  category       FinanceCategory @relation(fields: [categoryId], references: [id])
+  payments       PayablePayment[]
+  attachments    PayableAttachment[]
+
+  @@index([workspaceId, dueDate])
+  @@index([workspaceId, competenceDate])
+  @@index([workspaceId, seriesId])
+  @@unique([seriesId, seriesIndex])
+}
+
+// Baixa (total ou parcial). principalCents abate a conta; o que saiu do caixa = principal + juros + multa - desconto.
+// Estorno não apaga: marca reversedAt (fica na auditoria e no histórico).
+model PayablePayment {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  payableId     String
+  paidAt        DateTime
+  principalCents Int
+  interestCents Int       @default(0)
+  fineCents     Int       @default(0)
+  discountCents Int       @default(0)
+  method        String?
+  notes         String?
+  reversedAt    DateTime?
+  createdById   String?
+  createdAt     DateTime  @default(now())
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  payable       Payable   @relation(fields: [payableId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, paidAt])
+  @@index([payableId])
+}
+
+// Boleto, nota fiscal, comprovante ou contrato (arquivo em MediaFile, kind payable_attachment).
+model PayableAttachment {
+  id          String    @id @default(cuid())
+  workspaceId String
+  payableId   String
+  mediaId     String    @unique
+  kind        String    // boleto | nota_fiscal | comprovante | contrato | outro
+  fileName    String
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  payable     Payable   @relation(fields: [payableId], references: [id], onDelete: Cascade)
+
+  @@index([payableId])
 }
 
 // ----------------------- FISCAL -------------------------------------

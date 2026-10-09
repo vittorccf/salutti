@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 
 // clinical_photo: foto clínica (antes/durante/depois) da Salutti Estética; consent_signature: assinatura da
 // paciente no termo. As duas são dado de saúde: só papéis clínicos acessam.
-export type MediaKind = "user_avatar" | "workspace_banner" | "patient_photo" | "clinical_photo" | "consent_signature";
+// payable_attachment: boleto, nota ou comprovante de conta a pagar; só papéis do financeiro acessam.
+export type MediaKind = "user_avatar" | "workspace_banner" | "patient_photo" | "clinical_photo" | "consent_signature" | "payable_attachment";
 export const CLINICAL_MEDIA: MediaKind[] = ["clinical_photo", "consent_signature"];
 export type MediaOwner = { userId?: string; workspaceId?: string };
 

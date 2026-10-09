@@ -11,6 +11,7 @@ import { labeler } from "@/i18n/labels";
 import {
   AlertTriangle,
   ArrowUpRight,
+  Banknote,
   CakeSlice,
   CalendarDays,
   Clock,
@@ -21,12 +22,14 @@ import {
   Users,
 } from "lucide-react";
 import { insightsEngine } from "@/lib/providers/insights";
-import { startOfMonthSP, startOfTodaySP } from "@/lib/dates";
+import { dateKeySP, parseDateOnly, startOfMonthSP, startOfTodaySP } from "@/lib/dates";
 import { onboardingProgress } from "@/lib/onboarding";
 import { upcomingBirthdays, type BirthdayPerson } from "@/lib/birthdays";
 import { moduleEnabled } from "@/lib/areas";
 import { stockAlerts } from "@/lib/stock";
 import { SALUTTIN_ENABLED } from "@/lib/features";
+import { canManagePayables } from "@/lib/permissions";
+import { addDaysKey, paidPrincipal } from "@/lib/payables";
 
 export const dynamic = "force-dynamic";
 
@@ -127,6 +130,9 @@ export default async function DashboardPage() {
     : null;
   const stockTotal = stockCounts ? stockCounts.low + stockCounts.expiring + stockCounts.expired : 0;
 
+  // Contas a pagar vencidas e que vencem em 7 dias (só para quem cuida do financeiro).
+  const payables = canManagePayables(ctx.role) ? await payablesDue(wsId) : null;
+
   // Garante insights ao menos uma vez (auto-seed lazy)
   let liveInsights = insights;
   if (SALUTTIN_ENABLED && liveInsights.length === 0) {
@@ -146,6 +152,7 @@ export default async function DashboardPage() {
     getTranslations("common.labels").then(labeler),
     getTranslations("stock.dashboard"),
   ]);
+  const tp = await getTranslations("payables.dashboard");
   const hour = f.hour(now);
   const greeting = tg(hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening");
   const firstName = ctx.user.name.split(" ")[0];
@@ -280,6 +287,40 @@ export default async function DashboardPage() {
             </div>
             <Button variant="outline" size="sm" asChild>
               <Link href="/app/estoque?situacao=alertas">{ts("open")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {payables && (payables.overdue.count > 0 || payables.soon.count > 0) ? (
+        <Card className={payables.overdue.count > 0 ? "border-destructive/40" : "border-warning/40"}>
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="grid h-8 w-8 shrink-0 place-content-center rounded-md bg-warning/10 text-warning-strong">
+                <Banknote className="h-4 w-4" aria-hidden />
+              </div>
+              <div>
+                <p className="font-semibold">{tp("title")}</p>
+                <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {payables.overdue.count > 0 ? (
+                    <li>
+                      <Link href="/app/financeiro/pagar?status=overdue" className="text-brand hover:underline underline-offset-4">
+                        {tp("overdue", { count: payables.overdue.count, amount: f.money(payables.overdue.cents / 100) })}
+                      </Link>
+                    </li>
+                  ) : null}
+                  {payables.soon.count > 0 ? (
+                    <li>
+                      <Link href="/app/financeiro/pagar?status=next7" className="text-brand hover:underline underline-offset-4">
+                        {tp("soon", { count: payables.soon.count, amount: f.money(payables.soon.cents / 100) })}
+                      </Link>
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/app/financeiro/pagar">{tp("open")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -456,3 +497,22 @@ const KpiCard = ({
     </CardContent>
   </Card>
 );
+
+// Saldo em aberto das contas a pagar vencidas e das que vencem nos próximos 7 dias (com hoje).
+async function payablesDue(workspaceId: string) {
+  const today = dateKeySP();
+  const rows = await db.payable.findMany({
+    where: { workspaceId, cancelledAt: null, dueDate: { lte: parseDateOnly(addDaysKey(today, 7)) } },
+    select: { amountCents: true, dueDate: true, payments: { select: { principalCents: true, interestCents: true, fineCents: true, discountCents: true, reversedAt: true } } },
+  });
+  const overdue = { count: 0, cents: 0 };
+  const soon = { count: 0, cents: 0 };
+  for (const r of rows) {
+    const left = r.amountCents - paidPrincipal(r.payments);
+    if (left <= 0) continue;
+    const bucket = dateKeySP(r.dueDate) < today ? overdue : soon;
+    bucket.count += 1;
+    bucket.cents += left;
+  }
+  return { overdue, soon };
+}
