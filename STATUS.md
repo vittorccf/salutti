@@ -1,7 +1,17 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Sincronizar com o Stripe" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Contas a pagar e relatórios financeiros" é a mais recente; as demais ficam como histórico.
 
+
+## Contas a pagar e relatórios financeiros (2026-10-09) — branch `feat/contas-a-pagar`
+
+- `/app/financeiro/pagar`: fornecedores, plano de contas padrão (editável, com sugestão de dedutível no Livro-Caixa),
+  conta única/parcelada/recorrente, leitura da linha digitável, baixa parcial com juros/multa/desconto, estorno, anexos
+  (PDF/imagem até 2 MB), pagamento em lote, filtros e CSV. `/app/financeiro/relatorios`: fluxo de caixa realizado e previsto,
+  DRE por competência, despesas por categoria/fornecedor e Livro-Caixa do carnê-leão. Aviso no painel inicial.
+  Só dono, administrador e financeiro. Detalhes e o que ficou para depois: `docs/CONTAS-A-PAGAR.md`.
+- A revisão pelos agentes do projeto não rodou: o limite semanal de subagentes acabou. Rodar `qualidade`, `advogado-do-diabo`
+  e `psicologo` no PR antes do merge.
 
 ## Sincronizar com o Stripe (2026-10-09) — branch `feat/stripe-sincronizar`
 

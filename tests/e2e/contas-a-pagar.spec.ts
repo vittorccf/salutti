@@ -116,6 +116,10 @@ test("contas a pagar: boleto lido, parcelas, pagamento com juros, anexo, estorno
   const dreCsv = await page.request.get("/app/financeiro/relatorios/exportar?view=dre&year=2026");
   expect(await dreCsv.text()).toContain("Resultado");
 
+  // Painel inicial avisa das vencidas (o condomínio venceu em 05/10 e tem saldo).
+  await page.goto("/app");
+  await expect(page.getByRole("link", { name: /vencidas? \(R\$/ })).toBeVisible();
+
   // Outro consultório não vê a conta nem o anexo.
   const other = await browser.newContext({ locale: "pt-BR" });
   const otherPage = await other.newPage();

@@ -395,5 +395,11 @@
     "group": "Grupo",
     "supplier": "Proveedor",
     "livroDisclaimer": "Apoyo para completar el carnê-leão en el e-CAC. Los ingresos consideran los cobros marcados como pagados en Salutti. Confírmalo con tu contador antes de declarar y guarda los comprobantes 5 años."
+  },
+  "dashboard": {
+    "title": "Cuentas por pagar",
+    "overdue": "{count, plural, one {# vencida} other {# vencidas}} ({amount})",
+    "soon": "{count, plural, one {# vence} other {# vencen}} en 7 días ({amount})",
+    "open": "Ver cuentas"
   }
 }

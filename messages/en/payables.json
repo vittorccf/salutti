@@ -395,5 +395,11 @@
     "group": "Group",
     "supplier": "Supplier",
     "livroDisclaimer": "Support for filling in the carnê-leão on e-CAC. Income considers the charges marked as paid in Salutti. Confirm with your accountant before filing and keep receipts for 5 years."
+  },
+  "dashboard": {
+    "title": "Bills to pay",
+    "overdue": "{count, plural, one {# overdue} other {# overdue}} ({amount})",
+    "soon": "{count, plural, one {# due} other {# due}} in 7 days ({amount})",
+    "open": "See bills"
   }
 }

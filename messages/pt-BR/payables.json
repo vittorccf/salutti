@@ -395,5 +395,11 @@
     "group": "Grupo",
     "supplier": "Fornecedor",
     "livroDisclaimer": "Apoio para o preenchimento do carnê-leão no e-CAC. A receita considera as cobranças marcadas como pagas na Salutti. Confirme com seu contador antes de declarar e guarde os comprovantes por 5 anos."
+  },
+  "dashboard": {
+    "title": "Contas a pagar",
+    "overdue": "{count, plural, one {# vencida} other {# vencidas}} ({amount})",
+    "soon": "{count, plural, one {# vence} other {# vencem}} em 7 dias ({amount})",
+    "open": "Ver contas"
   }
 }

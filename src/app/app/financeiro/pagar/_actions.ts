@@ -338,8 +338,6 @@ export async function registerPaymentAction(_prev: FormResult, fd: FormData): Pr
   const workspaceId = ctx.workspace.id;
   const id = str(fd, "id");
   try {
-    const p = await loadOwned(workspaceId, id);
-    if (p.cancelledAt) throw new PayableError("cancelled");
     const paidAt = str(fd, "paidAt");
     if (!isDateKey(paidAt) || paidAt > dateKeySP()) throw new PayableError("paidAtInvalid");
     const paid = parseMoneyToCents(str(fd, "paidAmount"));
@@ -348,23 +346,30 @@ export async function registerPaymentAction(_prev: FormResult, fd: FormData): Pr
     const fine = cents(fd, "fine");
     const discount = cents(fd, "discount");
     const principal = principalFromPaid(paid, interest, fine, discount);
-    const remaining = p.amountCents - paidPrincipal(p.payments);
     if (principal <= 0) throw new PayableError("principalInvalid");
-    if (principal > remaining) throw new PayableError("paymentAboveRemaining");
     const method = str(fd, "method");
-    const payment = await db.payablePayment.create({
-      data: {
-        workspaceId,
-        payableId: p.id,
-        paidAt: parseDateOnly(paidAt),
-        principalCents: principal,
-        interestCents: interest,
-        fineCents: fine,
-        discountCents: discount,
-        method: oneOf(PAYMENT_METHODS, method) ? method : p.method,
-        notes: optional(fd, "notes"),
-        createdById: ctx.user.id,
-      },
+    // Trava a conta durante a conferência do saldo: dois envios ao mesmo tempo não pagam além do valor.
+    const { p, payment } = await db.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM "Payable" WHERE "id" = ${id} AND "workspaceId" = ${workspaceId} FOR UPDATE`;
+      const p = await tx.payable.findFirst({ where: { id, workspaceId }, include: { payments: true } });
+      if (!p) throw new PayableError("notFound");
+      if (p.cancelledAt) throw new PayableError("cancelled");
+      if (principal > p.amountCents - paidPrincipal(p.payments)) throw new PayableError("paymentAboveRemaining");
+      const payment = await tx.payablePayment.create({
+        data: {
+          workspaceId,
+          payableId: p.id,
+          paidAt: parseDateOnly(paidAt),
+          principalCents: principal,
+          interestCents: interest,
+          fineCents: fine,
+          discountCents: discount,
+          method: oneOf(PAYMENT_METHODS, method) ? method : p.method,
+          notes: optional(fd, "notes"),
+          createdById: ctx.user.id,
+        },
+      });
+      return { p, payment };
     });
     await saveAttachment(workspaceId, p.id, fd, "receipt", "comprovante");
     await recordAudit({
@@ -393,22 +398,23 @@ export async function bulkPayAction(_prev: FormResult, fd: FormData): Promise<Fo
   if (!ids.length) return { erro: t("bulkNone") };
   if (!isDateKey(paidAt) || paidAt > dateKeySP()) return fail(new PayableError("paidAtInvalid"));
   const method = str(fd, "method");
-  const rows = await db.payable.findMany({ where: { id: { in: ids }, workspaceId, cancelledAt: null }, include: { payments: true } });
-  const toPay = rows.map((r) => ({ r, remaining: r.amountCents - paidPrincipal(r.payments) })).filter((x) => x.remaining > 0);
-  await db.$transaction(
-    toPay.map(({ r, remaining }) =>
-      db.payablePayment.create({
-        data: {
-          workspaceId,
-          payableId: r.id,
-          paidAt: parseDateOnly(paidAt),
-          principalCents: remaining,
-          method: oneOf(PAYMENT_METHODS, method) ? method : r.method,
-          createdById: ctx.user.id,
-        },
-      }),
-    ),
-  );
+  // Mesma trava do pagamento individual: o saldo é lido com as contas travadas.
+  const toPay = await db.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT 1 FROM "Payable" WHERE "id" = ANY(${ids}) AND "workspaceId" = ${workspaceId} FOR UPDATE`;
+    const rows = await tx.payable.findMany({ where: { id: { in: ids }, workspaceId, cancelledAt: null }, include: { payments: true } });
+    const open = rows.map((r) => ({ r, remaining: r.amountCents - paidPrincipal(r.payments) })).filter((x) => x.remaining > 0);
+    await tx.payablePayment.createMany({
+      data: open.map(({ r, remaining }) => ({
+        workspaceId,
+        payableId: r.id,
+        paidAt: parseDateOnly(paidAt),
+        principalCents: remaining,
+        method: oneOf(PAYMENT_METHODS, method) ? method : r.method,
+        createdById: ctx.user.id,
+      })),
+    });
+    return open;
+  });
   await recordAudit({ workspaceId, userId: ctx.user.id, action: "payable.bulk-pay", entity: "Payable", entityId: "lote", metadata: { count: toPay.length } });
   revalidatePath(PATH);
   return { ok: t("bulkDone", { count: toPay.length }) };
