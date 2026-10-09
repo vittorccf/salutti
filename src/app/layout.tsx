@@ -50,6 +50,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     aesthetics: { form: aesthetics?.form, categories: aesthetics?.categories, schedule: aesthetics?.schedule },
     // Botão e painel de suporte (todas as telas logadas).
     support: all.support,
+    // Portal do paciente: check-in (paciente) e convite com link e WhatsApp (profissional).
+    portal: (({ checkin, pro }) => ({ checkin, pro: { invite: (pro as Record<string, unknown> | undefined)?.invite } }))((all.portal ?? {}) as Record<string, unknown>),
     // Formulário de conta a pagar (lê o boleto no navegador).
     payables: (({ form, groups, methods, frequencies, attachmentKinds }) => ({ form, groups, methods, frequencies, attachmentKinds }))(
       (all.payables ?? {}) as Record<string, unknown>,

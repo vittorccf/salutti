@@ -26,6 +26,10 @@ export const GET = async (req: Request) => {
       invoices: true,
       consentRecords: true,
       dailyCards: true,
+      // Portal do paciente: mensagens, destaques e o acesso (sem o hash da senha nem o token).
+      portalMessages: { orderBy: { createdAt: "asc" } },
+      portalHighlights: true,
+      portalAccess: { select: { cpfDigits: true, activatedAt: true, lastLoginAt: true, messagesEnabled: true, active: true } },
     },
   });
   if (!patient) return NextResponse.json({ error: "not found" }, { status: 404 });

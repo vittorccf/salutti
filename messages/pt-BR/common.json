@@ -16,7 +16,9 @@
     "lgpd": "LGPD",
     "settings": "Ajustes",
     "procedures": "Procedimentos",
-    "stock": "Estoque"
+    "stock": "Estoque",
+    "portal": "Portal do paciente",
+    "portalPending": "{count, plural, one {# pendência} other {# pendências}}"
   },
   "layout": {
     "home": "Início",

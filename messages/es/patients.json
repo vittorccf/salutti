@@ -76,10 +76,7 @@
     "card": "Credencial",
     "saveInsurance": "Guardar seguro",
     "portalTitle": "Portal del paciente · Tarjetas diarias",
-    "portalLink": "Enlace de acceso:",
-    "portalNotGranted": "El portal todavía no está habilitado para este paciente.",
-    "portalRenew": "Renovar enlace",
-    "portalGenerate": "Generar enlace del portal",
+    "portalNotGranted": "El portal aún no está habilitado para este paciente.",
     "dailyCardsEmpty": "Todavía no hay tarjetas diarias. Cuando el paciente registre su ánimo en el portal, aparecerán aquí.",
     "anxiety": "Ansiedad {value}/5",
     "sessionsTitle": "Historial de sesiones",
@@ -97,7 +94,10 @@
     "consentRecord": "Base legal: {basis} · {state} · {date}",
     "granted": "otorgado",
     "revoked": "revocado",
-    "rights": "Para ejercer los 9 derechos del titular (acceso, portabilidad, eliminación, etc.), abre la pantalla <link>LGPD</link>."
+    "rights": "Para ejercer los 9 derechos del titular (acceso, portabilidad, eliminación, etc.), abre la pantalla <link>LGPD</link>.",
+    "portalActive": "Portal activo: el paciente entra con CPF y contraseña.",
+    "portalInvited": "Invitación enviada, esperando que el paciente cree la contraseña.",
+    "portalOpen": "Abrir portal del paciente"
   },
   "errors": {
     "fullNameRequired": "Ingresa el nombre completo.",

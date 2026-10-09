@@ -197,41 +197,18 @@ export default async function PatientPage({
               <Smartphone className="h-5 w-5 text-brand" aria-hidden /> {t("portalTitle")}
             </CardTitle>
             <CardDescription>
-              {patient.portalAccess ? (
-                <>
-                  {t("portalLink")}{" "}
-                  <Link className="text-brand underline-offset-4 hover:underline" href={`/portal/${patient.portalAccess.token}`}>
-                    /portal/{patient.portalAccess.token.slice(0, 8)}…
-                  </Link>
-                </>
-              ) : (
-                t("portalNotGranted")
-              )}
+              {patient.portalAccess?.active && patient.portalAccess.activatedAt
+                ? t("portalActive")
+                : patient.portalAccess?.active && patient.portalAccess.inviteExpiresAt && patient.portalAccess.inviteExpiresAt > new Date()
+                  ? t("portalInvited")
+                  : t("portalNotGranted")}
             </CardDescription>
           </div>
-          <form action={async () => {
-            "use server";
-            const ctx = await requireContext();
-            const { randomToken } = await import("@/lib/utils");
-            await db.patientPortalAccess.upsert({
-              where: { patientId: patient.id },
-              create: { patientId: patient.id, token: randomToken(32) },
-              update: { active: true },
-            });
-            await import("@/lib/audit").then((m) =>
-              m.recordAudit({
-                workspaceId: ctx.workspace.id,
-                userId: ctx.user.id,
-                action: "portal.grant",
-                entity: "Patient",
-                entityId: patient.id,
-              }),
-            );
-          }}>
-            <Button size="sm" variant="outline" type="submit">
-              {patient.portalAccess ? t("portalRenew") : t("portalGenerate")}
+          {clinical ? (
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/app/pacientes/${patient.id}/portal`}>{t("portalOpen")}</Link>
             </Button>
-          </form>
+          ) : null}
         </CardHeader>
         <CardContent>
           {!clinical ? null : patient.dailyCards.length === 0 ? (

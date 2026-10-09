@@ -44,6 +44,8 @@ async function removeClinicalPhotos(workspaceId: string, patientId: string) {
   const signed = await db.consentRecord.findMany({ where: { workspaceId, patientId, signatureId: { not: null } }, select: { signatureId: true } });
   for (const c of signed) await media.remove(c.signatureId);
   await db.consentRecord.updateMany({ where: { workspaceId, patientId, signatureId: { not: null } }, data: { signatureId: null } });
+  // Acesso ao portal guarda CPF e senha: sai. As mensagens ficam como registro do atendimento (como as evoluções).
+  await db.patientPortalAccess.deleteMany({ where: { patientId, patient: { workspaceId } } });
 }
 
 async function anonymizeAction(formData: FormData) {
