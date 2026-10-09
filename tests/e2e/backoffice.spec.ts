@@ -43,6 +43,9 @@ test("backoffice: admin entra com a senha inicial, troca a senha provisória e v
   await expect(page.getByText("Mensal · R$ 49,90/mês")).toBeVisible();
   await expect(page.getByText("Mensal · R$ 89,90/mês")).toBeVisible();
   await expect(page.getByText("Anual · R$ 749,90/ano")).toBeVisible();
+  // Sem STRIPE_SECRET_KEY no e2e: a sincronização aparece, mas desligada.
+  await expect(page.getByText("Sem chave")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sincronizar com o Stripe" })).toBeDisabled();
 
   await page.goto("/backoffice/chamados");
   await expect(page.getByRole("heading", { name: "Chamados" })).toBeVisible();

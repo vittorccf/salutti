@@ -44,8 +44,16 @@ Semeados pela migration (códigos gravados em `Workspace.planTier`):
 `starter`, `pro` e `enterprise` continuam aceitos como legados. A mudança de plano no backoffice é **manual**: não cria nem cancela
 assinatura no Stripe. A cobrança automática (`src/lib/providers/billing.ts`, telas Ajustes e `/app/assinatura`) usa os planos
 ativos do catálogo: cada plano pago precisa do **ID do preço no Stripe** (`price_…`), conferido contra o Stripe ao salvar
-(valor, BRL, mensal/anual). Ao trocar o Stripe de teste para produção, cole os IDs dos preços de produção. Os dias do
-teste grátis valem para os próximos cadastros.
+(valor, BRL, mensal/anual). Os dias do teste grátis valem para os próximos cadastros.
+
+**Sincronizar com o Stripe** (admin, topo de `/backoffice/planos`; `syncStripe` em `billing.ts`), idempotente:
+- para cada plano pago, mantém o preço vinculado se ainda bate; senão reaproveita um preço ativo com a lookup key
+  `salutti_<código>_<centavos>_<month|year>` ou cria produto ("Salutti <nome>", `metadata.planCode`) e preço novos, e grava o `price_…`;
+- confere o webhook `APP_URL/api/stripe/webhook` e acrescenta os eventos que faltam; se não existir, cria e mostra o segredo **uma vez**
+  (copiar para `STRIPE_WEBHOOK_SECRET` na Vercel e publicar de novo);
+- cria ou atualiza o portal do cliente padrão: troca entre os planos ativos (com rateio), cartão, faturas, dados e cancelamento no fim do período.
+Rode de novo depois de mudar um preço e ao trocar o Stripe de teste para produção (o selo mostra o modo da chave). A sincronização fica na auditoria
+(`plan.stripe-sync`). Não tem API: em Billing → Revenue recovery, cancelar a assinatura depois das novas tentativas.
 
 ## Botão de suporte no app
 

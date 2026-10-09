@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { recordBackofficeAudit, requireBackoffice } from "@/lib/backoffice/auth";
 import { formatPlanPrice, intervalLabel } from "@/lib/backoffice/labels";
-import { billing, billingConfigured } from "@/lib/providers/billing";
+import { billing, billingConfigured, stripeMode, syncStripe } from "@/lib/providers/billing";
 import { ActionForm, type FormResult } from "@/components/forms/action-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,6 +91,57 @@ async function updatePlanAction(_prev: FormResult, formData: FormData): Promise<
   return { ok: `Plano ${parsed.data.name} salvo.` };
 }
 
+// Cria (ou reaproveita) no Stripe os preços dos planos pagos, liga cada um ao seu plano e confere webhook e portal.
+async function syncStripeAction(): Promise<FormResult> {
+  "use server";
+  const me = await requireBackoffice({ role: "admin" });
+  if (!billingConfigured()) return { erro: "Configure a STRIPE_SECRET_KEY na Vercel antes de sincronizar." };
+  const appUrl = process.env.APP_URL?.replace(/\/$/, "");
+  if (!appUrl) return { erro: "Configure a APP_URL na Vercel (ex.: https://salutti.vercel.app): o webhook e o portal usam esse endereço." };
+
+  const plans = await db.platformPlan.findMany({ orderBy: { sortOrder: "asc" } });
+  let report;
+  try {
+    report = await syncStripe(plans, appUrl);
+  } catch (e) {
+    return { erro: `O Stripe recusou: ${(e as Error).message}` };
+  }
+  // stripePriceId é único: solta os vínculos antigos antes de gravar os novos.
+  await db.$transaction([
+    db.platformPlan.updateMany({ where: { code: { in: report.prices.map((p) => p.code) } }, data: { stripePriceId: null } }),
+    ...report.prices.map((p) => db.platformPlan.update({ where: { code: p.code }, data: { stripePriceId: p.priceId } })),
+  ]);
+  await recordBackofficeAudit({
+    userId: me.id,
+    action: "plan.stripe-sync",
+    entity: "PlatformPlan",
+    entityId: "catalogo",
+    metadata: {
+      mode: report.mode,
+      prices: report.prices.map(({ code, priceId, created }) => ({ code, priceId, created })),
+      webhook: report.webhook.status,
+      portal: report.portal,
+    },
+  });
+  revalidatePath("/backoffice/planos");
+
+  const created = report.prices.filter((p) => p.created).map((p) => p.name);
+  const parts = [
+    `Stripe em modo ${report.mode}: ${report.prices.length} plano${report.prices.length === 1 ? "" : "s"} vinculado${report.prices.length === 1 ? "" : "s"}${created.length ? ` (preço novo: ${created.join(", ")})` : ""}.`,
+    `Portal do cliente ${report.portal}.`,
+  ];
+  if (report.webhook.status === "criado") {
+    parts.push(
+      `Webhook criado em ${report.webhook.url}. Copie o segredo ${report.webhook.secret} para STRIPE_WEBHOOK_SECRET na Vercel e publique de novo: ele não aparece outra vez.`,
+    );
+  } else if (report.webhook.status === "desativado") {
+    return { erro: `${parts.join(" ")} O webhook ${report.webhook.url} está desativado no Stripe: reative em Desenvolvedores → Webhooks.` };
+  } else {
+    parts.push(`Webhook ${report.webhook.status === "ok" ? "conferido" : "com eventos adicionados"}.`);
+  }
+  return { ok: parts.join(" ") };
+}
+
 export default async function PlansPage() {
   const me = await requireBackoffice();
   const [plans, counts] = await Promise.all([
@@ -106,9 +157,40 @@ export default async function PlansPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Planos</h1>
         <p className="text-sm text-muted-foreground">
           Catálogo de planos da Salutti. Cada plano pago cobra pelo preço do Stripe vinculado aqui, que precisa ter o mesmo valor e
-          a mesma recorrência. Ao trocar o Stripe de teste para produção, cole os IDs dos preços de produção.
+          a mesma recorrência. Ao trocar o Stripe de teste para produção, sincronize de novo.
         </p>
       </div>
+
+      {isAdmin ? (
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle className="text-base">Stripe</CardTitle>
+                <CardDescription>
+                  Cria no Stripe os preços que faltam, liga cada plano pago ao seu preço, confere o webhook e configura o portal do
+                  cliente (trocar de plano, cartão, faturas e cancelamento). Rode de novo depois de mudar um preço ou ao passar o
+                  Stripe de teste para produção.
+                </CardDescription>
+              </div>
+              {billingConfigured() ? (
+                <Badge variant={stripeMode() === "produção" ? "success" : "warning"}>Modo {stripeMode()}</Badge>
+              ) : (
+                <Badge variant="muted">Sem chave</Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ActionForm action={syncStripeAction} className="space-y-3">
+              <div className="flex justify-end">
+                <Button type="submit" size="sm" disabled={!billingConfigured()}>
+                  Sincronizar com o Stripe
+                </Button>
+              </div>
+            </ActionForm>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         {plans.map((p) => (
