@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal-auth";
-import { sessionIcs } from "@/lib/portal";
+import { safeUrl, sessionIcs } from "@/lib/portal";
 import { getTranslations } from "@/i18n/server";
 
 // Sessão do paciente em .ics para adicionar à agenda do celular (só a dele).
@@ -17,7 +17,7 @@ export const GET = async (_req: Request, { params }: { params: { id: string } })
     endsAt: a.endsAt,
     title: t("icsTitle", { workspace: access.patient.workspace.name }),
     location: a.modality === "online" ? null : access.patient.workspace.name,
-    url: a.meetingUrl,
+    url: safeUrl(a.meetingUrl),
   });
   return new NextResponse(ics, {
     headers: { "content-type": "text/calendar; charset=utf-8", "content-disposition": 'attachment; filename="sessao.ics"', "cache-control": "private, no-store" },

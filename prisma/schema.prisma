@@ -237,10 +237,20 @@ model PatientPortalAccess {
   lastLoginAt    DateTime?
   // O profissional pode desligar as mensagens deste paciente (o resto do portal continua).
   messagesEnabled Boolean @default(true)
+  // Sobe a cada troca de senha, convite usado ou revogação: sessões com versão anterior deixam de valer.
+  sessionVersion  Int     @default(0)
 
   patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([cpfDigits])
+}
+
+// Limite de tentativas do portal (login, convite): chave "cpfip:<hash>" (CPF + IP), "ip:<hash>" ou "access:<id>".
+// Guardado também para CPF que não existe, para a resposta não revelar quem é paciente.
+model PortalThrottle {
+  key         String   @id
+  failures    Int      @default(0)
+  windowStart DateTime @default(now())
 }
 
 // Mensagem do portal (paciente ↔ consultório). Não é canal de emergência; fica como registro do atendimento.

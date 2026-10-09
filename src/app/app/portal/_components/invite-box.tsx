@@ -1,6 +1,8 @@
 "use client";
 import { useFormState, useFormStatus } from "react-dom";
+import Link from "next/link";
 import { MessageCircle } from "lucide-react";
+import { whatsappLink } from "@/lib/phone";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
@@ -18,12 +20,39 @@ function Submit({ label }: { label: string }) {
 
 // Gera o convite do portal e mostra o link uma vez, com copiar e enviar pelo WhatsApp do profissional.
 // O link não fica guardado (só o hash): para reenviar, gere outro.
-export function InviteBox({ patientId, phone, firstName, activated }: { patientId: string; phone: string | null; firstName: string; activated: boolean }) {
+export function InviteBox({
+  patientId,
+  phone,
+  firstName,
+  activated,
+  canInvite,
+  editHref,
+}: {
+  patientId: string;
+  phone: string | null;
+  firstName: string;
+  activated: boolean;
+  canInvite: boolean;
+  editHref: string;
+}) {
   const t = useTranslations("portal.pro.invite");
   const f = useFormat();
   const [state, action] = useFormState<InviteResult, FormData>(createInviteAction, null);
   const message = state?.link ? t(activated ? "whatsappReset" : "whatsappText", { name: firstName, link: state.link }) : "";
-  const wa = phone ? `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
+  // Telefone do cadastro já está em E.164 (com DDI); sem telefone, o WhatsApp pergunta para quem enviar.
+  const wa = phone ? whatsappLink(phone, message) : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+  // Sem data de nascimento nem CPF, o paciente não teria o que confirmar: quem tivesse o link escolheria o login.
+  if (!canInvite) {
+    return (
+      <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-warning-strong">
+        {t("needIdentity")}{" "}
+        <Link href={editHref} className="font-medium underline underline-offset-4">
+          {t("editPatient")}
+        </Link>
+      </p>
+    );
+  }
 
   return (
     <form action={action} className="space-y-3">

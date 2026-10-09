@@ -19,22 +19,17 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("metaTitle"), robots: { index: false }, referrer: "no-referrer" };
 }
 
-// Convite (ou link antigo, antes da senha): o paciente confirma quem é e cria a senha.
+// Convite: o paciente confirma quem é (data de nascimento e/ou CPF do cadastro) e cria a senha.
 // A página não mostra nenhum dado do paciente: quem tem só o link não descobre nada.
 export default async function PortalInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const t = await getTranslations("portal.invite");
-  const access =
-    (await db.patientPortalAccess.findFirst({
-      where: { inviteTokenHash: hashInviteToken(token), inviteExpiresAt: { gt: new Date() }, active: true },
-      include: { patient: { select: { birthDate: true, cpf: true, deletedAt: true, workspace: { select: { name: true } } } } },
-    })) ??
-    (await db.patientPortalAccess.findFirst({
-      where: { token, activatedAt: null, active: true },
-      include: { patient: { select: { birthDate: true, cpf: true, deletedAt: true, workspace: { select: { name: true } } } } },
-    }));
+  const access = await db.patientPortalAccess.findFirst({
+    where: { inviteTokenHash: hashInviteToken(token), inviteExpiresAt: { gt: new Date() }, active: true },
+    include: { patient: { select: { birthDate: true, cpf: true, deletedAt: true, workspace: { select: { name: true } } } } },
+  });
 
-  if (!access || access.patient.deletedAt) {
+  if (!access || access.patient.deletedAt || (!access.patient.birthDate && !access.patient.cpf)) {
     return (
       <PortalShell>
         <Card>

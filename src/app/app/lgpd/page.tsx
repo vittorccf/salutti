@@ -52,6 +52,10 @@ async function anonymizeAction(formData: FormData) {
   "use server";
   const ctx = await requireContext({ allowExpired: true });
   const patientId = formData.get("patientId") as string;
+  // Texto livre do portal (mensagens, comentários de tarefa, recados de remarcação) pode citar nome e contato.
+  await db.portalMessage.deleteMany({ where: { workspaceId: ctx.workspace.id, patientId } });
+  await db.portalHighlight.updateMany({ where: { workspaceId: ctx.workspace.id, patientId }, data: { patientNote: null } });
+  await db.appointment.updateMany({ where: { workspaceId: ctx.workspace.id, patientId }, data: { patientResponseNote: null } });
   const before = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id }, select: { photoId: true } });
   // Tudo o que identifica a pessoa sai: contato, documentos, endereço completo, nascimento e foto.
   const anonymized = await db.patient.updateMany({

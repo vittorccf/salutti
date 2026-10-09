@@ -8,11 +8,8 @@
   },
   "errors": {
     "loginInvalid": "CPF o contraseña incorrectos.",
-    "locked": "Demasiados intentos. Vuelve a intentarlo en {minutes} minutos.",
     "inviteInvalid": "Esta invitación ya no es válida. Pide una nueva a tu profesional.",
-    "birthDateMismatch": "La fecha de nacimiento no coincide con el registro.",
     "cpfInvalid": "CPF no válido. Revisa los 11 dígitos.",
-    "cpfMismatch": "Este CPF no coincide con el registro.",
     "password": {
       "short": "La contraseña debe tener al menos 8 caracteres.",
       "long": "La contraseña puede tener como máximo 128 caracteres.",
@@ -28,7 +25,10 @@
     "sessionUnavailable": "Esta sesión ya no admite respuesta.",
     "messagesOff": "Los mensajes están desactivados para ti. Contacta al consultorio por los medios acordados.",
     "messageEmpty": "Escribe el mensaje.",
-    "messageLong": "El mensaje puede tener hasta {max} caracteres."
+    "messageLong": "El mensaje puede tener hasta {max} caracteres.",
+    "tooMany": "Demasiados intentos. Espera {minutes} minutos y vuelve a intentarlo.",
+    "identityMismatch": "Los datos no coinciden con el registro. Revísalos e inténtalo de nuevo.",
+    "tooManyMessages": "Enviaste muchos mensajes en la última hora. Espera un poco: la conversación es para avisos, no en tiempo real."
   },
   "login": {
     "metaTitle": "Entrar al portal del paciente",
@@ -56,7 +56,7 @@
     "password": "Contraseña",
     "passwordHint": "Al menos 8 caracteres. Una frase fácil de recordar es ideal.",
     "confirm": "Repite la contraseña",
-    "accept": "Entiendo que el portal guarda mis mensajes y registros con confidencialidad y que no es un canal de emergencias.",
+    "accept": "Entiendo que el portal guarda mis mensajes y registros con confidencialidad, que las respuestas no son inmediatas y que no es un canal de emergencias.",
     "privacy": "Política de Privacidad",
     "submit": "Crear acceso y entrar",
     "submitReset": "Guardar contraseña y entrar"
@@ -84,7 +84,7 @@
     "sendReschedule": "Enviar solicitud",
     "noSessions": "No hay sesiones agendadas. Cuando haya una, aparecerá aquí con el enlace de la videollamada.",
     "checkinTitle": "¿Cómo estás hoy?",
-    "checkinDescription": "Toma 30 segundos. Tu profesional sigue cómo fue tu semana.",
+    "checkinDescription": "Toma 30 segundos. Tus registros ayudan a conversar sobre la semana en la próxima sesión. No se leen en el momento.",
     "last7": "Últimos 7 días",
     "noCheckin": "sin registro",
     "highlights": "Destacados de la semana",
@@ -99,7 +99,7 @@
     "openMaterial": "Abrir material",
     "markDone": "Ya la hice",
     "taskNote": "Comentario sobre la tarea",
-    "taskNotePlaceholder": "¿Cómo te fue? (opcional)",
+    "taskNotePlaceholder": "¿Cómo te fue? Está bien si no pudiste (opcional)",
     "save": "Guardar",
     "moreSessions": "Próximas sesiones",
     "confirmedShort": "Confirmada",
@@ -113,7 +113,8 @@
     "taskDone": "Tarea marcada como hecha.",
     "taskSaved": "Comentario guardado.",
     "icsTitle": "Sesión · {workspace}",
-    "onDate": "el {date}"
+    "onDate": "el {date}",
+    "checkinLow": "Si necesitas ayuda ahora, llama al CVV al 188 (24 horas) o al SAMU al 192."
   },
   "checkin": {
     "question": "¿Cómo te sientes?",
@@ -121,7 +122,7 @@
     "more": "Más detalles (opcional)",
     "anxiety": "Ansiedad",
     "anxietyLevel": {
-      "1": "1 · Ninguna",
+      "1": "1 · Tranquilo(a)",
       "2": "2 · Poca",
       "3": "3 · Media",
       "4": "4 · Alta",
@@ -130,7 +131,8 @@
     "sleep": "Horas de sueño",
     "notes": "¿Algo que quieras anotar?",
     "save": "Registrar",
-    "update": "Actualizar registro"
+    "update": "Actualizar registro",
+    "notesHint": "Este espacio no se lee en el momento. Si necesitas ayuda ahora, llama al 188 (CVV)."
   },
   "messages": {
     "title": "Mensajes",
@@ -237,10 +239,11 @@
       "titleRequired": "Escribe el título (2 a 120 caracteres).",
       "urlInvalid": "Enlace no válido. Usa una dirección que empiece con https://.",
       "dueInvalid": "Fecha no válida.",
-      "onlyOwner": "Solo el titular o un administrador cambia este aviso."
+      "onlyOwner": "Solo el titular o un administrador cambia este aviso.",
+      "needIdentity": "Registra la fecha de nacimiento o el CPF del paciente antes de generar la invitación."
     },
     "invite": {
-      "whatsappText": "¡Hola, {name}! Este es tu acceso al portal del paciente, donde ves tus sesiones, el enlace de la videollamada y puedes escribirme entre sesiones. El enlace vale por 72 horas: {link}",
+      "whatsappText": "¡Hola, {name}! Este es tu acceso al portal del paciente, donde ves tus sesiones, el enlace de la videollamada y puedes dejar avisos entre sesiones. El enlace vale por 72 horas: {link}",
       "whatsappReset": "¡Hola, {name}! Aquí está el enlace para crear una contraseña nueva en el portal del paciente. Vale por 72 horas: {link}",
       "ready": "Invitación lista. Vale hasta el {date} y solo se puede usar una vez.",
       "copy": "Copiar enlace",
@@ -249,7 +252,9 @@
       "onceHint": "Este enlace aparece solo ahora. Si lo pierdes, genera otro (el anterior deja de valer).",
       "again": "Generar otra invitación",
       "reset": "Generar enlace para nueva contraseña",
-      "create": "Generar invitación"
+      "create": "Generar invitación",
+      "needIdentity": "Para generar la invitación, registra la fecha de nacimiento o el CPF del paciente: es lo que confirma al abrir el enlace.",
+      "editPatient": "Editar registro"
     },
     "inbox": {
       "title": "Portal del paciente",
@@ -265,12 +270,21 @@
       "noticeDescription": "Aparece para el paciente encima de la conversación. Fija plazos realistas: el portal no es atención en tiempo real.",
       "notice": "Aviso",
       "noticePlaceholder": "Ej.: Respondo en hasta 2 días hábiles, de lunes a viernes.",
-      "save": "Guardar"
+      "save": "Guardar",
+      "legacyTitle": "{count, plural, one {# paciente con el enlace antiguo} other {# pacientes con el enlace antiguo}}",
+      "legacyDescription": "El portal ahora tiene contraseña. Estos pacientes recibieron el enlace antiguo y aún no crearon la contraseña: genera una invitación nueva para cada uno."
     },
     "revokeConfirm": "¿Revocar el acceso de {name} al portal? Para habilitarlo de nuevo, genera una invitación.",
     "responseShort": {
       "confirmed": "Confirmó",
       "reschedule": "Pidió cambio"
-    }
+    },
+    "loginCpf": "Usuario del paciente: CPF {cpf}",
+    "cpfFromPatient": "CPF informado por el paciente en el primer acceso (el registro no tiene CPF). Revísalo antes de usarlo en recibos."
+  },
+  "legacy": {
+    "title": "Este enlace cambió",
+    "description": "El portal ahora tiene acceso con CPF y contraseña. Si ya creaste la contraseña, entra por la pantalla de inicio de sesión. Si no, pide a tu profesional un enlace nuevo.",
+    "login": "Ir a la pantalla de entrar"
   }
 }

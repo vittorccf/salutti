@@ -1,22 +1,22 @@
-// Acesso do paciente ao portal (só no servidor). Separado da sessão do app: cookie próprio, JWT com tipo "portal".
+// Acesso do paciente ao portal (só no servidor). Separado da sessão do app: cookie próprio e JWT com audiência própria.
 //
 // Fluxo (custo zero, sem e-mail nem SMS): o profissional gera um convite de uso único (72h) e manda pelo WhatsApp dele;
-// o paciente confirma a data de nascimento, informa o CPF e cria a senha; depois entra com CPF + senha.
+// o paciente confirma a data de nascimento e/ou o CPF do cadastro e cria a senha; depois entra com CPF + senha.
 // Esqueceu a senha: o profissional gera um novo convite, que troca a senha e derruba as sessões abertas.
 import crypto from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/lib/db";
 import { secretKey } from "@/lib/auth";
 
 export const PORTAL_COOKIE = "salutti_portal";
+const PORTAL_AUDIENCE = "salutti-portal";
 export const INVITE_HOURS = 72;
-export const MAX_FAILED_ATTEMPTS = 5;
-export const LOCK_MINUTES = 15;
 const SESSION_DAYS = 30;
 
 export const newInviteToken = () => crypto.randomBytes(24).toString("base64url");
 export const hashInviteToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
+const sha = (value: string) => crypto.createHash("sha256").update(value).digest("hex").slice(0, 40);
 
 // Senhas óbvias (as mais usadas no Brasil e sequências). A lista completa de vazadas fica para quando houver API.
 const COMMON = new Set([
@@ -39,11 +39,50 @@ export function passwordProblem(password: string, confirm: string, personal: str
   return null;
 }
 
-type PortalJwt = { accessId: string; patientId: string; workspaceId: string; typ: "portal" };
+// ------------------------------ Limite de tentativas ------------------------------
+// Janela de 15 minutos. Por CPF + IP (5): quem não está na rede do paciente não o bloqueia. Por IP (30): segura
+// varredura de vários CPFs. A resposta é a mesma exista o CPF ou não, então o limite não revela quem é paciente.
+export const THROTTLE_MINUTES = 15;
+const WINDOW_MS = THROTTLE_MINUTES * 60_000;
 
-export async function createPortalSession(access: { id: string; patientId: string }, workspaceId: string) {
-  const token = await new SignJWT({ accessId: access.id, patientId: access.patientId, workspaceId, typ: "portal" } satisfies PortalJwt)
+export const clientIp = () => {
+  const h = headers();
+  return (h.get("x-forwarded-for")?.split(",")[0] ?? h.get("x-real-ip") ?? "local").trim();
+};
+
+export const throttleKeys = {
+  cpfIp: (cpf: string, ip: string) => `cpfip:${sha(`${cpf}|${ip}`)}`,
+  ip: (ip: string) => `ip:${sha(ip)}`,
+  access: (accessId: string) => `access:${accessId}`,
+};
+
+export const LIMITS = { cpfIp: 5, ip: 30, access: 5 };
+
+// true = já passou do limite na janela atual.
+export async function isThrottled(key: string, limit: number) {
+  const row = await db.portalThrottle.findUnique({ where: { key } });
+  return !!row && row.windowStart.getTime() > Date.now() - WINDOW_MS && row.failures >= limit;
+}
+
+// Conta uma falha (atômico: duas tentativas ao mesmo tempo não passam do limite). Janela vencida recomeça.
+export async function registerFailure(key: string) {
+  const since = new Date(Date.now() - WINDOW_MS);
+  const res = await db.portalThrottle.updateMany({ where: { key, windowStart: { gt: since } }, data: { failures: { increment: 1 } } });
+  if (res.count) return;
+  await db.portalThrottle.upsert({ where: { key }, create: { key, failures: 1 }, update: { failures: 1, windowStart: new Date() } });
+}
+
+export const clearThrottle = (key: string) => db.portalThrottle.deleteMany({ where: { key } });
+
+// ------------------------------------ Sessão ------------------------------------
+
+type PortalJwt = { accessId: string; patientId: string; workspaceId: string; sv: number; typ: "portal" };
+
+export async function createPortalSession(access: { id: string; patientId: string; sessionVersion: number }, workspaceId: string) {
+  const token = await new SignJWT({ accessId: access.id, patientId: access.patientId, workspaceId, sv: access.sessionVersion, typ: "portal" } satisfies PortalJwt)
     .setProtectedHeader({ alg: "HS256" })
+    // Audiência própria: a sessão do app (getSession) recusa tokens com audiência, e o portal só aceita a dele.
+    .setAudience(PORTAL_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(`${SESSION_DAYS}d`)
     .sign(secretKey());
@@ -58,20 +97,20 @@ export async function createPortalSession(access: { id: string; patientId: strin
 
 export const destroyPortalSession = () => cookies().set(PORTAL_COOKIE, "", { path: "/portal", maxAge: 0 });
 
-// Sessão válida só se o acesso continua ativo, o paciente não foi excluído e a senha não mudou depois do login.
+// Sessão válida só se o acesso continua ativo, o paciente não foi excluído e a versão da sessão é a atual
+// (troca de senha, novo convite usado e revogação sobem a versão).
 export async function getPortalSession() {
   const raw = cookies().get(PORTAL_COOKIE)?.value;
   if (!raw) return null;
   try {
-    const { payload } = await jwtVerify(raw, secretKey());
-    const p = payload as unknown as PortalJwt & { iat?: number };
-    if (p.typ !== "portal") return null;
+    const { payload } = await jwtVerify(raw, secretKey(), { audience: PORTAL_AUDIENCE });
+    const p = payload as unknown as PortalJwt;
+    if (p.typ !== "portal" || typeof p.accessId !== "string") return null;
     const access = await db.patientPortalAccess.findFirst({
-      where: { id: p.accessId, patientId: p.patientId, active: true, activatedAt: { not: null } },
+      where: { id: p.accessId, patientId: p.patientId, active: true, activatedAt: { not: null }, sessionVersion: p.sv },
       include: { patient: { include: { workspace: true } } },
     });
     if (!access || access.patient.deletedAt || access.patient.workspaceId !== p.workspaceId) return null;
-    if (access.passwordChangedAt && p.iat && access.passwordChangedAt.getTime() > p.iat * 1000 + 1000) return null;
     return access;
   } catch {
     return null;

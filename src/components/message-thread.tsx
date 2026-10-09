@@ -6,7 +6,7 @@ export type ThreadMessage = { id: string; body: string; mine: boolean; author: s
 export function MessageThread({ messages, emptyText, readLabel }: { messages: ThreadMessage[]; emptyText: string; readLabel?: string }) {
   if (!messages.length) return <p className="py-8 text-center text-sm text-muted-foreground">{emptyText}</p>;
   return (
-    <ol className="space-y-3" aria-live="polite">
+    <ol className="space-y-3">
       {messages.map((m) => (
         <li key={m.id} className={cn("flex", m.mine ? "justify-end" : "justify-start")}>
           <div

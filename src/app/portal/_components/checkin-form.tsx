@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Angry, Frown, Laugh, Meh, Smile } from "lucide-react";
+import { Annoyed, Frown, Laugh, Meh, Smile } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { useTranslations } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { checkinAction } from "../_actions";
 
-const ICONS = [Angry, Frown, Meh, Smile, Laugh];
+const ICONS = [Frown, Annoyed, Meh, Smile, Laugh];
 
 // Check-in do dia: um toque no humor e, se quiser, ansiedade, sono e uma nota.
 export function CheckinForm({
@@ -71,7 +71,10 @@ export function CheckinForm({
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="notes">{t("notes")}</Label>
-            <Textarea id="notes" name="notes" rows={2} maxLength={1000} defaultValue={current?.notes ?? ""} />
+            <Textarea id="notes" name="notes" rows={2} maxLength={1000} defaultValue={current?.notes ?? ""} aria-describedby="notes-hint" />
+            <p id="notes-hint" className="text-xs text-muted-foreground">
+              {t("notesHint")}
+            </p>
           </div>
         </div>
       </details>

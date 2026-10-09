@@ -158,7 +158,7 @@ export default async function AppointmentDetailPage({
           {appt.patientResponse ? (
             <p className={`mt-1 text-sm ${appt.patientResponse === "confirmed" ? "text-success-strong" : "text-warning-strong"}`}>
               {(await getTranslations("portal.pro.response"))(appt.patientResponse)}
-              {appt.patientResponseNote ? `: “${appt.patientResponseNote}”` : ""}
+              {appt.patientResponseNote && canSeeClinical(ctx.role) ? `: “${appt.patientResponseNote}”` : ""}
             </p>
           ) : null}
         </div>

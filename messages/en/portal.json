@@ -8,11 +8,8 @@
   },
   "errors": {
     "loginInvalid": "Incorrect CPF or password.",
-    "locked": "Too many attempts. Try again in {minutes} minutes.",
     "inviteInvalid": "This invitation is no longer valid. Ask your professional for a new one.",
-    "birthDateMismatch": "The date of birth doesn't match our records.",
     "cpfInvalid": "Invalid CPF. Check the 11 digits.",
-    "cpfMismatch": "This CPF doesn't match our records.",
     "password": {
       "short": "The password must have at least 8 characters.",
       "long": "The password can have at most 128 characters.",
@@ -28,7 +25,10 @@
     "sessionUnavailable": "This session can no longer be answered.",
     "messagesOff": "Messages are turned off for you. Contact the practice through the agreed channels.",
     "messageEmpty": "Write the message.",
-    "messageLong": "The message can have up to {max} characters."
+    "messageLong": "The message can have up to {max} characters.",
+    "tooMany": "Too many attempts. Wait {minutes} minutes and try again.",
+    "identityMismatch": "The details don't match our records. Check them and try again.",
+    "tooManyMessages": "You sent many messages in the last hour. Wait a bit: the conversation is for notes, not real-time chat."
   },
   "login": {
     "metaTitle": "Sign in to the patient portal",
@@ -56,7 +56,7 @@
     "password": "Password",
     "passwordHint": "At least 8 characters. An easy-to-remember phrase works great.",
     "confirm": "Repeat the password",
-    "accept": "I understand that the portal keeps my messages and records confidential and that it isn't an emergency channel.",
+    "accept": "I understand that the portal keeps my messages and records confidential, that replies aren't immediate and that it isn't an emergency channel.",
     "privacy": "Privacy Policy",
     "submit": "Create access and sign in",
     "submitReset": "Save password and sign in"
@@ -84,7 +84,7 @@
     "sendReschedule": "Send request",
     "noSessions": "No sessions scheduled. When there is one, it shows up here with the video call link.",
     "checkinTitle": "How are you today?",
-    "checkinDescription": "It takes 30 seconds. Your professional follows how your week went.",
+    "checkinDescription": "It takes 30 seconds. Your entries help talk about the week in your next session. They aren't read right away.",
     "last7": "Last 7 days",
     "noCheckin": "no entry",
     "highlights": "This week's highlights",
@@ -99,7 +99,7 @@
     "openMaterial": "Open material",
     "markDone": "I did it",
     "taskNote": "Comment about the task",
-    "taskNotePlaceholder": "How did it go? (optional)",
+    "taskNotePlaceholder": "How did it go? It's okay if you couldn't (optional)",
     "save": "Save",
     "moreSessions": "Upcoming sessions",
     "confirmedShort": "Confirmed",
@@ -113,7 +113,8 @@
     "taskDone": "Task marked as done.",
     "taskSaved": "Comment saved.",
     "icsTitle": "Session · {workspace}",
-    "onDate": "on {date}"
+    "onDate": "on {date}",
+    "checkinLow": "If you need help now, call CVV at 188 (24 hours) or SAMU at 192."
   },
   "checkin": {
     "question": "How are you feeling?",
@@ -121,7 +122,7 @@
     "more": "More details (optional)",
     "anxiety": "Anxiety",
     "anxietyLevel": {
-      "1": "1 · None",
+      "1": "1 · Calm",
       "2": "2 · Low",
       "3": "3 · Medium",
       "4": "4 · High",
@@ -130,7 +131,8 @@
     "sleep": "Hours of sleep",
     "notes": "Anything you'd like to note?",
     "save": "Check in",
-    "update": "Update entry"
+    "update": "Update entry",
+    "notesHint": "This space isn't read right away. If you need help now, call 188 (CVV)."
   },
   "messages": {
     "title": "Messages",
@@ -237,10 +239,11 @@
       "titleRequired": "Write the title (2 to 120 characters).",
       "urlInvalid": "Invalid link. Use an address starting with https://.",
       "dueInvalid": "Invalid date.",
-      "onlyOwner": "Only the owner or an admin can change this notice."
+      "onlyOwner": "Only the owner or an admin can change this notice.",
+      "needIdentity": "Add the patient's date of birth or CPF before generating the invitation."
     },
     "invite": {
-      "whatsappText": "Hi, {name}! This is your access to the patient portal, where you see your sessions, the video call link and can message me between sessions. The link is valid for 72 hours: {link}",
+      "whatsappText": "Hi, {name}! This is your access to the patient portal, where you see your sessions, the video call link and can leave notes between sessions. The link is valid for 72 hours: {link}",
       "whatsappReset": "Hi, {name}! Here's the link to create a new password in the patient portal. It's valid for 72 hours: {link}",
       "ready": "Invitation ready. Valid until {date} and can be used only once.",
       "copy": "Copy link",
@@ -249,7 +252,9 @@
       "onceHint": "This link only shows up now. If you lose it, generate another one (the previous one stops working).",
       "again": "Generate another invitation",
       "reset": "Generate new-password link",
-      "create": "Generate invitation"
+      "create": "Generate invitation",
+      "needIdentity": "To generate the invitation, add the patient's date of birth or CPF: that's what they confirm when opening the link.",
+      "editPatient": "Edit patient"
     },
     "inbox": {
       "title": "Patient portal",
@@ -265,12 +270,21 @@
       "noticeDescription": "Shown to the patient above the conversation. Set realistic times: the portal isn't real-time care.",
       "notice": "Notice",
       "noticePlaceholder": "E.g.: I reply within 2 business days, Monday to Friday.",
-      "save": "Save"
+      "save": "Save",
+      "legacyTitle": "{count, plural, one {# patient with the old link} other {# patients with the old link}}",
+      "legacyDescription": "The portal now has a password. These patients got the old link and haven't created a password yet: generate a new invitation for each one."
     },
     "revokeConfirm": "Revoke {name}'s portal access? To enable it again, generate an invitation.",
     "responseShort": {
       "confirmed": "Confirmed",
       "reschedule": "Asked to reschedule"
-    }
+    },
+    "loginCpf": "Patient login: CPF {cpf}",
+    "cpfFromPatient": "CPF entered by the patient on first access (the record has no CPF). Check it before using it on receipts."
+  },
+  "legacy": {
+    "title": "This link has changed",
+    "description": "The portal now uses CPF and password. If you already created your password, use the sign-in screen. If not, ask your professional for a new access link.",
+    "login": "Go to sign in"
   }
 }

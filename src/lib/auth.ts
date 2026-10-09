@@ -82,6 +82,8 @@ export const getSession = async (): Promise<SessionPayload | null> => {
     const { payload } = await jwtVerify(token, secretKey());
     // Tokens com audiência (etapa de 2FA, backoffice) usam a mesma chave: nunca podem valer como sessão do app.
     if (payload.aud) return null;
+    // Sessão do app sempre tem usuário: um token de outro tipo (ex.: portal do paciente) nunca vale aqui.
+    if (typeof payload.userId !== "string" || !payload.userId) return null;
     return payload as unknown as SessionPayload;
   } catch {
     return null;

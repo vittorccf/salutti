@@ -3,20 +3,25 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { appOrigin } from "@/lib/app-url";
+import { cpfDigits } from "@/lib/cpf";
 import { requireClinicalContext } from "@/lib/permissions";
 import { parseDateOnly } from "@/lib/dates";
-import { HIGHLIGHT_KINDS, MESSAGE_MAX, safeUrl } from "@/lib/portal";
-import { hashInviteToken, INVITE_HOURS, newInviteToken } from "@/lib/portal-auth";
+import { HIGHLIGHT_KINDS, MESSAGE_MAX, portalPatientScope, safeUrl } from "@/lib/portal";
+import { clearThrottle, hashInviteToken, INVITE_HOURS, newInviteToken, throttleKeys } from "@/lib/portal-auth";
 import { getTranslations } from "@/i18n/server";
 import type { FormResult } from "@/components/forms/action-form";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const isDateKey = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
 
-// Paciente do consultório ativo (e não excluído). Mensagens e tarefas são conteúdo clínico: só papéis clínicos.
+// Paciente do consultório ativo (e não excluído) que esta pessoa pode ver. Mensagens e tarefas são conteúdo
+// clínico: só papéis clínicos; na clínica, o profissional só vê os pacientes que atende.
 async function ownedPatient(patientId: string) {
   const ctx = await requireClinicalContext();
-  const patient = await db.patient.findFirst({ where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null }, include: { portalAccess: true } });
+  const patient = await db.patient.findFirst({
+    where: { id: patientId, workspaceId: ctx.workspace.id, deletedAt: null, ...portalPatientScope(ctx) },
+    include: { portalAccess: true },
+  });
   return { ctx, patient };
 }
 
@@ -27,18 +32,22 @@ const paths = (patientId: string) => {
 
 export type InviteResult = { erro?: string; link?: string; expiresAt?: string } | null;
 
-// Convite de uso único (72h). Paciente que já tem senha: o convite serve para criar uma nova (esqueceu a senha).
+// Convite de uso único (72h). Exige data de nascimento ou CPF no cadastro: é o que o paciente confirma ao abrir
+// (sem isso, quem tivesse o link escolheria o login). Paciente que já tem senha: o convite cria uma nova.
 export async function createInviteAction(_prev: InviteResult, fd: FormData): Promise<InviteResult> {
   const { ctx, patient } = await ownedPatient(str(fd, "patientId"));
   const t = await getTranslations("portal.pro.errors");
   if (!patient) return { erro: t("patientNotFound") };
+  if (!patient.birthDate && !cpfDigits(patient.cpf)) return { erro: t("needIdentity") };
   const token = newInviteToken();
   const expiresAt = new Date(Date.now() + INVITE_HOURS * 3_600_000);
-  await db.patientPortalAccess.upsert({
+  const access = await db.patientPortalAccess.upsert({
     where: { patientId: patient.id },
     create: { patientId: patient.id, token: newInviteToken(), inviteTokenHash: hashInviteToken(token), inviteExpiresAt: expiresAt },
     update: { active: true, inviteTokenHash: hashInviteToken(token), inviteExpiresAt: expiresAt },
   });
+  // Convite novo destrava as tentativas erradas da ativação.
+  await clearThrottle(throttleKeys.access(access.id));
   await recordAudit({
     workspaceId: ctx.workspace.id,
     userId: ctx.user.id,
@@ -50,12 +59,24 @@ export async function createInviteAction(_prev: InviteResult, fd: FormData): Pro
   return { link: `${appOrigin()}/portal/convite/${token}`, expiresAt: expiresAt.toISOString() };
 }
 
-// Revogar: o portal deixa de abrir (sessões caem na próxima requisição). Gerar um convite reativa.
+// Revogar: o portal deixa de abrir e as sessões caem. A senha e o login saem: para voltar, o paciente usa um
+// convite novo e cria outra senha (a antiga não ressuscita).
 export async function revokePortalAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const { ctx, patient } = await ownedPatient(str(fd, "patientId"));
   const t = await getTranslations("portal.pro");
   if (!patient?.portalAccess) return { erro: t("errors.patientNotFound") };
-  await db.patientPortalAccess.update({ where: { id: patient.portalAccess.id }, data: { active: false, inviteTokenHash: null, inviteExpiresAt: null } });
+  await db.patientPortalAccess.update({
+    where: { id: patient.portalAccess.id },
+    data: {
+      active: false,
+      inviteTokenHash: null,
+      inviteExpiresAt: null,
+      passwordHash: null,
+      activatedAt: null,
+      cpfDigits: null,
+      sessionVersion: { increment: 1 },
+    },
+  });
   await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "portal.revoke", entity: "Patient", entityId: patient.id });
   paths(patient.id);
   return { ok: t("revoked") };
@@ -117,9 +138,12 @@ export async function addHighlightAction(_prev: FormResult, fd: FormData): Promi
 export async function archiveHighlightAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const ctx = await requireClinicalContext();
   const t = await getTranslations("portal.pro");
-  const h = await db.portalHighlight.findFirst({ where: { id: str(fd, "highlightId"), workspaceId: ctx.workspace.id } });
+  const h = await db.portalHighlight.findFirst({
+    where: { id: str(fd, "highlightId"), workspaceId: ctx.workspace.id, patient: portalPatientScope(ctx) },
+  });
   if (!h) return { erro: t("errors.patientNotFound") };
   await db.portalHighlight.update({ where: { id: h.id }, data: { archivedAt: h.archivedAt ? null : new Date() } });
+  await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: h.archivedAt ? "portal.highlight-restore" : "portal.highlight-archive", entity: "Patient", entityId: h.patientId });
   paths(h.patientId);
   return { ok: h.archivedAt ? t("highlightRestored") : t("highlightArchived") };
 }
@@ -128,11 +152,13 @@ export async function archiveHighlightAction(_prev: FormResult, fd: FormData): P
 export async function clearResponseAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const ctx = await requireClinicalContext();
   const t = await getTranslations("portal.pro");
+  const appointmentId = str(fd, "appointmentId");
   const res = await db.appointment.updateMany({
-    where: { id: str(fd, "appointmentId"), workspaceId: ctx.workspace.id, patientResponse: "reschedule" },
+    where: { id: appointmentId, workspaceId: ctx.workspace.id, patientResponse: "reschedule", patient: portalPatientScope(ctx) },
     data: { patientResponse: null, patientResponseAt: null, patientResponseNote: null },
   });
   if (!res.count) return { erro: t("errors.patientNotFound") };
+  await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "portal.reschedule-handled", entity: "Appointment", entityId: appointmentId });
   revalidatePath("/app/portal");
   revalidatePath("/app/agenda");
   return { ok: t("responseCleared") };
@@ -143,6 +169,7 @@ export async function saveNoticeAction(_prev: FormResult, fd: FormData): Promise
   const t = await getTranslations("portal.pro");
   if (ctx.role !== "owner" && ctx.role !== "admin") return { erro: t("errors.onlyOwner") };
   await db.workspace.update({ where: { id: ctx.workspace.id }, data: { portalMessageNotice: str(fd, "notice").slice(0, 200) || null } });
+  await recordAudit({ workspaceId: ctx.workspace.id, userId: ctx.user.id, action: "portal.notice", entity: "Workspace", entityId: ctx.workspace.id });
   revalidatePath("/app/portal");
   return { ok: t("noticeSaved") };
 }

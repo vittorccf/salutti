@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CalendarPlus, CheckCircle2, ExternalLink, FileText, ListTodo, MapPin, MessagesSquare, StickyNote, Video } from "lucide-react";
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal-auth";
-import { canJoin, JOIN_WINDOW_MINUTES } from "@/lib/portal";
+import { canJoin, JOIN_WINDOW_MINUTES, safeUrl } from "@/lib/portal";
 import { addDaysKey } from "@/lib/payables";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import { meetingPlatform } from "@/lib/providers/video";
@@ -47,6 +47,7 @@ export default async function PortalWeekPage() {
     db.portalMessage.count({ where: { patientId: patient.id, fromPatient: false, readAt: null } }),
   ]);
   const next = sessions[0];
+  const nextUrl = safeUrl(next?.meetingUrl);
   const rest = sessions.slice(1);
   const todayCard = cards.find((c) => dateKeySP(c.date) === today);
   const week = Array.from({ length: 7 }, (_, i) => {
@@ -90,11 +91,11 @@ export default async function PortalWeekPage() {
               {next.professional.fullName} · {label("modality", next.modality)}
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
-              {next.modality === "online" && next.meetingUrl ? (
+              {next.modality === "online" && nextUrl ? (
                 canJoin(next.startsAt, next.endsAt, now) ? (
                   <Button asChild size="lg">
-                    <a href={next.meetingUrl} target="_blank" rel="noopener noreferrer">
-                      <Video className="h-4 w-4" aria-hidden /> {t("join", { platform: platform(next.meetingUrl) })}
+                    <a href={nextUrl} target="_blank" rel="noopener noreferrer">
+                      <Video className="h-4 w-4" aria-hidden /> {t("join", { platform: platform(nextUrl) })}
                     </a>
                   </Button>
                 ) : (
@@ -193,7 +194,7 @@ export default async function PortalWeekPage() {
                     {h.kind === "task" ? <ListTodo className="h-4 w-4 text-brand" aria-hidden /> : h.kind === "material" ? <FileText className="h-4 w-4 text-brand" aria-hidden /> : <StickyNote className="h-4 w-4 text-brand" aria-hidden />}
                     {h.title}
                   </p>
-                  <Badge variant={h.kind === "task" ? (h.doneAt ? "success" : "warning") : "secondary"}>
+                  <Badge variant={h.kind === "task" && h.doneAt ? "success" : "secondary"}>
                     {h.kind === "task" ? (h.doneAt ? t("done") : t("kind.task")) : t(`kind.${h.kind}`)}
                   </Badge>
                 </div>

@@ -23,10 +23,15 @@ test("portal do paciente: convite, criar senha, semana, check-in, mensagens, tar
   await page.getByRole("button", { name: "Agendar sessão" }).click();
   await expect(page.getByRole("heading", { name: `Sessão · ${name}` })).toBeVisible();
 
-  // Profissional: abre o portal do paciente, publica uma tarefa e gera o convite.
+  // Profissional: abre o portal do paciente. Sem nascimento nem CPF no cadastro, o convite fica bloqueado.
   await page.goto(patientUrl);
   await page.getByRole("link", { name: "Abrir portal do paciente" }).click();
   await expect(page.getByRole("heading", { name: `Portal · ${name}` })).toBeVisible();
+  await expect(page.getByText(/Para gerar o convite, cadastre a data de nascimento ou o CPF/)).toBeVisible();
+  await page.getByRole("link", { name: "Editar cadastro" }).click();
+  await page.locator("#birthDate").fill("1990-01-31");
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+  await page.goto(`${patientUrl}/portal`);
   await page.locator("#h-title").fill("Registro de pensamentos");
   await page.locator("#h-body").fill("Anote 3 situações na semana.");
   await page.getByRole("button", { name: "Publicar para o paciente" }).click();
@@ -43,6 +48,14 @@ test("portal do paciente: convite, criar senha, semana, check-in, mensagens, tar
   await p.goto(invite);
   await expect(p.getByRole("heading", { name: "Crie seu acesso" })).toBeVisible();
   await expect(p.getByText(name)).toHaveCount(0);
+  await p.locator("#birthDate").fill("1990-02-01");
+  await p.locator("#cpf").fill(CPF);
+  await p.locator("#password").fill(PASSWORD);
+  await p.locator("#confirm").fill(PASSWORD);
+  await p.getByRole("checkbox").check();
+  await p.getByRole("button", { name: "Criar acesso e entrar" }).click();
+  await expect(p.getByText("Os dados não conferem com o cadastro. Confira e tente de novo.")).toBeVisible();
+  await p.locator("#birthDate").fill("1990-01-31");
   await p.locator("#cpf").fill("111.111.111-11");
   await p.locator("#password").fill(PASSWORD);
   await p.locator("#confirm").fill(PASSWORD);
@@ -106,13 +119,43 @@ test("portal do paciente: convite, criar senha, semana, check-in, mensagens, tar
   await p.locator("#password").fill("senha errada demais");
   await p.getByRole("button", { name: "Entrar" }).click();
   await expect(p.getByText("CPF ou senha incorretos.")).toBeVisible();
+  // CPF que não tem acesso recebe a mesma resposta (não revela quem é paciente).
+  await p.locator("#cpf").fill("111.444.777-35");
+  await p.locator("#password").fill("qualquer senha longa");
+  await p.getByRole("button", { name: "Entrar" }).click();
+  await expect(p.getByText("CPF ou senha incorretos.")).toBeVisible();
+  await p.locator("#cpf").fill(CPF);
   await p.locator("#password").fill(PASSWORD);
   await p.getByRole("button", { name: "Entrar" }).click();
   await expect(p).toHaveURL(/\/portal$/);
 
+  // O token do portal não vale como sessão do app (mesma chave, audiência diferente).
+  const portalCookie = (await ctxP.cookies()).find((c) => c.name === "salutti_portal")!;
+  await ctxP.addCookies([{ name: "salutti_session", value: portalCookie.value, domain: portalCookie.domain, path: "/" }]);
+  await p.goto("/app");
+  await expect(p).toHaveURL(/\/login/);
+
+  // Link antigo (de antes da senha) só orienta: não abre o portal nem cria senha.
+  await p.goto("/portal/qualquer-token-antigo");
+  await expect(p.getByRole("heading", { name: "Este link mudou" })).toBeVisible();
+
   // Convite já usado não vale de novo.
   await p.goto(invite);
   await expect(p.getByRole("heading", { name: "Link sem validade" })).toBeVisible();
+
+  // Sexta tentativa errada seguida do mesmo CPF e rede: barrada por 15 minutos, mesmo com a senha certa.
+  await p.goto("/portal/conta");
+  await p.getByRole("button", { name: "Sair" }).click();
+  for (let i = 0; i < 5; i++) {
+    await p.locator("#cpf").fill(CPF);
+    await p.locator("#password").fill(`errada numero ${i}`);
+    await p.getByRole("button", { name: "Entrar" }).click();
+    await expect(p.getByText(/CPF ou senha incorretos|Muitas tentativas/)).toBeVisible();
+  }
+  await p.locator("#cpf").fill(CPF);
+  await p.locator("#password").fill(PASSWORD);
+  await p.getByRole("button", { name: "Entrar" }).click();
+  await expect(p.getByText("Muitas tentativas. Espere 15 minutos e tente de novo.")).toBeVisible();
 
   // Revogar: a sessão do paciente cai.
   await page.goto(`${patientUrl}/portal`);
@@ -122,4 +165,8 @@ test("portal do paciente: convite, criar senha, semana, check-in, mensagens, tar
   await p.goto("/portal");
   await expect(p).toHaveURL(/\/portal\/entrar$/);
   await ctxP.close();
+
+  // Convite novo depois de revogar: a senha antiga não volta a valer.
+  await page.reload();
+  await expect(page.getByText("Sem acesso", { exact: true })).toBeVisible();
 });

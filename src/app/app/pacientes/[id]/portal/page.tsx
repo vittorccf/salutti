@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { requireClinicalContext } from "@/lib/permissions";
 import { addDaysKey } from "@/lib/payables";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
-import { HIGHLIGHT_KINDS, MESSAGE_MAX } from "@/lib/portal";
+import { HIGHLIGHT_KINDS, MESSAGE_MAX, portalPatientScope } from "@/lib/portal";
+import { cpfDigits, formatCpf } from "@/lib/cpf";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
 import { ActionForm } from "@/components/forms/action-form";
@@ -27,7 +28,10 @@ export const dynamic = "force-dynamic";
 export default async function PatientPortalAdminPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireClinicalContext();
   const { id } = await params;
-  const patient = await db.patient.findFirst({ where: { id, workspaceId: ctx.workspace.id, deletedAt: null }, include: { portalAccess: true } });
+  const patient = await db.patient.findFirst({
+    where: { id, workspaceId: ctx.workspace.id, deletedAt: null, ...portalPatientScope(ctx) },
+    include: { portalAccess: true },
+  });
   if (!patient) notFound();
   const [t, f, label] = await Promise.all([getTranslations("portal.pro"), getFormat(), getTranslations("common.labels").then(labeler)]);
   const access = patient.portalAccess;
@@ -202,7 +206,20 @@ export default async function PatientPortalAdminPage({ params }: { params: Promi
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InviteBox patientId={patient.id} phone={patient.phone} firstName={firstName} activated={!!access?.activatedAt} />
+              {status === "active" && access?.cpfDigits ? (
+                <p className="text-sm">
+                  {t("loginCpf", { cpf: formatCpf(access.cpfDigits) })}
+                  {!cpfDigits(patient.cpf) ? <span className="block text-xs text-warning-strong">{t("cpfFromPatient")}</span> : null}
+                </p>
+              ) : null}
+              <InviteBox
+                patientId={patient.id}
+                phone={patient.phone}
+                firstName={firstName}
+                activated={!!access?.activatedAt}
+                canInvite={!!patient.birthDate || !!cpfDigits(patient.cpf)}
+                editHref={`/app/pacientes/${patient.id}/editar`}
+              />
               {access?.active ? (
                 <div className="space-y-3 border-t pt-4">
                   <ActionForm action={setMessagesAction} className="flex items-center justify-between gap-3">

@@ -29,7 +29,6 @@ export default async function PortalMessagesPage() {
       <AutoRefresh />
       <div>
         <h1 className="text-page-title">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{patient.workspace.portalMessageNotice || t("defaultNotice")}</p>
       </div>
       <p role="note" className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm text-warning-strong">
         <LifeBuoy className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
@@ -37,7 +36,6 @@ export default async function PortalMessagesPage() {
       </p>
       <MessageThread
         emptyText={t("empty")}
-        readLabel={t("read")}
         messages={messages.map((m) => ({
           id: m.id,
           body: m.body,
@@ -52,6 +50,7 @@ export default async function PortalMessagesPage() {
           <Label htmlFor="body" className="sr-only">
             {t("write")}
           </Label>
+          <p className="text-xs text-muted-foreground">{patient.workspace.portalMessageNotice || t("defaultNotice")}</p>
           <Textarea id="body" name="body" rows={3} required maxLength={MESSAGE_MAX} placeholder={t("placeholder")} />
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-muted-foreground">{t("privacy")}</span>

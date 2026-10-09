@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessagesSquare } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireClinicalContext } from "@/lib/permissions";
+import { portalPatientScope } from "@/lib/portal";
 import { getFormat, getTranslations } from "@/i18n/server";
 import { ActionForm } from "@/components/forms/action-form";
 import { AutoRefresh } from "@/components/auto-refresh";
@@ -20,15 +21,23 @@ export default async function PortalInboxPage() {
   const ctx = await requireClinicalContext();
   const wsId = ctx.workspace.id;
   const [t, f] = await Promise.all([getTranslations("portal.pro.inbox"), getFormat()]);
-  const [threads, unread, requests, active] = await Promise.all([
-    db.portalMessage.groupBy({ by: ["patientId"], where: { workspaceId: wsId }, _max: { createdAt: true }, orderBy: { _max: { createdAt: "desc" } }, take: 50 }),
-    db.portalMessage.groupBy({ by: ["patientId"], where: { workspaceId: wsId, fromPatient: true, readAt: null }, _count: { _all: true } }),
+  const scope = portalPatientScope(ctx);
+  const [threads, unread, requests, active, legacy] = await Promise.all([
+    db.portalMessage.groupBy({ by: ["patientId"], where: { workspaceId: wsId, patient: scope }, _max: { createdAt: true }, orderBy: { _max: { createdAt: "desc" } }, take: 50 }),
+    db.portalMessage.groupBy({ by: ["patientId"], where: { workspaceId: wsId, fromPatient: true, readAt: null, patient: scope }, _count: { _all: true } }),
     db.appointment.findMany({
-      where: { workspaceId: wsId, patientResponse: "reschedule", startsAt: { gte: new Date() }, status: { not: "cancelled" } },
+      where: { workspaceId: wsId, patientResponse: "reschedule", startsAt: { gte: new Date() }, status: { not: "cancelled" }, patient: scope },
       include: { patient: { select: { id: true, fullName: true } } },
       orderBy: { startsAt: "asc" },
+      take: 50,
     }),
-    db.patientPortalAccess.count({ where: { active: true, activatedAt: { not: null }, patient: { workspaceId: wsId, deletedAt: null } } }),
+    db.patientPortalAccess.count({ where: { active: true, activatedAt: { not: null }, patient: { workspaceId: wsId, deletedAt: null, ...scope } } }),
+    // Link antigo (de antes da senha), ainda sem senha criada: o paciente precisa de um convite novo.
+    db.patientPortalAccess.findMany({
+      where: { active: true, activatedAt: null, inviteTokenHash: null, patient: { workspaceId: wsId, deletedAt: null, ...scope } },
+      include: { patient: { select: { id: true, fullName: true } } },
+      take: 50,
+    }),
   ]);
   const patients = await db.patient.findMany({ where: { id: { in: threads.map((x) => x.patientId) }, workspaceId: wsId }, select: { id: true, fullName: true } });
   const unreadOf = (id: string) => unread.find((u) => u.patientId === id)?._count._all ?? 0;
@@ -46,6 +55,26 @@ export default async function PortalInboxPage() {
         </h1>
         <p className="text-sm text-muted-foreground">{t("description", { count: active })}</p>
       </header>
+
+      {legacy.length ? (
+        <Card className="border-brand/40">
+          <CardHeader>
+            <CardTitle>{t("legacyTitle", { count: legacy.length })}</CardTitle>
+            <CardDescription>{t("legacyDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-wrap gap-2 text-sm">
+              {legacy.map((l) => (
+                <li key={l.id}>
+                  <Link href={`/app/pacientes/${l.patient.id}/portal`} className="inline-flex rounded-full border px-3 py-1 text-brand hover:bg-accent">
+                    {l.patient.fullName}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {requests.length ? (
         <Card className="border-warning/40">

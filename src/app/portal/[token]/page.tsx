@@ -1,13 +1,27 @@
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import Link from "next/link";
+import { getTranslations } from "@/i18n/server";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PortalShell } from "../_components/portal-shell";
 
 export const dynamic = "force-dynamic";
 
-// Link antigo do portal (antes da senha). Ainda sem senha: vira o convite para criá-la.
-// Já com senha (ou link desconhecido): vai para a tela de entrar. O link sozinho não abre mais o portal.
-export default async function LegacyPortalLink({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-  const access = await db.patientPortalAccess.findFirst({ where: { token, active: true }, select: { activatedAt: true } });
-  if (access && !access.activatedAt) redirect(`/portal/convite/${token}`);
-  redirect("/portal/entrar");
+// Link antigo do portal (de antes da senha). O link sozinho não abre mais o portal nem cria senha:
+// quem já tem senha entra pela tela de entrar; quem não tem pede um convite novo (o consultório vê a lista).
+export default async function LegacyPortalLink() {
+  const t = await getTranslations("portal.legacy");
+  return (
+    <PortalShell>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/portal/entrar" className="text-sm font-medium text-brand underline-offset-4 hover:underline">
+            {t("login")}
+          </Link>
+        </CardContent>
+      </Card>
+    </PortalShell>
+  );
 }

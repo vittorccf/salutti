@@ -5,16 +5,21 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { hashPassword, verifyPassword } from "@/lib/auth";
-import { cpfDigits, formatCpf, isValidCpf } from "@/lib/cpf";
+import { cpfDigits, isValidCpf } from "@/lib/cpf";
 import { dateKeySP, parseDateOnly } from "@/lib/dates";
 import {
+  clearThrottle,
+  clientIp,
   createPortalSession,
   destroyPortalSession,
   getPortalSession,
   hashInviteToken,
-  LOCK_MINUTES,
-  MAX_FAILED_ATTEMPTS,
+  isThrottled,
+  LIMITS,
   passwordProblem,
+  registerFailure,
+  THROTTLE_MINUTES,
+  throttleKeys,
 } from "@/lib/portal-auth";
 import { MESSAGE_MAX } from "@/lib/portal";
 import { getTranslations } from "@/i18n/server";
@@ -25,6 +30,7 @@ const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const raw = (fd: FormData, key: string) => String(fd.get(key) ?? "");
 // Hash fixo para gastar o mesmo tempo quando o CPF não existe (não revela quem tem acesso).
 const DUMMY_HASH = bcrypt.hashSync("salutti-portal-dummy", 10);
+const MESSAGES_PER_HOUR = 20;
 
 async function err(key: string, values?: Record<string, string | number>): Promise<FormResult> {
   const t = await getTranslations("portal.errors");
@@ -41,96 +47,88 @@ export async function loginAction(_prev: FormResult, fd: FormData): Promise<Form
   const cpf = cpfDigits(str(fd, "cpf"));
   const password = raw(fd, "password");
   if (!isValidCpf(cpf) || !password) return err("loginInvalid");
+  const ip = clientIp();
+  const keys = { cpfIp: throttleKeys.cpfIp(cpf, ip), ip: throttleKeys.ip(ip) };
+  // Mesma resposta exista o CPF ou não: o limite não revela quem é paciente.
+  if ((await isThrottled(keys.cpfIp, LIMITS.cpfIp)) || (await isThrottled(keys.ip, LIMITS.ip))) return err("tooMany", { minutes: THROTTLE_MINUTES });
+
   const accesses = await db.patientPortalAccess.findMany({
-    where: { cpfDigits: cpf, active: true, activatedAt: { not: null }, patient: { deletedAt: null } },
+    where: { cpfDigits: cpf, active: true, activatedAt: { not: null }, passwordHash: { not: null }, patient: { deletedAt: null } },
     include: { patient: { select: { workspaceId: true } } },
     orderBy: { lastLoginAt: { sort: "desc", nulls: "last" } },
+    take: 5,
   });
-  const now = new Date();
-  if (!accesses.length) {
-    await bcrypt.compare(password, DUMMY_HASH);
-    return err("loginInvalid");
-  }
-  if (accesses.every((a) => a.lockedUntil && a.lockedUntil > now)) return err("locked", { minutes: LOCK_MINUTES });
   // Mesmo CPF em mais de um consultório: entra no primeiro cuja senha confere (o mais usado recentemente).
+  let match: (typeof accesses)[number] | null = null;
+  if (!accesses.length) await bcrypt.compare(password, DUMMY_HASH);
   for (const a of accesses) {
-    if (a.lockedUntil && a.lockedUntil > now) continue;
     if (await verifyPassword(password, a.passwordHash)) {
-      await db.patientPortalAccess.update({ where: { id: a.id }, data: { failedAttempts: 0, lockedUntil: null, lastLoginAt: now } });
-      await createPortalSession(a, a.patient.workspaceId);
-      redirect("/portal");
+      match = a;
+      break;
     }
   }
-  // Senha errada: conta para todos os acessos do CPF; na 5ª seguida, trava por 15 minutos.
-  for (const a of accesses) {
-    const failed = a.failedAttempts + 1;
-    await db.patientPortalAccess.update({
-      where: { id: a.id },
-      data: failed >= MAX_FAILED_ATTEMPTS ? { failedAttempts: 0, lockedUntil: new Date(now.getTime() + LOCK_MINUTES * 60_000) } : { failedAttempts: failed },
-    });
+  if (!match) {
+    await registerFailure(keys.cpfIp);
+    await registerFailure(keys.ip);
+    return err("loginInvalid");
   }
-  return err("loginInvalid");
+  await clearThrottle(keys.cpfIp);
+  await db.patientPortalAccess.update({ where: { id: match.id }, data: { lastLoginAt: new Date() } });
+  await createPortalSession(match, match.patient.workspaceId);
+  redirect("/portal");
 }
 
-// Convite (ou link antigo, antes da senha): confirma a data de nascimento, o CPF e cria a senha.
+// Convite: confirma a data de nascimento e/ou o CPF do cadastro e cria a senha. Uso único (consumido de forma atômica).
 export async function redeemInviteAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const token = str(fd, "token");
+  const tokenHash = hashInviteToken(token);
   const now = new Date();
-  const access =
-    (await db.patientPortalAccess.findFirst({
-      where: { inviteTokenHash: hashInviteToken(token), inviteExpiresAt: { gt: now }, active: true },
-      include: { patient: true },
-    })) ??
-    (await db.patientPortalAccess.findFirst({ where: { token, activatedAt: null, active: true }, include: { patient: true } }));
+  const access = await db.patientPortalAccess.findFirst({
+    where: { inviteTokenHash: tokenHash, inviteExpiresAt: { gt: now }, active: true },
+    include: { patient: true },
+  });
   if (!access || access.patient.deletedAt) return err("inviteInvalid");
-  if (access.lockedUntil && access.lockedUntil > now) return err("locked", { minutes: LOCK_MINUTES });
-
   const patient = access.patient;
+  // Cadastro sem data de nascimento nem CPF: o convite não vale (quem tivesse o link escolheria o login).
+  if (!patient.birthDate && !cpfDigits(patient.cpf)) return err("inviteInvalid");
+  const ip = clientIp();
+  const keys = { access: throttleKeys.access(access.id), ip: throttleKeys.ip(ip) };
+  if ((await isThrottled(keys.access, LIMITS.access)) || (await isThrottled(keys.ip, LIMITS.ip))) return err("tooMany", { minutes: THROTTLE_MINUTES });
+
   const fail = async (key: string) => {
-    const failed = access.failedAttempts + 1;
-    await db.patientPortalAccess.update({
-      where: { id: access.id },
-      data: failed >= MAX_FAILED_ATTEMPTS ? { failedAttempts: 0, lockedUntil: new Date(now.getTime() + LOCK_MINUTES * 60_000) } : { failedAttempts: failed },
-    });
+    await registerFailure(keys.access);
+    await registerFailure(keys.ip);
     return err(key);
   };
-  // Data de nascimento do cadastro: confere (segunda checagem além do link).
-  if (patient.birthDate && str(fd, "birthDate") !== dateKeySP(patient.birthDate)) return fail("birthDateMismatch");
+  if (patient.birthDate && str(fd, "birthDate") !== dateKeySP(patient.birthDate)) return fail("identityMismatch");
   const cpf = cpfDigits(str(fd, "cpf"));
   if (!isValidCpf(cpf)) return err("cpfInvalid");
-  if (patient.cpf && cpfDigits(patient.cpf) && cpfDigits(patient.cpf) !== cpf) return fail("cpfMismatch");
+  // CPF do cadastro confere; sem CPF no cadastro, o informado vira só o login (não entra no cadastro clínico).
+  if (cpfDigits(patient.cpf) && cpfDigits(patient.cpf) !== cpf) return fail("identityMismatch");
   const password = raw(fd, "password");
   const problem = passwordProblem(password, raw(fd, "confirm"), [cpf, patient.birthDate ? dateKeySP(patient.birthDate).replace(/-/g, "") : ""]);
   if (problem) return err(`password.${problem}`);
   if (fd.get("accept") !== "on") return err("acceptRequired");
 
   const wasActive = !!access.activatedAt;
-  await db.$transaction([
-    db.patientPortalAccess.update({
-      where: { id: access.id },
-      data: {
-        cpfDigits: cpf,
-        passwordHash: await hashPassword(password),
-        activatedAt: access.activatedAt ?? now,
-        passwordChangedAt: now,
-        inviteTokenHash: null,
-        inviteExpiresAt: null,
-        failedAttempts: 0,
-        lockedUntil: null,
-        lastLoginAt: now,
-      },
-    }),
-    // CPF informado pelo próprio paciente entra no cadastro quando ainda não havia.
-    ...(patient.cpf ? [] : [db.patient.update({ where: { id: patient.id }, data: { cpf: formatCpf(cpf) } })]),
-  ]);
-  await recordAudit({
-    workspaceId: patient.workspaceId,
-    userId: null,
-    action: wasActive ? "portal.password-reset" : "portal.activate",
-    entity: "Patient",
-    entityId: patient.id,
+  const used = await db.patientPortalAccess.updateMany({
+    where: { id: access.id, inviteTokenHash: tokenHash },
+    data: {
+      cpfDigits: cpf,
+      passwordHash: await hashPassword(password),
+      activatedAt: access.activatedAt ?? now,
+      passwordChangedAt: now,
+      inviteTokenHash: null,
+      inviteExpiresAt: null,
+      lastLoginAt: now,
+      sessionVersion: { increment: 1 },
+    },
   });
-  await createPortalSession(access, patient.workspaceId);
+  if (!used.count) return err("inviteInvalid");
+  await clearThrottle(keys.access);
+  await recordAudit({ workspaceId: patient.workspaceId, userId: null, action: wasActive ? "portal.password-reset" : "portal.activate", entity: "Patient", entityId: patient.id });
+  const fresh = await db.patientPortalAccess.findUniqueOrThrow({ where: { id: access.id } });
+  await createPortalSession(fresh, patient.workspaceId);
   redirect("/portal");
 }
 
@@ -141,16 +139,22 @@ export async function logoutAction() {
 
 export async function changePasswordAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const access = await requirePortalAction();
-  if (!(await verifyPassword(raw(fd, "current"), access.passwordHash))) return err("currentPassword");
+  const key = throttleKeys.access(access.id);
+  if (await isThrottled(key, LIMITS.access)) return err("tooMany", { minutes: THROTTLE_MINUTES });
+  if (!(await verifyPassword(raw(fd, "current"), access.passwordHash))) {
+    await registerFailure(key);
+    return err("currentPassword");
+  }
   const birth = access.patient.birthDate ? dateKeySP(access.patient.birthDate).replace(/-/g, "") : "";
   const problem = passwordProblem(raw(fd, "password"), raw(fd, "confirm"), [access.cpfDigits ?? "", birth]);
   if (problem) return err(`password.${problem}`);
-  await db.patientPortalAccess.update({
+  // Sobe a versão: sessões em outros aparelhos caem; este recebe uma sessão nova.
+  const updated = await db.patientPortalAccess.update({
     where: { id: access.id },
-    data: { passwordHash: await hashPassword(raw(fd, "password")), passwordChangedAt: new Date() },
+    data: { passwordHash: await hashPassword(raw(fd, "password")), passwordChangedAt: new Date(), sessionVersion: { increment: 1 } },
   });
-  // A sessão atual também cai com a troca: entra de novo com a senha nova.
-  await createPortalSession(access, access.patient.workspaceId);
+  await clearThrottle(key);
+  await createPortalSession(updated, access.patient.workspaceId);
   await recordAudit({ workspaceId: access.patient.workspaceId, userId: null, action: "portal.password-change", entity: "Patient", entityId: access.patientId });
   const t = await getTranslations("portal.account");
   return { ok: t("passwordChanged") };
@@ -176,7 +180,8 @@ export async function checkinAction(_prev: FormResult, fd: FormData): Promise<Fo
   });
   revalidatePath("/portal");
   const t = await getTranslations("portal.week");
-  return { ok: t("checkinSaved") };
+  // Humor baixo: além do "salvo", lembra que o registro não é lido na hora e onde buscar ajuda.
+  return { ok: mood <= 2 ? `${t("checkinSaved")} ${t("checkinLow")}` : t("checkinSaved") };
 }
 
 // Confirmar presença ou pedir remarcação de uma sessão futura (o consultório vê na agenda e no portal).
@@ -215,6 +220,9 @@ export async function sendMessageAction(_prev: FormResult, fd: FormData): Promis
   const body = str(fd, "body");
   if (!body) return err("messageEmpty");
   if (body.length > MESSAGE_MAX) return err("messageLong", { max: MESSAGE_MAX });
+  // Até 20 mensagens por hora: a conversa é para recados, não para tempo real.
+  const lastHour = await db.portalMessage.count({ where: { patientId: access.patientId, fromPatient: true, createdAt: { gte: new Date(Date.now() - 3_600_000) } } });
+  if (lastHour >= MESSAGES_PER_HOUR) return err("tooManyMessages");
   await db.portalMessage.create({ data: { workspaceId: access.patient.workspaceId, patientId: access.patientId, fromPatient: true, body } });
   revalidatePath("/portal/mensagens");
   const t = await getTranslations("portal.messages");

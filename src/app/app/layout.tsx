@@ -94,7 +94,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <Separator />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav clinical={canSeeClinical(ctx.role)} modules={modules} portalPending={canSeeClinical(ctx.role) ? await portalPendingCount(ctx.workspace.id) : 0} />
+        <SidebarNav clinical={canSeeClinical(ctx.role)} modules={modules} portalPending={canSeeClinical(ctx.role) ? await portalPendingCount(ctx) : 0} />
       </div>
       {trialDays !== null ? (
         <>
