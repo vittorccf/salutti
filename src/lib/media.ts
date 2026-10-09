@@ -63,3 +63,21 @@ export async function readImageUpload(formData: FormData, name: string): Promise
 }
 
 export const mediaUrl = (id: string | null | undefined) => (id ? `/api/media/${id}` : null);
+
+// Anexo de conta a pagar (boleto, nota, comprovante): PDF ou imagem, até 2 MB, tipo conferido pelo conteúdo.
+export const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
+
+export const sniffAttachment = (b: Uint8Array): "application/pdf" | "image/jpeg" | "image/png" | "image/webp" | null =>
+  b.length >= 5 && String.fromCharCode(b[0], b[1], b[2], b[3], b[4]) === "%PDF-" ? "application/pdf" : sniffImage(b);
+
+export async function readAttachmentUpload(formData: FormData, name: string): Promise<{ mime: string; bytes: Buffer; fileName: string } | null> {
+  const file = formData.get(name);
+  if (!(file instanceof File) || file.size === 0) return null;
+  if (file.size > MAX_ATTACHMENT_BYTES) throw new UploadError("attachmentTooBig");
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const mime = sniffAttachment(bytes);
+  if (!mime) throw new UploadError("attachmentFormat");
+  // Só o nome (sem pasta), sem caracteres de controle, até 120 caracteres.
+  const fileName = (file.name.split(/[\\/]/).pop() ?? "arquivo").replace(/[\u0000-\u001f]/g, "").slice(0, 120) || "arquivo";
+  return { mime, bytes, fileName };
+}

@@ -50,6 +50,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     aesthetics: { form: aesthetics?.form, categories: aesthetics?.categories, schedule: aesthetics?.schedule },
     // Botão e painel de suporte (todas as telas logadas).
     support: all.support,
+    // Formulário de conta a pagar (lê o boleto no navegador).
+    payables: (({ form, groups, methods, frequencies, attachmentKinds }) => ({ form, groups, methods, frequencies, attachmentKinds }))(
+      (all.payables ?? {}) as Record<string, unknown>,
+    ),
   };
   return (
     <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable} ${cormorant.variable}`}>

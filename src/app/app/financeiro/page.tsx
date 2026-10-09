@@ -10,6 +10,7 @@ import { getFormat, getTranslations } from "@/i18n/server";
 import { labeler } from "@/i18n/labels";
 import { Banknote, MessageSquareText, Receipt as ReceiptIcon, PlusCircle } from "lucide-react";
 import { CashflowChart } from "./_components/cashflow-chart";
+import { FinanceTabs } from "./_components/finance-tabs";
 import { isPastDue, startOfMonthSP, TZ } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
@@ -82,6 +83,8 @@ export default async function FinancialPage() {
           </Button>
         </div>
       </header>
+
+      <FinanceTabs role={ctx.role} active="receivables" />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
