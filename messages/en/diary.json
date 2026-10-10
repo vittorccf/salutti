@@ -1,0 +1,305 @@
+{
+  "notice": "This card is not read in real time. If you are in crisis or thinking about hurting yourself, call your local emergency number (in Brazil, 188 CVV or 192 SAMU) or go to an emergency room.",
+  "monthCount": "{count, plural, =0 {No entries this month.} one {You logged # day this month.} other {You logged # days this month.}}",
+  "consent": {
+    "title": "Daily card",
+    "description": "A quick log of how you are doing, with a single purpose: helping your clinician follow your care and prepare sessions.",
+    "who": "Only the clinical team that cares for you sees what you log.",
+    "realtime": "Nobody monitors it in real time: what you write is read when preparing your sessions.",
+    "optional": "It's optional and you can stop at any time. What you've already logged may become part of your clinical record, which your clinician keeps for at least 5 years. Talk to them about it.",
+    "accept": "I understand and want to use the daily card.",
+    "submit": "Start"
+  },
+  "support": {
+    "title": "Thank you for sharing how you are",
+    "description": "If you are in danger right now, call your local emergency number. One of your answers shows you may be going through a very hard time, and you don't have to face this alone.",
+    "cvv": "Call your local crisis line (in Brazil, 188 CVV, 24 h, free)",
+    "samu": "In an emergency, call your local emergency number (in Brazil, 192 SAMU)",
+    "upa": "Or go to the nearest emergency room.",
+    "professional": "Your clinician will see this answer when they open the system, but not right away. If you can, also talk to someone you trust now."
+  },
+  "instrument": {
+    "title": "Questionnaire: {name}",
+    "description": "Your clinician added this questionnaire to your card. It takes about 2 minutes and helps track how you are doing over time.",
+    "submit": "Send answers",
+    "saved": "Answers sent. Thank you!",
+    "credit": "Screening scales, not tests or diagnoses. PHQ-9 and GAD-7: Drs. Robert L. Spitzer, Janet B. W. Williams, Kurt Kroenke and colleagues (free to use). WHO-5: Psychiatric Centre North Zealand and World Health Organization.",
+    "phq9": {
+      "name": "PHQ-9 (mood)",
+      "prompt": "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
+      "i1": "Little interest or pleasure in doing things",
+      "i2": "Feeling down, depressed, or hopeless",
+      "i3": "Trouble falling or staying asleep, or sleeping too much",
+      "i4": "Feeling tired or having little energy",
+      "i5": "Poor appetite or overeating",
+      "i6": "Feeling bad about yourself, or that you are a failure or have let yourself or your family down",
+      "i7": "Trouble concentrating on things, such as reading the newspaper or watching television",
+      "i8": "Moving or speaking so slowly that other people could have noticed. Or the opposite: being so fidgety or restless that you have been moving around a lot more than usual",
+      "i9": "Thoughts that you would be better off dead, or of hurting yourself in some way",
+      "o0": "Not at all",
+      "o1": "Several days",
+      "o2": "More than half the days",
+      "o3": "Nearly every day"
+    },
+    "gad7": {
+      "name": "GAD-7 (anxiety)",
+      "prompt": "Over the last 2 weeks, how often have you been bothered by the following problems?",
+      "i1": "Feeling nervous, anxious, or on edge",
+      "i2": "Not being able to stop or control worrying",
+      "i3": "Worrying too much about different things",
+      "i4": "Trouble relaxing",
+      "i5": "Being so restless that it is hard to sit still",
+      "i6": "Becoming easily annoyed or irritable",
+      "i7": "Feeling afraid, as if something awful might happen",
+      "o0": "Not at all",
+      "o1": "Several days",
+      "o2": "More than half the days",
+      "o3": "Nearly every day"
+    },
+    "who5": {
+      "name": "WHO-5 (well-being)",
+      "prompt": "Over the last 2 weeks, how much does each statement describe how you have been feeling?",
+      "i1": "I have felt cheerful and in good spirits",
+      "i2": "I have felt calm and relaxed",
+      "i3": "I have felt active and vigorous",
+      "i4": "I woke up feeling fresh and rested",
+      "i5": "My daily life has been filled with things that interest me",
+      "o0": "At no time",
+      "o1": "Some of the time",
+      "o2": "Less than half of the time",
+      "o3": "More than half of the time",
+      "o4": "Most of the time",
+      "o5": "All of the time"
+    },
+    "bands": {
+      "minimo": "Minimal",
+      "leve": "Mild",
+      "moderado": "Moderate",
+      "moderadamente_grave": "Moderately severe",
+      "grave": "Severe",
+      "muito_baixo": "Very low (assess)",
+      "baixo": "Low (assess)",
+      "adequado": "Adequate"
+    }
+  },
+  "client": {
+    "emotions": "Which emotions showed up today?",
+    "emotionsHint": "Pick up to {max}.",
+    "activities": "What was part of your day?",
+    "quadrants": {
+      "alta_desagradavel": "Tension and discomfort",
+      "baixa_desagradavel": "Low energy and discomfort",
+      "alta_agradavel": "Energy and well-being",
+      "baixa_agradavel": "Calm and well-being"
+    },
+    "emotion": {
+      "ansioso": "Anxiety",
+      "irritado": "Irritation",
+      "estressado": "Stress",
+      "com_medo": "Fear",
+      "triste": "Sadness",
+      "cansado": "Tiredness",
+      "sozinho": "Loneliness",
+      "desanimado": "Discouragement",
+      "animado": "Excitement",
+      "alegre": "Joy",
+      "orgulhoso": "Pride",
+      "esperancoso": "Hope",
+      "calmo": "Calm",
+      "grato": "Gratitude",
+      "aliviado": "Relief",
+      "seguro": "Safety",
+      "raiva": "Anger",
+      "vazio": "Emptiness",
+      "culpa": "Guilt",
+      "vergonha": "Shame"
+    },
+    "activity": {
+      "exercicio": "Exercise",
+      "ar_livre": "Outdoors",
+      "amigos_familia": "Friends or family",
+      "trabalho_estudo": "Work or study",
+      "lazer": "Leisure",
+      "tarefa_terapia": "Therapy homework",
+      "meditacao": "Meditation or breathing",
+      "boa_alimentacao": "Regular meals",
+      "alcool": "Alcohol",
+      "telas": "Screens (social media, shows)"
+    },
+    "energy": "Energy",
+    "energyLevel": {
+      "1": "Very low",
+      "2": "Low",
+      "3": "Medium",
+      "4": "Good",
+      "5": "Very good"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "scaleHint": "0 = not at all, 10 = very much.",
+    "chart": {
+      "mood": "Daily mood",
+      "avg7": "7-day average",
+      "anxiety": "Anxiety"
+    },
+    "medication": "Took my medication"
+  },
+  "pro": {
+    "title": "Daily card · {name}",
+    "description": "What the patient logged in the portal, with patterns to bring to the session. Association is not causation.",
+    "exportCsv": "Export CSV",
+    "print": "Print or save as PDF",
+    "risk": {
+      "title": "An answer that needs attention",
+      "description": "On the PHQ-9, the patient endorsed item 9 (thoughts of being better off dead or of self-harm). Crisis contacts were shown to them. Assess risk and reach out according to your protocol.",
+      "item": "{date}: item 9 answered \"{answer}\"",
+      "review": "Record action",
+      "noteLabel": "Action taken (optional)",
+      "notePlaceholder": "E.g. called the patient, assessed risk, booked an extra session."
+    },
+    "waitingConsent": "The patient hasn't accepted the daily card in the portal yet. They will see the invitation next time they sign in.",
+    "noPortal": "The patient doesn't use the portal yet. Give access under \"Open patient portal\" so they can fill in the card.",
+    "periodLabel": "Period",
+    "period": "Last {days} days",
+    "summary": {
+      "days": "Days logged",
+      "daysValue": "{count} of {total}",
+      "mood": "Average mood",
+      "lowDays": "Low-mood days",
+      "sleep": "Average sleep",
+      "hours": "{hours} h",
+      "medication": "Medication",
+      "medicationValue": "{count} of {total} days"
+    },
+    "chartTitle": "Mood over time",
+    "chartDescription": "Dots: each day. Bold line: average of the last 7 logged days.",
+    "empty": "No entries in this period yet.",
+    "pixels": {
+      "title": "Mood in pixels ({weeks} weeks)",
+      "description": "Each square is a day; the stronger the color, the better the mood.",
+      "aria": "{count} of {total} days logged in recent weeks",
+      "low": "Worse",
+      "high": "Better"
+    },
+    "patterns": {
+      "title": "Patterns",
+      "description": "Associations in this period's data, to explore with the patient. They don't show causation.",
+      "sleepNotEnough": "Sleep × mood: at least {min} days with both sleep and mood are needed ({count} so far).",
+      "sleep_none": "Sleep × mood: no clear trend over {n} days (r = {r}).",
+      "sleep_weak": "Sleep × mood: weak {direction} trend over {n} days (r = {r}).",
+      "sleep_moderate": "Sleep × mood: moderate {direction} trend over {n} days (r = {r}).",
+      "sleep_strong": "Sleep × mood: marked {direction} trend over {n} days (r = {r}). Worth exploring with the patient.",
+      "positive": "positive (more sleep, better mood)",
+      "negative": "negative (more sleep, worse mood)",
+      "activity": "{activity}: average mood {with} on the {days} days with it and {without} on days without.",
+      "activityNotEnough": "Activities: at least {min} days with and {min} without each activity are needed to compare.",
+      "emotions": "Most frequent emotions"
+    },
+    "instruments": {
+      "title": "Screening scales",
+      "description": "Scores and severity bands. They support clinical assessment, don't replace it, and are not psychological tests.",
+      "none": "No answers yet. The questionnaire shows up in the portal when it's due.",
+      "off": "No questionnaire turned on for this patient.",
+      "date": "Date",
+      "name": "Questionnaire",
+      "score": "Score",
+      "band": "Band",
+      "item9": "Item 9",
+      "conduct": "Action recorded by {name} on {date}"
+    },
+    "answers": {
+      "title": "Your questions",
+      "archived": "{label} (removed)"
+    },
+    "notesTitle": "Patient notes",
+    "setup": {
+      "title": "Customize the card",
+      "description": "Pick a template or adjust item by item. Fewer items usually means more entries.",
+      "templates": "Templates",
+      "items": "Check-in items",
+      "itemsHint": "Mood is always on; the others are optional for the patient.",
+      "questions": "Your own questions (up to {max})",
+      "questionsHint": "E.g. \"Did the 4-7-8 breathing?\" (yes/no) or \"How much did worry get in the way today?\" (0 to 10). Custom questions don't trigger alerts: for risk, use the PHQ-9. Editing a question creates a new one; old answers are kept.",
+      "questionPlaceholder": "Question text",
+      "questionLabel": "Question {n}",
+      "questionType": "Type of question {n}",
+      "instruments": "Validated questionnaires",
+      "instrumentsHint": "They show up in the portal when due. The PHQ-9 includes the self-harm item: if answered above zero, the patient sees crisis contacts and you get an alert at the top of the app.",
+      "itemsCount": "{count} items",
+      "every": "Frequency",
+      "everyDays": "Every {days} days",
+      "save": "Save card",
+      "riskAck": "I understand Salutti does not monitor in real time and that I will assess PHQ-9 alerts according to my risk protocol."
+    },
+    "items": {
+      "anxiety": "Anxiety",
+      "sleep": "Sleep (hours)",
+      "energy": "Energy",
+      "emotions": "Emotions",
+      "activities": "Activities",
+      "notes": "Free note",
+      "medication": "Medication (yes/no)"
+    },
+    "questionTypes": {
+      "scale": "Scale 0 to 10",
+      "yesno": "Yes or no",
+      "number": "Number",
+      "text": "Short text"
+    },
+    "templates": {
+      "basico": {
+        "name": "Basic",
+        "description": "Mood, anxiety, sleep and note."
+      },
+      "ansiedade": {
+        "name": "Anxiety",
+        "description": "Emotions, activities and GAD-7."
+      },
+      "humor": {
+        "name": "Mood",
+        "description": "Energy, sleep, activities and PHQ-9."
+      },
+      "bem_estar": {
+        "name": "Well-being",
+        "description": "Sleep, activities and WHO-5."
+      },
+      "personalizado": {
+        "name": "Custom",
+        "description": "Adjusted item by item."
+      }
+    },
+    "templateApplied": "Template \"{name}\" applied.",
+    "setupSaved": "Card saved.",
+    "riskReviewed": "Marked as seen.",
+    "errors": {
+      "generic": "That didn't work. Try again.",
+      "riskAckRequired": "To turn on the PHQ-9, confirm you will assess alerts according to your risk protocol."
+    },
+    "chartAria": "Mood chart: {count} days logged, average mood {avg} of 5, {low} low-mood days.",
+    "printFooter": "Patient self-report, generated by Salutti on {date}. Not a psychological document.",
+    "templateNeedsAck": "The PHQ-9 is added once you tick the risk protocol confirmation below and save.",
+    "csv": {
+      "date": "Date",
+      "mood": "Mood (1 to 5)",
+      "anxiety": "Anxiety (1 to 5)",
+      "energy": "Energy (1 to 5)",
+      "sleep": "Sleep (hours)",
+      "medication": "Medication",
+      "emotions": "Emotions",
+      "activities": "Activities",
+      "archived": "{label} (removed)",
+      "note": "Note"
+    }
+  },
+  "revoke": {
+    "title": "Stop using the daily card",
+    "description": "You'll no longer see the card or the questionnaires. What you've already logged stays with your clinician. You can come back any time.",
+    "submit": "Stop using"
+  },
+  "alerts": {
+    "title": "Daily card:",
+    "description": "an answer needs attention and has no recorded action.",
+    "patient": "{name} ({count})",
+    "more": "and {count} more"
+  }
+}

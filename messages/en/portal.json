@@ -29,7 +29,10 @@
     "tooMany": "Too many attempts. Wait {minutes} minutes and try again.",
     "identityMismatch": "The details don't match our records. Check them and try again.",
     "tooManyMessages": "You sent many messages in the last hour. Wait a bit: the conversation is for notes, not real-time chat.",
-    "portalOff": "The portal is turned off for this practice. Contact your professional."
+    "portalOff": "The portal is turned off for this practice. Contact your professional.",
+    "diaryConsentRequired": "Check that you understand how the card works to start.",
+    "instrumentNotDue": "This questionnaire was already answered. It comes back on the next date.",
+    "instrumentIncomplete": "Answer every question to send it."
   },
   "login": {
     "metaTitle": "Sign in to the patient portal",
@@ -281,7 +284,8 @@
       "reschedule": "Asked to reschedule"
     },
     "loginCpf": "Patient login: CPF {cpf}",
-    "cpfFromPatient": "CPF entered by the patient on first access (the record has no CPF). Check it before using it on receipts."
+    "cpfFromPatient": "CPF entered by the patient on first access (the record has no CPF). Check it before using it on receipts.",
+    "diaryOpen": "Open full daily card"
   },
   "legacy": {
     "title": "This link has changed",
