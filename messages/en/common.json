@@ -215,8 +215,8 @@
       "refunded": "Refunded"
     },
     "receitaSaude": {
-      "queued": "Queued",
-      "sent": "Awaiting confirmation",
+      "queued": "To send",
+      "sent": "Exported (CSV)",
       "confirmed": "Confirmed",
       "error": "Failed"
     },

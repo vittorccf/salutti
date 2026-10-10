@@ -1,0 +1,164 @@
+{
+  "title": "Fiscal",
+  "description": "Impuestos y documentos de la consulta: carnê-leão, Receita Saúde, recibos, NFS-e y calendario de obligaciones.",
+  "agenda": {
+    "title": "Calendario fiscal",
+    "description": {
+      "pf": "Profesional persona física: carnê-leão (DARF 0190), recibos de Receita Saúde e INSS (GPS).",
+      "simples": "Simples Nacional: DAS mensual y DMED anual. Revisa el factor R para saber el anexo.",
+      "presumido": "Lucro presumido: DMED anual. Los demás tributos los lleva tu contador."
+    },
+    "items": {
+      "carneLeao": "Carnê-leão (DARF 0190)",
+      "inss": "INSS contribuyente individual (GPS)",
+      "receitaSaude": "Recibos de Receita Saúde del mes",
+      "das": "DAS (Simples Nacional)",
+      "dmed": "DMED (declaración de servicios de salud)"
+    },
+    "ofMonth": "de {month}",
+    "due": "vence el {date}",
+    "none": "Nada vence en las próximas semanas.",
+    "disclaimer": "Valores y fechas son estimaciones según lo registrado en Salutti; la liquidación oficial es la del Carnê-Leão Web y de tu contador.",
+    "clinicWarning": "{count, plural, other {Este consultorio tiene # profesionales activos.}} El carnê-leão es individual: el cálculo y el archivo usan el CPF del titular del perfil fiscal con todos los pagos. Cada profesional debe calcular solo sus propias atenciones."
+  },
+  "links": {
+    "carneLeao": "Calcular carnê-leão",
+    "export": "CSV de {month} (Carnê-Leão Web)",
+    "factorR": "Calcular factor R"
+  },
+  "profile": {
+    "title": "Perfil fiscal",
+    "description": "Define las obligaciones, el recibo y el archivo para la Receita.",
+    "regime": "Régimen",
+    "regimes": {
+      "pf": "Persona física (carnê-leão)",
+      "simples": "Simples Nacional",
+      "presumido": "Lucro presumido"
+    },
+    "cpf": "CPF del titular del carnê-leão",
+    "cpfHint": "Va en el recibo y en el archivo de la Receita Saúde.",
+    "occupation": "Ocupación (Carnê-Leão)",
+    "dependents": "Dependientes",
+    "occupationHint": "Código de ocupación en el Carnê-Leão Web (psicólogo: 255). Cada dependiente deduce R$ 189,59 al mes.",
+    "save": "Guardar perfil",
+    "saved": "Perfil fiscal guardado.",
+    "errors": {
+      "onlyFinance": "Solo quien administra las finanzas (dueño, administrador o finanzas) cambia el perfil fiscal.",
+      "generic": "No funcionó. Inténtalo de nuevo.",
+      "cpf": "CPF no válido. Revisa los 11 dígitos.",
+      "dependents": "Indica de 0 a 20 dependientes."
+    }
+  },
+  "receitaSaude": {
+    "notice": "{count, plural, =0 {Receita Saúde: ningún recibo por enviar.} one {Receita Saúde: # recibo por enviar.} other {Receita Saúde: # recibos por enviar.}} No hay integración directa: descarga el CSV del mes e impórtalo en el Carnê-Leão Web (Escrituração > Importar). Las filas con indicador S generan los recibos."
+  },
+  "receipts": {
+    "title": "Recibos",
+    "description": "Se generan en cada pago. Imprímelos para el paciente.",
+    "number": "N.º",
+    "patient": "Paciente",
+    "amount": "Valor",
+    "status": "Receita Saúde",
+    "print": "Imprimir",
+    "printOf": "Imprimir recibo {number} (se abre en una pestaña nueva)",
+    "empty": "Aún no hay recibos."
+  },
+  "nfse": {
+    "title": "Service invoices (NFS-e)",
+    "description": "Notas de servicio (consulta con CNPJ).",
+    "empty": "Aún no hay notas.",
+    "sandbox": "Emisión de prueba: la integración con el emisor nacional (con certificado e-CNPJ) aún no está activa."
+  },
+  "carneLeao": {
+    "back": "Fiscal",
+    "title": "Carnê-leão · {month}",
+    "description": "Ingresos recibidos de personas físicas en el mes, con las deducciones registradas en Salutti. Revísalo en el Carnê-Leão Web.",
+    "monthNav": "Mes",
+    "prev": "Mes anterior",
+    "next": "Mes siguiente",
+    "calcTitle": "Cálculo",
+    "usingSimplified": "El descuento simplificado fue mayor que INSS, dependientes y pensión: se usó. El libro de caja se deduce aparte.",
+    "usingLegal": "INSS, dependientes y pensión sumaron más que el descuento simplificado: se usaron. El libro de caja se deduce aparte.",
+    "income": "Ingresos ({count, plural, one {# pago} other {# pagos}})",
+    "legalTitle": "Otras deducciones o descuento simplificado",
+    "inss": "INSS pagado en el mes",
+    "dependents": "Dependientes: {count} × {each}",
+    "legalTotal": "INSS + dependientes",
+    "simplified": "Descuento simplificado (hasta {value})",
+    "deductions": "Total deducido",
+    "base": "Base de cálculo",
+    "gross": "Impuesto según la tabla 2026",
+    "reduction": "Reducción 2026 (Ley 15.270/2025)",
+    "tax": "Carnê-leão estimado",
+    "darfTitle": "DARF 0190",
+    "darfDescription": "Genera la guía en el Carnê-Leão Web después de importar los ingresos.",
+    "darfDue": "Vence el {date} (último día hábil del mes siguiente).",
+    "under10": "Por debajo de R$ 10,00 no se paga en el mes: se suma a los meses siguientes.",
+    "noTax": "Sin impuesto a pagar este mes",
+    "exportTitle": "Archivo para la Receita",
+    "exportDescription": "CSV en formato del Carnê-Leão Web (Escrituração > Importar). Con régimen persona física, también genera los recibos de la Receita Saúde.",
+    "needsCpf": "Indica un CPF válido del titular en el perfil fiscal.",
+    "exportCsv": "Descargar CSV del mes",
+    "missingCpf": "{count, plural, one {# pago sin CPF válido de quien pagó: queda fuera del archivo.} other {# pagos sin CPF válido de quien pagó: quedan fuera del archivo.}}",
+    "disclaimer": "Estimación para conferir. El valor oficial es el del Carnê-Leão Web. Aquí solo entran los pagos de personas físicas registrados en Salutti: los ingresos de personas jurídicas o convenios (con retención en la fuente) y los reembolsos quedan fuera.",
+    "csvDescription": "Atendimento em saúde",
+    "bookTitle": "Libro de caja",
+    "bookExpenses": "Gastos deducibles pagados en el mes",
+    "bookCarriedIn": "Excedente de meses anteriores",
+    "bookUsed": "Deducido este mes",
+    "bookCarriedOut": "Pasa al mes siguiente",
+    "needsOccupation": "Indica el código de ocupación del Carnê-Leão Web en el perfil fiscal.",
+    "blockRegime": "El carnê-leão y el archivo de la Receita valen solo para el régimen persona física.",
+    "openProfile": "Abrir perfil fiscal",
+    "onlyFinance": "Solo quien administra las finanzas descarga el archivo.",
+    "exportOnlyPending": "El archivo trae los pagos que aún no se exportaron, para no duplicar recibos en Receita Saúde.",
+    "exportNoReceitaSaude": "Los procedimientos estéticos no generan recibo de Receita Saúde: el archivo solo registra los ingresos.",
+    "markImported": "{count, plural, one {Ya lo importé: marcar # recibo como exportado} other {Ya lo importé: marcar # recibos como exportados}}",
+    "markImportedHint": "Úsalo después de importar el archivo en el Carnê-Leão Web.",
+    "imported": "{count, plural, =0 {Ningún recibo pendiente con CPF del pagador.} one {# recibo marcado como exportado.} other {# recibos marcados como exportados.}}"
+  },
+  "factorR": {
+    "back": "Fiscal",
+    "title": "Factor R",
+    "description": "Nómina ÷ ingresos brutos, de {from} a {to}.",
+    "revenue": "Ingresos (12 meses)",
+    "payroll": "Nómina (12 meses)",
+    "ratio": "Factor R",
+    "result": "Resultado",
+    "anexo": "Anexo {anexo}",
+    "noRevenue": "Sin ingresos registrados en los últimos 12 meses.",
+    "isIII": "Con factor R del 28% o más, los servicios de salud van al Anexo III (desde 6%).",
+    "isV": "Por debajo del 28%: Anexo V (desde 15,5%). Faltan {missing} de nómina en 12 meses para llegar al 28%.",
+    "how": "La nómina sale de las cuentas por pagar del grupo \"Personal\" (salarios, pro labore y cargas) y los ingresos, de los cobros pagados. Confírmalo con tu contador."
+  },
+  "receiptPrint": {
+    "print": "Imprimir o guardar PDF",
+    "title": "Recibo",
+    "needsDoc": "Indica el CPF (perfil fiscal) o el CNPJ de la consulta: la Receita exige el documento de quien recibió.",
+    "body": "Recibí de {name} la cantidad de {amount} ({words}), por {service} prestado a {patient} el {date}.",
+    "service": {
+      "mental": "atención psicológica",
+      "estetica": "procedimiento estético",
+      "odonto": "tratamiento odontológico"
+    },
+    "patient": "Paciente",
+    "payer": "Pagador (responsable)",
+    "paidOn": "Pagado el",
+    "placeDate": "{city}, {date}.",
+    "signature": "Firma",
+    "dateOnly": "{date}."
+  },
+  "yearReport": {
+    "print": "Imprimir o guardar PDF",
+    "title": "Informe de pagos",
+    "year": "Año calendario {year}",
+    "patient": "Paciente",
+    "responsible": "Responsable: {name}",
+    "month": "Mes",
+    "amount": "Valor pagado",
+    "total": "Total del año",
+    "note": "Valores efectivamente pagados en el año, para la declaración de la renta (gastos de salud). Guárdalo con los recibos.",
+    "signature": "Prestador",
+    "noteEstetica": "Valores efectivamente pagados en el año. Los procedimientos estéticos no son gasto médico deducible del impuesto sobre la renta."
+  }
+}

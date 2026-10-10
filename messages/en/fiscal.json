@@ -1,0 +1,164 @@
+{
+  "title": "Tax",
+  "description": "Practice taxes and documents: carnê-leão, Receita Saúde, receipts, service invoices and filing calendar.",
+  "agenda": {
+    "title": "Tax calendar",
+    "description": {
+      "pf": "Individual professional: carnê-leão (DARF 0190), Receita Saúde receipts and INSS (GPS).",
+      "simples": "Simples Nacional: monthly DAS and annual DMED. Check factor R to know the annex.",
+      "presumido": "Presumed profit: annual DMED. Other taxes are handled by your accountant."
+    },
+    "items": {
+      "carneLeao": "Carnê-leão (DARF 0190)",
+      "inss": "INSS self-employed (GPS)",
+      "receitaSaude": "Receita Saúde receipts for the month",
+      "das": "DAS (Simples Nacional)",
+      "dmed": "DMED (health services return)"
+    },
+    "ofMonth": "for {month}",
+    "due": "due {date}",
+    "none": "Nothing due in the coming weeks.",
+    "disclaimer": "Amounts and dates are estimates from what is recorded in Salutti; the official filing is done in Carnê-Leão Web and by your accountant.",
+    "clinicWarning": "{count, plural, other {This practice has # active professionals.}} Carnê-leão is individual: the calculation and the file use the tax profile holder’s CPF with every payment. Each professional should report only their own sessions."
+  },
+  "links": {
+    "carneLeao": "Compute carnê-leão",
+    "export": "{month} CSV (Carnê-Leão Web)",
+    "factorR": "Compute factor R"
+  },
+  "profile": {
+    "title": "Tax profile",
+    "description": "Sets the obligations, the receipt and the file for the Revenue Service.",
+    "regime": "Regime",
+    "regimes": {
+      "pf": "Individual (carnê-leão)",
+      "simples": "Simples Nacional",
+      "presumido": "Presumed profit"
+    },
+    "cpf": "Carnê-leão holder's CPF",
+    "cpfHint": "Printed on receipts and used in the Receita Saúde file.",
+    "occupation": "Occupation (Carnê-Leão)",
+    "dependents": "Dependents",
+    "occupationHint": "Occupation code in Carnê-Leão Web (psychologist: 255). Each dependent deducts R$ 189.59 per month.",
+    "save": "Save profile",
+    "saved": "Tax profile saved.",
+    "errors": {
+      "onlyFinance": "Only whoever manages finances (owner, admin or finance) can change the tax profile.",
+      "generic": "That didn't work. Try again.",
+      "cpf": "Invalid CPF. Check the 11 digits.",
+      "dependents": "Enter 0 to 20 dependents."
+    }
+  },
+  "receitaSaude": {
+    "notice": "{count, plural, =0 {Receita Saúde: no receipts to send.} one {Receita Saúde: # receipt to send.} other {Receita Saúde: # receipts to send.}} There is no direct integration: download the month's CSV and import it in Carnê-Leão Web (Escrituração > Importar). Rows flagged S generate the receipts."
+  },
+  "receipts": {
+    "title": "Receipts",
+    "description": "Created on each payment. Print to give to the patient.",
+    "number": "No.",
+    "patient": "Patient",
+    "amount": "Amount",
+    "status": "Receita Saúde",
+    "print": "Print",
+    "printOf": "Print receipt {number} (opens in a new tab)",
+    "empty": "No receipts yet."
+  },
+  "nfse": {
+    "title": "Service invoices (NFS-e)",
+    "description": "Service invoices (practices with CNPJ).",
+    "empty": "No invoices yet.",
+    "sandbox": "Test issuance: the national issuer integration (with an e-CNPJ certificate) is not active yet."
+  },
+  "carneLeao": {
+    "back": "Tax",
+    "title": "Carnê-leão · {month}",
+    "description": "Income received from individuals in the month, with the deductions recorded in Salutti. Check it in Carnê-Leão Web.",
+    "monthNav": "Month",
+    "prev": "Previous month",
+    "next": "Next month",
+    "calcTitle": "Computation",
+    "usingSimplified": "The simplified discount was higher than INSS, dependents and alimony, so it was used. The cash book is deducted separately.",
+    "usingLegal": "INSS, dependents and alimony added up to more than the simplified discount, so they were used. The cash book is deducted separately.",
+    "income": "Income ({count, plural, one {# payment} other {# payments}})",
+    "legalTitle": "Other deductions or simplified discount",
+    "inss": "INSS paid in the month",
+    "dependents": "Dependents: {count} × {each}",
+    "legalTotal": "INSS + dependents",
+    "simplified": "Simplified discount (up to {value})",
+    "deductions": "Total deducted",
+    "base": "Tax base",
+    "gross": "Tax per 2026 table",
+    "reduction": "2026 reduction (Law 15.270/2025)",
+    "tax": "Estimated carnê-leão",
+    "darfTitle": "DARF 0190",
+    "darfDescription": "Generate the payment slip in Carnê-Leão Web after importing the income.",
+    "darfDue": "Due on {date} (last business day of the following month).",
+    "under10": "Below R$ 10.00 nothing is paid this month: it adds to the following months.",
+    "noTax": "No tax due this month",
+    "exportTitle": "File for the Revenue Service",
+    "exportDescription": "CSV in Carnê-Leão Web format (Escrituração > Importar). Under the individual regime it also generates Receita Saúde receipts.",
+    "needsCpf": "Enter a valid holder CPF in the tax profile.",
+    "exportCsv": "Download month CSV",
+    "missingCpf": "{count, plural, one {# payment without a valid payer CPF: left out of the file.} other {# payments without a valid payer CPF: left out of the file.}}",
+    "disclaimer": "Estimate for checking. The official amount is the one in Carnê-Leão Web. Only payments from individuals recorded in Salutti count here: income from companies or insurers (with tax withheld at source) and reimbursements are left out.",
+    "csvDescription": "Atendimento em saúde",
+    "bookTitle": "Cash book (livro-caixa)",
+    "bookExpenses": "Deductible expenses paid this month",
+    "bookCarriedIn": "Surplus from previous months",
+    "bookUsed": "Deducted this month",
+    "bookCarriedOut": "Carried to next month",
+    "needsOccupation": "Enter the Carnê-Leão Web occupation code in the tax profile.",
+    "blockRegime": "Carnê-leão and the Receita file only apply to the individual (PF) regime.",
+    "openProfile": "Open tax profile",
+    "onlyFinance": "Only people who manage finances can download the file.",
+    "exportOnlyPending": "The file includes payments not yet exported, so receipts are not duplicated in Receita Saúde.",
+    "exportNoReceitaSaude": "Aesthetic procedures do not generate Receita Saúde receipts: the file only records the income.",
+    "markImported": "{count, plural, one {I imported it: mark # receipt as exported} other {I imported it: mark # receipts as exported}}",
+    "markImportedHint": "Use after importing the file into Carnê-Leão Web.",
+    "imported": "{count, plural, =0 {No pending receipt with the payer's CPF.} one {# receipt marked as exported.} other {# receipts marked as exported.}}"
+  },
+  "factorR": {
+    "back": "Tax",
+    "title": "Factor R",
+    "description": "Payroll ÷ gross revenue, from {from} to {to}.",
+    "revenue": "Revenue (12 months)",
+    "payroll": "Payroll (12 months)",
+    "ratio": "Factor R",
+    "result": "Result",
+    "anexo": "Annex {anexo}",
+    "noRevenue": "No revenue recorded in the last 12 months.",
+    "isIII": "With factor R of 28% or more, health services go to Annex III (from 6%).",
+    "isV": "Below 28%: Annex V (from 15.5%). {missing} more payroll over 12 months would reach 28%.",
+    "how": "Payroll comes from bills in the \"Personnel\" group (salaries, owner's pay and charges); revenue, from paid charges. Confirm with your accountant."
+  },
+  "receiptPrint": {
+    "print": "Print or save PDF",
+    "title": "Receipt",
+    "needsDoc": "Enter the CPF (tax profile) or the practice's CNPJ: the Revenue Service requires the receiver's document.",
+    "body": "I received from {name} the amount of {amount} ({words}), for {service} provided to {patient} on {date}.",
+    "service": {
+      "mental": "psychological care",
+      "estetica": "an aesthetic procedure",
+      "odonto": "dental treatment"
+    },
+    "patient": "Patient",
+    "payer": "Payer (guardian)",
+    "paidOn": "Paid on",
+    "placeDate": "{city}, {date}.",
+    "signature": "Signature",
+    "dateOnly": "{date}."
+  },
+  "yearReport": {
+    "print": "Print or save PDF",
+    "title": "Payment statement",
+    "year": "Calendar year {year}",
+    "patient": "Patient",
+    "responsible": "Guardian: {name}",
+    "month": "Month",
+    "amount": "Amount paid",
+    "total": "Total for the year",
+    "note": "Amounts actually paid in the year, for the income tax return (health expenses). Keep it with the receipts.",
+    "signature": "Provider",
+    "noteEstetica": "Amounts actually paid during the year. Aesthetic procedures are not deductible medical expenses for income tax."
+  }
+}

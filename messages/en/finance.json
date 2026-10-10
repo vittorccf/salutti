@@ -56,7 +56,8 @@
     "receitaSaude": "Receita Saúde:",
     "noReceipt": "No receipt issued. It is created after payment.",
     "invoice": "NFS-e {number}",
-    "noInvoice": "No invoice issued."
+    "noInvoice": "No invoice issued.",
+    "issueReceipt": "Issue receipt"
   },
   "dunning": {
     "title": "Payment reminders",

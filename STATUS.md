@@ -1,9 +1,33 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Cartão diário" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-11. A seção "Fiscal" é a mais recente; as demais ficam como histórico.
 
 
 
+
+## Fiscal: carnê-leão, Receita Saúde, recibo e informe (2026-10-11) — branch `feat/financeiro-fiscal`
+
+- **Perfil fiscal** (Workspace): regime (`pf`, `simples`, `presumido`), CPF do titular, ocupação do Carnê-Leão Web (255 para psicólogo) e dependentes. Consultório com CNPJ entra como `simples` na migration.
+- **Carnê-leão:**
+  - tabela mensal 2026 e redutor da Lei 15.270/2025;
+  - o livro-caixa deduz à parte, somado ao maior entre o desconto simplificado e INSS + dependentes;
+  - o excedente do livro-caixa passa para os meses seguintes do ano;
+  - DARF 0190 vence no último dia útil do mês seguinte.
+- **Receita Saúde:**
+  - CSV no layout do Carnê-Leão Web, com 16 campos e indicador "S";
+  - o responsável do menor (`Patient.responsibleCpf`) vai como pagador e o paciente como beneficiário;
+  - baixar o arquivo não altera nada; o botão "Já importei" (POST) marca os recibos como exportados;
+  - só `financeiro.pagar` exporta;
+  - estética fica de fora.
+- **Agenda fiscal:** GPS (dia 15) e DAS (dia 20) prorrogam para o dia útil seguinte. Fator R para quem está no Simples.
+- **Recibo e informe anual:** recibo pela Lei 9.250 com o valor por extenso, e informe anual para o paciente. Os dois imprimem com registro na auditoria.
+- **Revisão:** contador, advogado do diabo e qualidade.
+- **Pendências:**
+  - identidade fiscal por profissional em clínica;
+  - conferir o layout do CSV e a ocupação da odontologia no manual oficial;
+  - rendimentos de PJ/convênio;
+  - NFS-e real.
+- **Detalhes:** `docs/FISCAL.md`.
 
 ## Cartão diário (2026-10-11) — branch `feat/cartao-diario`
 

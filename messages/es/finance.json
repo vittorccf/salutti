@@ -56,7 +56,8 @@
     "receitaSaude": "Receita Saúde:",
     "noReceipt": "No se emitió ningún recibo. Se genera después del pago.",
     "invoice": "NFS-e {number}",
-    "noInvoice": "No se emitió ninguna factura."
+    "noInvoice": "No se emitió ninguna factura.",
+    "issueReceipt": "Emitir recibo"
   },
   "dunning": {
     "title": "Recordatorios de cobro",

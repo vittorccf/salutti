@@ -39,6 +39,8 @@
     "cpf": "CPF (optional)",
     "birthDate": "Date of birth",
     "responsible": "Guardian (if a minor)",
+    "responsibleCpf": "Guardian CPF",
+    "responsibleCpfHint": "Who pays for the sessions. Listed as payer on the receipt and in the Receita Saúde file.",
     "emergencyContact": "Emergency contact",
     "emergencyContactPlaceholder": "Name and phone",
     "insurance": "Health plan",
@@ -99,12 +101,15 @@
     "portalInvited": "Invitation sent, waiting for the patient to create a password.",
     "portalOpen": "Open patient portal",
     "odontogram": "Dental chart",
-    "diaryOpen": "Daily card"
+    "diaryOpen": "Daily card",
+    "yearReport": "Year statement",
+    "newTab": "(opens in a new tab)"
   },
   "errors": {
     "fullNameRequired": "Enter the full name.",
     "tooLong": "One of the fields is too long. Shorten the text and try again.",
     "birthDateInvalid": "Invalid date of birth.",
+    "responsibleCpfInvalid": "Invalid guardian CPF. Check the 11 digits.",
     "invalid": "Check the form details and try again.",
     "contractLimit": "This practice's contract allows up to {max, plural, one {# active patient} other {# active patients}}. Contact support to increase it."
   },

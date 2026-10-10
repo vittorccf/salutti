@@ -56,7 +56,8 @@
     "receitaSaude": "Receita Saúde:",
     "noReceipt": "Nenhum recibo emitido. É gerado depois do pagamento.",
     "invoice": "NFS-e {number}",
-    "noInvoice": "Nenhuma fatura emitida."
+    "noInvoice": "Nenhuma fatura emitida.",
+    "issueReceipt": "Emitir recibo"
   },
   "dunning": {
     "title": "Régua de cobrança",

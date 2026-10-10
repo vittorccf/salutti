@@ -39,6 +39,8 @@
     "cpf": "CPF (opcional)",
     "birthDate": "Data de nascimento",
     "responsible": "Responsável (se menor)",
+    "responsibleCpf": "CPF do responsável",
+    "responsibleCpfHint": "Quem paga as sessões. Entra como pagador no recibo e no ficheiro da Receita Saúde.",
     "emergencyContact": "Contacto de emergência",
     "emergencyContactPlaceholder": "Nome e telemóvel",
     "insurance": "Seguro de saúde",
@@ -99,12 +101,15 @@
     "portalInvited": "Convite enviado, a aguardar que o paciente crie a palavra-passe.",
     "portalOpen": "Abrir portal do paciente",
     "odontogram": "Odontograma",
-    "diaryOpen": "Cartão diário"
+    "diaryOpen": "Cartão diário",
+    "yearReport": "Informe anual",
+    "newTab": "(abre num novo separador)"
   },
   "errors": {
     "fullNameRequired": "Indique o nome completo.",
     "tooLong": "Um dos campos ultrapassou o tamanho máximo. Encurte o texto e tente novamente.",
     "birthDateInvalid": "Data de nascimento inválida.",
+    "responsibleCpfInvalid": "CPF do responsável inválido. Confira os 11 dígitos.",
     "invalid": "Verifique os dados do formulário e tente novamente.",
     "contractLimit": "O contrato deste consultório permite até {max, plural, one {# paciente ativo} other {# pacientes ativos}}. Fale com o suporte para alargar."
   },
