@@ -50,7 +50,8 @@
     },
     "footer": "Salutti · ERP for mental health professionals ·",
     "contact": "Get in touch:",
-    "esteticaLink": "Work in aesthetics? Meet Salutti Estética"
+    "esteticaLink": "Work in aesthetics? Meet Salutti Estética",
+    "odontoLink": "Work in dentistry? Meet Salutti Odonto"
   },
   "pay": {
     "title": "Payment · {workspace}",
@@ -149,5 +150,70 @@
     "otherDocs": "Other documents",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
+  },
+  "odonto": {
+    "metaDescription": "Dental chart, per-tooth treatment plan and estimate, lab work, recalls, scheduling and finance for dentists and dental clinics.",
+    "login": "Sign in",
+    "tryFree": "Try for free",
+    "badge": "Salutti Odonto · beta",
+    "headline": "The whole practice, from dental chart to payment, <hl>no spreadsheets</hl>.",
+    "subtitle": "FDI dental chart, treatment plans that become estimates, installments with payment links, lab work with due dates and maintenance recalls. For solo dentists and clinics.",
+    "ctaCreate": "Create free account",
+    "ctaLogin": "I have an account",
+    "fineprint": "Free trial, no card. Your data is yours (LGPD).",
+    "sampleLabel": "Sample dental chart",
+    "sampleCaption": "Sample: 16 to treat, 36 in treatment, 46 missing, 24 implant, 11 and 26 restored.",
+    "features": {
+      "odontogram": {
+        "title": "Dental chart",
+        "desc": "Permanent and primary dentition, surfaces and history per tooth."
+      },
+      "plan": {
+        "title": "Treatment plan",
+        "desc": "Procedures per tooth and surface, from your table, with TUSS codes for insurance."
+      },
+      "budget": {
+        "title": "Estimates that become charges",
+        "desc": "Once approved, installments go to Charges with Pix or boleto. Print it for the patient to sign."
+      },
+      "lab": {
+        "title": "Lab work",
+        "desc": "Sent, try-in, returned and fitted, with due dates and late alerts."
+      },
+      "recall": {
+        "title": "Maintenance recalls",
+        "desc": "Prophylaxis, periodontal and orthodontic: who to call and when, with a ready WhatsApp message."
+      },
+      "schedule": {
+        "title": "Schedule and reminders",
+        "desc": "Schedule per dentist, reminders and confirmation through the patient portal."
+      },
+      "records": {
+        "title": "Records and medical history",
+        "desc": "Medical history with the risks that change care: anticoagulants, bisphosphonates, endocarditis."
+      },
+      "finance": {
+        "title": "Finance",
+        "desc": "Payments, bills, receipts and practice reports."
+      }
+    },
+    "differentiators": {
+      "fdi": {
+        "title": "Built in the dentist's language",
+        "desc": "FDI numbering, MOD surfaces and TUSS codes: the system speaks the way you write in the record."
+      },
+      "approve": {
+        "title": "From estimate to installment in one click",
+        "desc": "An approved plan creates the charges; a completed procedure updates the chart and schedules the recall."
+      },
+      "team": {
+        "title": "For solo practices and clinics",
+        "desc": "Each dentist sees their own patients; front desk and finance work without opening the records."
+      }
+    },
+    "disclaimer": "Salutti Odonto is a management tool. Diagnosis, plan and care are the dentist's. Advertising must follow the Dental Code of Ethics.",
+    "footer": "Already using Salutti Odonto?",
+    "contact": "Talk to us:",
+    "otherArea": "See Salutti for mental health"
   }
 }

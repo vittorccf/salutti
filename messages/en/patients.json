@@ -97,7 +97,8 @@
     "rights": "To exercise the 9 data subject rights (access, portability, deletion, etc.), open the <link>LGPD</link> page.",
     "portalActive": "Portal active: the patient signs in with CPF and password.",
     "portalInvited": "Invitation sent, waiting for the patient to create a password.",
-    "portalOpen": "Open patient portal"
+    "portalOpen": "Open patient portal",
+    "odontogram": "Dental chart"
   },
   "errors": {
     "fullNameRequired": "Enter the full name.",

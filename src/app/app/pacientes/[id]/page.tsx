@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { CalendarPlus, FilePlus2, Pencil, Receipt as ReceiptIcon, ShieldCheck, Smartphone } from "lucide-react";
+import { CalendarPlus, FilePlus2, Pencil, Receipt as ReceiptIcon, ShieldCheck, Smartphone, Smile } from "lucide-react";
 import { differenceInYears } from "date-fns";
 import { chargeDisplayStatus } from "@/lib/labels";
 import { getFormat, getTranslations } from "@/i18n/server";
@@ -131,6 +131,13 @@ export default async function PatientPage({
               <CalendarPlus className="h-4 w-4" /> {t("schedule")}
             </Link>
           </Button>
+          {clinical && moduleEnabled(ctx.workspace, "odontograma") ? (
+            <Button variant="outline" asChild>
+              <Link href={`/app/pacientes/${patient.id}/odontograma`}>
+                <Smile className="h-4 w-4" /> {t("odontogram")}
+              </Link>
+            </Button>
+          ) : null}
           <Button variant="outline" asChild>
             <Link href={`/app/financeiro/novo?patientId=${patient.id}`}>
               <ReceiptIcon className="h-4 w-4" /> {t("newCharge")}

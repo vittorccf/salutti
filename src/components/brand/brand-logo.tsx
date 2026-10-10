@@ -24,6 +24,11 @@ const FILES: Record<Area, Record<"logo" | "symbol", { light: string; dark: strin
     logo: { light: "/brand/estetica/salutti-estetica-logo.svg", dark: "/brand/estetica/salutti-estetica-logo-branco.svg", ratio: 368.9 / 64 },
     symbol: { light: "/brand/estetica/salutti-estetica-simbolo.svg", dark: "/brand/estetica/salutti-estetica-simbolo-branco.svg", ratio: 1 },
   },
+  // Salutti Odonto: arquivos do design system "Salutti Odonto" (selo "odonto" em Geist Mono, em curvas, sobre azul gelo).
+  odonto: {
+    logo: { light: "/brand/odonto/salutti-odonto-logo.svg", dark: "/brand/odonto/salutti-odonto-logo-branco.svg", ratio: 367.72 / 64 },
+    symbol: { light: "/brand/odonto/salutti-odonto-simbolo.svg", dark: "/brand/odonto/salutti-odonto-simbolo-branco.svg", ratio: 1 },
+  },
 };
 
 export function BrandLogo({ variant = "logo", height = 28, className, area = "mental" }: Props) {

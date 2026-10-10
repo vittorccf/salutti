@@ -20,7 +20,10 @@
     "portal": "Patient portal",
     "portalPending": "{count, plural, one {# pending} other {# pending}}",
     "waitlist": "Waitlist",
-    "waitlistUrgent": "{count, plural, one {# urgent sign-up} other {# urgent sign-ups}}"
+    "waitlistUrgent": "{count, plural, one {# urgent sign-up} other {# urgent sign-ups}}",
+    "plans": "Plans and estimates",
+    "recalls": "Recalls",
+    "lab": "Prosthetics"
   },
   "layout": {
     "home": "Home",
@@ -110,7 +113,15 @@
       "estetica_enfermagem": "Aesthetic nursing",
       "estetica_hof": "Orofacial harmonization",
       "estetica_medicina": "Aesthetic medicine",
-      "estetica_clinica": "Aesthetics clinic"
+      "estetica_clinica": "Aesthetics clinic",
+      "odonto_clinico": "General dentistry",
+      "odonto_ortodontia": "Orthodontics",
+      "odonto_implantodontia": "Implantology",
+      "odonto_endodontia": "Endodontics",
+      "odonto_odontopediatria": "Pediatric dentistry",
+      "odonto_periodontia": "Periodontics",
+      "odonto_protese": "Prosthodontics",
+      "odonto_clinica": "Dental clinic"
     },
     "segmentOption": {
       "solo_psicologo": "Psychology (licensed)",
@@ -118,14 +129,21 @@
       "odonto": "Dentistry",
       "clinica": "Multidisciplinary clinic",
       "ubs": "Public health unit (UBS) or public service",
-      "odonto_clinica": "Dental clinic",
+      "odonto_clinica": "Dental clinic (CNPJ)",
       "estetica_farmacia": "Aesthetic pharmacy (CRF)",
       "estetica_biomedicina": "Aesthetic biomedicine (CRBM)",
       "estetica_esteticista": "Aesthetician (Law 13.643/2018, no licensing board)",
       "estetica_enfermagem": "Aesthetic nursing (COREN)",
       "estetica_hof": "Orofacial harmonization (CRO)",
       "estetica_medicina": "Aesthetic medicine and dermatology (CRM)",
-      "estetica_clinica": "Aesthetics clinic"
+      "estetica_clinica": "Aesthetics clinic",
+      "odonto_clinico": "General dentist (CRO)",
+      "odonto_ortodontia": "Orthodontist (CRO)",
+      "odonto_implantodontia": "Implantologist (CRO)",
+      "odonto_endodontia": "Endodontist (CRO)",
+      "odonto_odontopediatria": "Pediatric dentist (CRO)",
+      "odonto_periodontia": "Periodontist (CRO)",
+      "odonto_protese": "Prosthodontist (CRO)"
     },
     "accountType": {
       "autonomo": "Independent professional",
@@ -145,7 +163,9 @@
       "farmaceutico": "Pharmacist",
       "biomedico": "Biomedical scientist",
       "esteticista": "Aesthetician",
-      "enfermeiro": "Nurse"
+      "enfermeiro": "Nurse",
+      "tsb": "Oral health technician (TSB)",
+      "asb": "Dental assistant (ASB)"
     },
     "guideType": {
       "consulta": "Consultation form",

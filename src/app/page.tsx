@@ -123,6 +123,11 @@ export default async function Home() {
             {t("esteticaLink")}
           </Link>
         </p>
+        <p className="mt-2">
+          <Link href="/odonto" className="text-brand underline-offset-4 hover:underline">
+            {t("odontoLink")}
+          </Link>
+        </p>
         <LegalLinks className="mt-2" />
       </footer>
     </main>

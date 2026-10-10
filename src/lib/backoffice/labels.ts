@@ -30,7 +30,7 @@ export const MEMBER_ROLES = {
 } as const;
 export const memberRoleLabel = (r: string) => pick(MEMBER_ROLES, r);
 
-export const AREA_LABELS = { mental: "Salutti", estetica: "Salutti Estética" } as const;
+export const AREA_LABELS = { mental: "Salutti", estetica: "Salutti Estética", odonto: "Salutti Odonto" } as const;
 export const areaLabel = (a: string) => pick(AREA_LABELS, a);
 export const accountTypeLabel = (t: string) => pick({ autonomo: "Autônomo", clinica: "Clínica" }, t);
 

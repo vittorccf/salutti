@@ -20,7 +20,10 @@
     "portal": "Portal del paciente",
     "portalPending": "{count, plural, one {# pendiente} other {# pendientes}}",
     "waitlist": "Lista de espera",
-    "waitlistUrgent": "{count, plural, one {# inscripción urgente} other {# inscripciones urgentes}}"
+    "waitlistUrgent": "{count, plural, one {# inscripción urgente} other {# inscripciones urgentes}}",
+    "plans": "Planes y presupuestos",
+    "recalls": "Revisiones",
+    "lab": "Prótesis"
   },
   "layout": {
     "home": "Inicio",
@@ -110,7 +113,15 @@
       "estetica_enfermagem": "Enfermería estética",
       "estetica_hof": "Armonización orofacial",
       "estetica_medicina": "Medicina estética",
-      "estetica_clinica": "Clínica de estética"
+      "estetica_clinica": "Clínica de estética",
+      "odonto_clinico": "Odontología general",
+      "odonto_ortodontia": "Ortodoncia",
+      "odonto_implantodontia": "Implantología",
+      "odonto_endodontia": "Endodoncia",
+      "odonto_odontopediatria": "Odontopediatría",
+      "odonto_periodontia": "Periodoncia",
+      "odonto_protese": "Prótesis dental",
+      "odonto_clinica": "Clínica dental"
     },
     "segmentOption": {
       "solo_psicologo": "Psicología (colegiado/a)",
@@ -118,14 +129,21 @@
       "odonto": "Odontología",
       "clinica": "Clínica multiprofesional",
       "ubs": "Centro de salud (UBS) o servicio público",
-      "odonto_clinica": "Clínica odontológica",
+      "odonto_clinica": "Clínica dental (CNPJ)",
       "estetica_farmacia": "Farmacia estética (CRF)",
       "estetica_biomedicina": "Biomedicina estética (CRBM)",
       "estetica_esteticista": "Esteticista (Ley 13.643/2018, sin colegio profesional)",
       "estetica_enfermagem": "Enfermería estética (COREN)",
       "estetica_hof": "Armonización orofacial (CRO)",
       "estetica_medicina": "Medicina estética y dermatología (CRM)",
-      "estetica_clinica": "Clínica de estética"
+      "estetica_clinica": "Clínica de estética",
+      "odonto_clinico": "Odontólogo general (CRO)",
+      "odonto_ortodontia": "Ortodoncista (CRO)",
+      "odonto_implantodontia": "Implantólogo (CRO)",
+      "odonto_endodontia": "Endodoncista (CRO)",
+      "odonto_odontopediatria": "Odontopediatra (CRO)",
+      "odonto_periodontia": "Periodoncista (CRO)",
+      "odonto_protese": "Protesista (CRO)"
     },
     "accountType": {
       "autonomo": "Profesional independiente",
@@ -145,7 +163,9 @@
       "farmaceutico": "Farmacéutico(a)",
       "biomedico": "Biomédico(a)",
       "esteticista": "Esteticista",
-      "enfermeiro": "Enfermero(a)"
+      "enfermeiro": "Enfermero(a)",
+      "tsb": "Técnico/a en salud bucal (TSB)",
+      "asb": "Auxiliar en salud bucal (ASB)"
     },
     "guideType": {
       "consulta": "Guía de consulta",

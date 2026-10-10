@@ -4,13 +4,13 @@
 // (Workspace.area); dentro do app a marca vem do consultório ativo, não da URL.
 import type { AccountType } from "./account";
 
-export type Area = "mental" | "estetica";
-export const AREAS_LIST: Area[] = ["mental", "estetica"];
-export const isArea = (v: unknown): v is Area => v === "mental" || v === "estetica";
+export type Area = "mental" | "estetica" | "odonto";
+export const AREAS_LIST: Area[] = ["mental", "estetica", "odonto"];
+export const isArea = (v: unknown): v is Area => v === "mental" || v === "estetica" || v === "odonto";
 export const areaOf = (v: string | null | undefined): Area => (isArea(v) ? v : "mental");
 
 // Módulos que podem ser ligados ou desligados por área e, no backoffice, por cliente (o menu e as rotas consultam isto).
-export const MODULES = ["prontuario", "convenios", "procedimentos", "estoque", "portal", "contas_pagar", "lista_espera", "cartao_diario"] as const;
+export const MODULES = ["prontuario", "convenios", "procedimentos", "estoque", "portal", "contas_pagar", "lista_espera", "cartao_diario", "odontograma", "protese"] as const;
 export type Module = (typeof MODULES)[number];
 export const isModule = (v: string): v is Module => (MODULES as readonly string[]).includes(v);
 
@@ -24,6 +24,8 @@ export const MODULE_LABELS: Record<Module, string> = {
   contas_pagar: "Contas a pagar e relatórios",
   lista_espera: "Lista de espera",
   cartao_diario: "Cartão diário",
+  odontograma: "Odontograma, planos e orçamentos",
+  protese: "Prótese (laboratório)",
 };
 
 type AreaConfig = {
@@ -40,7 +42,7 @@ type AreaConfig = {
   professionalTypes: string[];
   councils: string[];
   /** sufixo das chaves de título de login/cadastro (auth.*.title + sufixo): "" na Salutti, "Estetica" na Estética */
-  titleKey: "" | "Estetica";
+  titleKey: "" | "Estetica" | "Odonto";
   /** tipo de conta já escolhido no cadastro (null = a pessoa escolhe) */
   defaultAccountType: AccountType | null;
 };
@@ -52,7 +54,7 @@ export const AREAS: Record<Area, AreaConfig> = {
     publicPath: "/",
     loginPath: "/login",
     signupPath: "/signup",
-    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: true },
+    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: false, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: true, odontograma: false, protese: false },
     segments: { autonomo: ["solo_psicologo", "solo_psicanalista", "odonto"], clinica: ["clinica", "ubs", "odonto"] },
     professionalTypes: ["psicologo", "psicanalista", "terapeuta", "psiquiatra", "dentista", "medico"],
     councils: ["CRP", "CRM", "CRO", "sem_registro"],
@@ -66,7 +68,7 @@ export const AREAS: Record<Area, AreaConfig> = {
     loginPath: "/estetica/login",
     signupPath: "/estetica/cadastro",
     // Procedimentos estéticos não são cobertos por convênio: o módulo de convênios/TISS fica desligado.
-    modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: false },
+    modules: { convenios: false, prontuario: true, procedimentos: true, estoque: true, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: false, odontograma: false, protese: false },
     segments: {
       autonomo: [
         "estetica_farmacia",
@@ -83,6 +85,25 @@ export const AREAS: Record<Area, AreaConfig> = {
     // Foco da área: a profissional autônoma (a clínica escolhe "Clínica" no cadastro).
     titleKey: "Estetica",
     defaultAccountType: "autonomo",
+  },
+  odonto: {
+    name: "Salutti Odonto",
+    brandTag: "Odonto",
+    publicPath: "/odonto",
+    loginPath: "/odonto/login",
+    signupPath: "/odonto/cadastro",
+    // Odontograma, plano de tratamento e orçamento por dente; prótese com o laboratório; estoque de materiais.
+    // Convênios ligados (GTO/TISS). O cartão diário é da saúde mental.
+    modules: { convenios: true, prontuario: true, procedimentos: false, estoque: true, portal: true, contas_pagar: true, lista_espera: true, cartao_diario: false, odontograma: true, protese: true },
+    segments: {
+      autonomo: ["odonto_clinico", "odonto_ortodontia", "odonto_implantodontia", "odonto_endodontia", "odonto_odontopediatria", "odonto_periodontia", "odonto_protese"],
+      clinica: ["odonto_clinica"],
+    },
+    // ASB e TSB também se inscrevem no CRO; quem atende e assina é o cirurgião-dentista.
+    professionalTypes: ["dentista", "tsb", "asb"],
+    councils: ["CRO"],
+    titleKey: "Odonto",
+    defaultAccountType: null,
   },
 };
 
@@ -105,7 +126,7 @@ export const enabledModules = (ws: WorkspaceModules) => MODULES.filter((m) => mo
 export const segmentsFor = (area: Area, type: AccountType) => AREAS[area].segments[type];
 
 // Área a que um segmento pertence (cadastros antigos não têm área gravada).
-export const areaOfSegment = (segment: string): Area => (segment.startsWith("estetica") ? "estetica" : "mental");
+export const areaOfSegment = (segment: string): Area => (segment.startsWith("estetica") ? "estetica" : segment.startsWith("odonto_") ? "odonto" : "mental");
 
 // Profissão e conselho sugeridos no primeiro cadastro profissional, pelo segmento.
 export function professionalDefaults(segment: string): { type: string; council: string } {
@@ -114,6 +135,14 @@ export function professionalDefaults(segment: string): { type: string; council: 
       return { type: "psicanalista", council: "sem_registro" };
     case "odonto":
     case "estetica_hof":
+    case "odonto_clinico":
+    case "odonto_ortodontia":
+    case "odonto_implantodontia":
+    case "odonto_endodontia":
+    case "odonto_odontopediatria":
+    case "odonto_periodontia":
+    case "odonto_protese":
+    case "odonto_clinica":
       return { type: "dentista", council: "CRO" };
     case "estetica_farmacia":
       return { type: "farmaceutico", council: "CRF" };
