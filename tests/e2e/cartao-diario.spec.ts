@@ -82,7 +82,7 @@ test("cartão diário: modelo e pergunta própria, aceite, check-in completo, PH
   await page.goto("/app");
   await page.getByRole("alert").filter({ hasText: "Cartão diário:" }).getByRole("link", { name: new RegExp(name) }).click();
   await expect(page).toHaveURL(/\/cartao$/);
-  const alert = page.getByRole("alert").filter({ hasText: "Resposta que pede atenção" });
+  const alert = page.locator('section[role="alert"]').filter({ hasText: "Resposta que pede atenção" });
   await expect(alert).toContainText('item 9 respondido como "Vários dias"');
   await expect(page.getByRole("cell", { name: "1 / 27" })).toBeVisible();
   await expect(page.getByText("Calma · 1")).toBeVisible();

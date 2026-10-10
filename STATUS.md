@@ -1,9 +1,22 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Salutti Odonto" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Cartão diário" é a mais recente; as demais ficam como histórico.
 
 
 
+
+## Cartão diário (2026-10-11) — branch `feat/cartao-diario`
+
+- **Por paciente:** modelos (Básico, Ansiedade, Humor, Bem-estar); itens ansiedade, sono, energia, medicação, emoções, atividades e nota; até 5 perguntas próprias (editar cria outra, a antiga fica arquivada).
+- **Escalas de rastreio:** PHQ-9, GAD-7 e WHO-5 a cada 7, 14 ou 28 dias. Ligar o PHQ-9 pede a confirmação do protocolo de risco.
+- **Portal:**
+  - aceite revogável antes do primeiro registro, com aviso de que não é lido em tempo real;
+  - check-in só com os itens ligados (desligar um item não apaga o que já foi registrado);
+  - escala única por período (trava);
+  - tela de apoio quando o item 9 do PHQ-9 vem acima de zero.
+- **Alerta de risco:** faixa no topo do app para quem é clínico e vê o paciente. Some ao registrar a conduta, com nota, quem e quando.
+- **Profissional:** gráfico com média de 7 dias, pixels de 12 semanas, padrões (sono × humor com n ≥ 14, atividades com ≥ 5 dias de cada lado), escores com faixa, CSV traduzido e impressão com rodapé "autorrelato".
+- **Revisão:** qualidade, advogado do diabo e psicólogo. Pendente: aviso por e-mail do alerta (falta provedor de e-mail), modelos DBT e de registro de pensamentos. Detalhes: `docs/CARTAO-DIARIO.md`.
 ## Salutti Odonto (2026-10-10) — branch `feat/area-odonto`
 
 - Terceira área (`area = "odonto"`):

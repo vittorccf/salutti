@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LogOut, Smartphone } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatCpf } from "@/lib/cpf";
@@ -12,7 +13,9 @@ import { Label } from "@/components/ui/label";
 import { changePasswordAction, logoutAction } from "../../_actions";
 
 export default async function PortalAccountPage() {
-  const access = (await getPortalSession())!;
+  // O layout já redireciona sem sessão, mas a página renderiza em paralelo: sem sessão, vai para o login.
+  const access = await getPortalSession();
+  if (!access) redirect("/portal/entrar");
   const { patient } = access;
   const [t, f] = await Promise.all([getTranslations("portal.account"), getFormat()]);
   const receipts = await db.receipt.findMany({ where: { patientId: patient.id, workspaceId: patient.workspaceId }, orderBy: { issuedAt: "desc" }, take: 12 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CalendarPlus, CheckCircle2, ExternalLink, FileText, ListTodo, MapPin, MessagesSquare, StickyNote, Video } from "lucide-react";
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal-auth";
@@ -20,7 +21,9 @@ import { DiarySection, SupportCard } from "../_components/diary-section";
 import { respondSessionAction, toggleTaskAction } from "../_actions";
 
 export default async function PortalWeekPage({ searchParams }: { searchParams: { apoio?: string } }) {
-  const access = (await getPortalSession())!;
+  // O layout já redireciona sem sessão, mas a página renderiza em paralelo: sem sessão, vai para o login.
+  const access = await getPortalSession();
+  if (!access) redirect("/portal/entrar");
   const { patient } = access;
   const now = new Date();
   const today = dateKeySP();
