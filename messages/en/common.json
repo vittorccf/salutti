@@ -18,7 +18,9 @@
     "procedures": "Procedures",
     "stock": "Inventory",
     "portal": "Patient portal",
-    "portalPending": "{count, plural, one {# pending} other {# pending}}"
+    "portalPending": "{count, plural, one {# pending} other {# pending}}",
+    "waitlist": "Waitlist",
+    "waitlistUrgent": "{count, plural, one {# urgent sign-up} other {# urgent sign-ups}}"
   },
   "layout": {
     "home": "Home",

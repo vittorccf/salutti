@@ -18,7 +18,9 @@
     "procedures": "Procedimentos",
     "stock": "Stock",
     "portal": "Portal do paciente",
-    "portalPending": "{count, plural, one {# pendente} other {# pendentes}}"
+    "portalPending": "{count, plural, one {# pendente} other {# pendentes}}",
+    "waitlist": "Lista de espera",
+    "waitlistUrgent": "{count, plural, one {# inscrição urgente} other {# inscrições urgentes}}"
   },
   "layout": {
     "home": "Início",

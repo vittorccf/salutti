@@ -7,6 +7,7 @@ import {
   ClipboardList,
   FileSignature,
   Handshake,
+  Hourglass,
   LayoutDashboard,
   MessageSquareText,
   MessagesSquare,
@@ -27,6 +28,7 @@ const nav: { href: string; label: string; icon: typeof Users; module?: Module; p
   { href: "/app", label: "dashboard", icon: LayoutDashboard },
   { href: "/app/pacientes", label: "patients", icon: Users },
   { href: "/app/agenda", label: "schedule", icon: CalendarDays },
+  { href: "/app/lista-espera", label: "waitlist", icon: Hourglass, module: "lista_espera", perm: "pacientes.gerenciar" },
   { href: "/app/procedimentos", label: "procedures", icon: Syringe, module: "procedimentos" },
   { href: "/app/estoque", label: "stock", icon: Package, module: "estoque" },
   { href: "/app/prontuario", label: "records", icon: ClipboardList, module: "prontuario" },
@@ -44,16 +46,19 @@ const nav: { href: string; label: string; icon: typeof Users; module?: Module; p
 const MENTAL_MODULES = (Object.keys(AREAS.mental.modules) as Module[]).filter((m) => AREAS.mental.modules[m]);
 
 // `portalPending`: mensagens não lidas e pedidos de remarcação do portal do paciente (badge no item).
+// `waitlistUrgent`: inscrições da lista de espera marcadas como urgentes e ainda sem contato.
 // `perms`: permissões do membro (sem a lista, mostra tudo o que o módulo permite).
 export const SidebarNav = ({
   clinical = true,
   modules = MENTAL_MODULES,
   portalPending = 0,
+  waitlistUrgent = 0,
   perms,
 }: {
   clinical?: boolean;
   modules?: Module[];
   portalPending?: number;
+  waitlistUrgent?: number;
   perms?: string[];
 }) => {
   const pathname = usePathname();
@@ -85,6 +90,12 @@ export const SidebarNav = ({
               <span className="ml-auto rounded-full bg-highlight px-2 py-0.5 text-xs font-semibold tabular-nums text-highlight-foreground">
                 <span className="sr-only">{t("portalPending", { count: portalPending })}</span>
                 <span aria-hidden>{portalPending > 99 ? "99+" : portalPending}</span>
+              </span>
+            ) : null}
+            {item.href === "/app/lista-espera" && waitlistUrgent > 0 ? (
+              <span className="ml-auto rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold tabular-nums text-destructive-foreground">
+                <span className="sr-only">{t("waitlistUrgent", { count: waitlistUrgent })}</span>
+                <span aria-hidden>{waitlistUrgent > 99 ? "99+" : waitlistUrgent}</span>
               </span>
             ) : null}
           </Link>

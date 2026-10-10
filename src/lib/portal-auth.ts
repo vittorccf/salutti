@@ -48,7 +48,8 @@ const WINDOW_MS = THROTTLE_MINUTES * 60_000;
 
 export const clientIp = () => {
   const h = headers();
-  return (h.get("x-forwarded-for")?.split(",")[0] ?? h.get("x-real-ip") ?? "local").trim();
+  // Na Vercel, x-real-ip e x-vercel-forwarded-for vêm da própria plataforma; x-forwarded-for fica por último (fora dela, o cliente escolhe).
+  return (h.get("x-vercel-forwarded-for")?.split(",")[0] ?? h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0] ?? "local").trim();
 };
 
 export const throttleKeys = {
