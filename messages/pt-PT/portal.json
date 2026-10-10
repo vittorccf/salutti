@@ -29,7 +29,10 @@
     "tooMany": "Demasiadas tentativas. Espere {minutes} minutos e tente novamente.",
     "identityMismatch": "Os dados não correspondem ao registo. Confira e tente novamente.",
     "tooManyMessages": "Enviou muitas mensagens na última hora. Espere um pouco: a conversa é para recados, não para tempo real.",
-    "portalOff": "O portal está desligado para este consultório. Contacte o seu profissional."
+    "portalOff": "O portal está desligado para este consultório. Contacte o seu profissional.",
+    "diaryConsentRequired": "Assinale que compreendeu como o cartão funciona para começar.",
+    "instrumentNotDue": "Este questionário já foi respondido. Volta na próxima data.",
+    "instrumentIncomplete": "Responda a todas as perguntas para enviar."
   },
   "login": {
     "metaTitle": "Entrar no portal do paciente",
@@ -281,7 +284,8 @@
       "reschedule": "Pediu remarcação"
     },
     "loginCpf": "Utilizador do paciente: CPF {cpf}",
-    "cpfFromPatient": "CPF indicado pelo paciente no primeiro acesso (o registo não tem CPF). Confirme antes de usar em recibos."
+    "cpfFromPatient": "CPF indicado pelo paciente no primeiro acesso (o registo não tem CPF). Confirme antes de usar em recibos.",
+    "diaryOpen": "Abrir cartão diário completo"
   },
   "legacy": {
     "title": "Este link mudou",

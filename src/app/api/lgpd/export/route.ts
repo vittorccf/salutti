@@ -31,6 +31,8 @@ export const GET = async (req: Request) => {
       treatmentPlans: { include: { items: true, charges: { select: { id: true, amount: true, dueDate: true, status: true, installment: true } } } },
       labOrders: true,
       recalls: true,
+      diaryConfig: true,
+      instrumentResponses: true,
       // Portal do paciente: mensagens, destaques e o acesso (sem o hash da senha nem o token).
       portalMessages: { orderBy: { createdAt: "asc" } },
       portalHighlights: true,

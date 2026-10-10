@@ -1,4 +1,5 @@
 import { LifeBuoy } from "lucide-react";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal-auth";
 import { MESSAGE_MAX } from "@/lib/portal";
@@ -12,7 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { sendMessageAction } from "../../_actions";
 
 export default async function PortalMessagesPage() {
-  const access = (await getPortalSession())!;
+  // O layout já redireciona sem sessão, mas a página renderiza em paralelo: sem sessão, vai para o login.
+  const access = await getPortalSession();
+  if (!access) redirect("/portal/entrar");
   const { patient } = access;
   const [t, f] = await Promise.all([getTranslations("portal.messages"), getFormat()]);
   // Abrir a conversa marca como lidas as mensagens do consultório.

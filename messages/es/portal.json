@@ -29,7 +29,10 @@
     "tooMany": "Demasiados intentos. Espera {minutes} minutos y vuelve a intentarlo.",
     "identityMismatch": "Los datos no coinciden con el registro. Revísalos e inténtalo de nuevo.",
     "tooManyMessages": "Enviaste muchos mensajes en la última hora. Espera un poco: la conversación es para avisos, no en tiempo real.",
-    "portalOff": "El portal está desactivado para este consultorio. Habla con tu profesional."
+    "portalOff": "El portal está desactivado para este consultorio. Habla con tu profesional.",
+    "diaryConsentRequired": "Marca que entendiste cómo funciona la tarjeta para empezar.",
+    "instrumentNotDue": "Este cuestionario ya fue respondido. Vuelve en la próxima fecha.",
+    "instrumentIncomplete": "Responde todas las preguntas para enviar."
   },
   "login": {
     "metaTitle": "Entrar al portal del paciente",
@@ -281,7 +284,8 @@
       "reschedule": "Pidió cambio"
     },
     "loginCpf": "Usuario del paciente: CPF {cpf}",
-    "cpfFromPatient": "CPF informado por el paciente en el primer acceso (el registro no tiene CPF). Revísalo antes de usarlo en recibos."
+    "cpfFromPatient": "CPF informado por el paciente en el primer acceso (el registro no tiene CPF). Revísalo antes de usarlo en recibos.",
+    "diaryOpen": "Abrir la tarjeta diaria completa"
   },
   "legacy": {
     "title": "Este enlace cambió",

@@ -211,11 +211,18 @@ export default async function PatientPage({
                   : t("portalNotGranted")}
             </CardDescription>
           </div>
-          {clinical && moduleEnabled(ctx.workspace, "portal") ? (
-            <Button size="sm" variant="outline" asChild>
-              <Link href={`/app/pacientes/${patient.id}/portal`}>{t("portalOpen")}</Link>
-            </Button>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {clinical && moduleEnabled(ctx.workspace, "cartao_diario") ? (
+              <Button size="sm" variant="outline" asChild>
+                <Link href={`/app/pacientes/${patient.id}/cartao`}>{t("diaryOpen")}</Link>
+              </Button>
+            ) : null}
+            {clinical && moduleEnabled(ctx.workspace, "portal") ? (
+              <Button size="sm" variant="outline" asChild>
+                <Link href={`/app/pacientes/${patient.id}/portal`}>{t("portalOpen")}</Link>
+              </Button>
+            ) : null}
+          </div>
         </CardHeader>
         <CardContent>
           {!clinical || !moduleEnabled(ctx.workspace, "cartao_diario") ? null : patient.dailyCards.length === 0 ? (

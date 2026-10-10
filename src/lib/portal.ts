@@ -18,6 +18,7 @@ export const portalPatientScope = (ctx: ScopeCtx): Prisma.PatientWhereInput =>
     : {};
 
 // Pendências do portal para o badge do menu: mensagens do paciente não lidas e pedidos de remarcação de sessões futuras.
+// (Alertas de risco do cartão diário têm faixa própria no topo do app: src/lib/diary-alerts.ts.)
 export async function portalPendingCount(ctx: ScopeCtx & { workspace: { id: string } }) {
   const workspaceId = ctx.workspace.id;
   const patient = portalPatientScope(ctx);

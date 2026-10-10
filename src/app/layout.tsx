@@ -62,6 +62,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     payables: (({ form, groups, methods, frequencies, attachmentKinds }) => ({ form, groups, methods, frequencies, attachmentKinds }))(
       (all.payables ?? {}) as Record<string, unknown>,
     ),
+    // Cartão diário: emoções, atividades e perguntas no check-in (paciente) e o gráfico (profissional).
+    diary: { client: ((all.diary ?? {}) as Record<string, unknown>).client },
   };
   return (
     <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable} ${cormorant.variable} ${geistMono.variable}`}>

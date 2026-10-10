@@ -1,0 +1,305 @@
+{
+  "notice": "Esta tarjeta no se lee en tiempo real. Si estás en crisis o pensando en hacerte daño, llama al número de emergencias de tu país (en Brasil, 188 CVV o 192 SAMU) o acude a urgencias.",
+  "monthCount": "{count, plural, =0 {Ningún registro este mes.} one {Registraste # día este mes.} other {Registraste # días este mes.}}",
+  "consent": {
+    "title": "Tarjeta diaria",
+    "description": "Un registro rápido de cómo estás, con una sola finalidad: ayudar a quien te atiende a seguir el tratamiento y preparar las sesiones.",
+    "who": "Solo el equipo clínico que te atiende ve lo que registras.",
+    "realtime": "Nadie lo sigue en tiempo real: lo que escribes se lee al preparar las sesiones.",
+    "optional": "Es opcional y puedes dejarlo cuando quieras. Lo que ya registraste puede formar parte de tu historia clínica, que el profesional guarda al menos 5 años. Háblalo con quien te atiende.",
+    "accept": "Lo entiendo y quiero usar la tarjeta diaria.",
+    "submit": "Empezar"
+  },
+  "support": {
+    "title": "Gracias por contar cómo estás",
+    "description": "Si corres peligro ahora, llama al número de emergencias. Una de tus respuestas muestra que puedes estar pasando por un momento muy difícil, y no tienes que enfrentarlo solo/a.",
+    "cvv": "Llama a la línea de crisis de tu país (en Brasil, 188 CVV, 24 h, gratuito)",
+    "samu": "En una emergencia, llama al número de emergencias (en Brasil, 192 SAMU)",
+    "upa": "O acude a urgencias más cercanas.",
+    "professional": "Quien te atiende verá esta respuesta al abrir el sistema, pero no es inmediato. Si puedes, habla también ahora con alguien de confianza."
+  },
+  "instrument": {
+    "title": "Cuestionario: {name}",
+    "description": "Quien te atiende incluyó este cuestionario en tu tarjeta. Lleva unos 2 minutos y ayuda a seguir cómo estás a lo largo del tiempo.",
+    "submit": "Enviar respuestas",
+    "saved": "Respuestas enviadas. ¡Gracias!",
+    "credit": "Escalas de cribado, no son pruebas ni diagnóstico. PHQ-9 y GAD-7: Drs. Robert L. Spitzer, Janet B. W. Williams, Kurt Kroenke y colegas (uso libre). WHO-5: Psychiatric Centre North Zealand y Organización Mundial de la Salud.",
+    "phq9": {
+      "name": "PHQ-9 (ánimo)",
+      "prompt": "Durante las últimas 2 semanas, ¿qué tan seguido ha tenido molestias debido a los siguientes problemas?",
+      "i1": "Poco interés o placer en hacer cosas",
+      "i2": "Se ha sentido decaído(a), deprimido(a) o sin esperanzas",
+      "i3": "Ha tenido dificultad para quedarse o permanecer dormido(a), o ha dormido demasiado",
+      "i4": "Se ha sentido cansado(a) o con poca energía",
+      "i5": "Sin apetito o ha comido en exceso",
+      "i6": "Se ha sentido mal con usted mismo(a), o que es un fracaso o que ha quedado mal con usted mismo(a) o con su familia",
+      "i7": "Ha tenido dificultad para concentrarse en ciertas actividades, tales como leer el periódico o ver la televisión",
+      "i8": "¿Se ha movido o hablado tan lento que otras personas podrían haberlo notado? O lo contrario: muy inquieto(a) o agitado(a), moviéndose mucho más de lo normal",
+      "i9": "Pensamientos de que estaría mejor muerto(a) o de lastimarse de alguna manera",
+      "o0": "Ningún día",
+      "o1": "Varios días",
+      "o2": "Más de la mitad de los días",
+      "o3": "Casi todos los días"
+    },
+    "gad7": {
+      "name": "GAD-7 (ansiedad)",
+      "prompt": "Durante las últimas 2 semanas, ¿con qué frecuencia ha sentido molestias por los siguientes problemas?",
+      "i1": "Sentirse nervioso(a), ansioso(a) o con los nervios de punta",
+      "i2": "No poder dejar de preocuparse o no poder controlar la preocupación",
+      "i3": "Preocuparse demasiado por diferentes cosas",
+      "i4": "Dificultad para relajarse",
+      "i5": "Estar tan inquieto(a) que es difícil permanecer sentado(a) tranquilamente",
+      "i6": "Molestarse o ponerse irritable fácilmente",
+      "i7": "Sentir miedo como si algo terrible pudiera pasar",
+      "o0": "Ningún día",
+      "o1": "Varios días",
+      "o2": "Más de la mitad de los días",
+      "o3": "Casi todos los días"
+    },
+    "who5": {
+      "name": "WHO-5 (bienestar)",
+      "prompt": "Durante las últimas 2 semanas, ¿en qué medida cada frase describe cómo se ha sentido?",
+      "i1": "Me he sentido alegre y de buen humor",
+      "i2": "Me he sentido tranquilo(a) y relajado(a)",
+      "i3": "Me he sentido activo(a) y enérgico(a)",
+      "i4": "Me he despertado fresco(a) y descansado(a)",
+      "i5": "Mi vida cotidiana ha estado llena de cosas que me interesan",
+      "o0": "Nunca",
+      "o1": "Algunas veces",
+      "o2": "Menos de la mitad del tiempo",
+      "o3": "Más de la mitad del tiempo",
+      "o4": "La mayor parte del tiempo",
+      "o5": "Todo el tiempo"
+    },
+    "bands": {
+      "minimo": "Mínimo",
+      "leve": "Leve",
+      "moderado": "Moderado",
+      "moderadamente_grave": "Moderadamente grave",
+      "grave": "Grave",
+      "muito_baixo": "Muy bajo (evaluar)",
+      "baixo": "Bajo (evaluar)",
+      "adequado": "Adecuado"
+    }
+  },
+  "client": {
+    "emotions": "¿Qué emociones aparecieron hoy?",
+    "emotionsHint": "Elige hasta {max}.",
+    "activities": "¿Qué formó parte de tu día?",
+    "quadrants": {
+      "alta_desagradavel": "Agitación e incomodidad",
+      "baixa_desagradavel": "Poca energía e incomodidad",
+      "alta_agradavel": "Energía y bienestar",
+      "baixa_agradavel": "Calma y bienestar"
+    },
+    "emotion": {
+      "ansioso": "Ansiedad",
+      "irritado": "Irritación",
+      "estressado": "Estrés",
+      "com_medo": "Miedo",
+      "triste": "Tristeza",
+      "cansado": "Cansancio",
+      "sozinho": "Soledad",
+      "desanimado": "Desánimo",
+      "animado": "Entusiasmo",
+      "alegre": "Alegría",
+      "orgulhoso": "Orgullo",
+      "esperancoso": "Esperanza",
+      "calmo": "Calma",
+      "grato": "Gratitud",
+      "aliviado": "Alivio",
+      "seguro": "Seguridad",
+      "raiva": "Rabia",
+      "vazio": "Vacío",
+      "culpa": "Culpa",
+      "vergonha": "Vergüenza"
+    },
+    "activity": {
+      "exercicio": "Ejercicio",
+      "ar_livre": "Aire libre",
+      "amigos_familia": "Amigos o familia",
+      "trabalho_estudo": "Trabajo o estudio",
+      "lazer": "Ocio",
+      "tarefa_terapia": "Tarea de terapia",
+      "meditacao": "Meditación o respiración",
+      "boa_alimentacao": "Comidas regulares",
+      "alcool": "Alcohol",
+      "telas": "Pantallas (redes, series)"
+    },
+    "energy": "Energía",
+    "energyLevel": {
+      "1": "Muy baja",
+      "2": "Baja",
+      "3": "Media",
+      "4": "Buena",
+      "5": "Muy buena"
+    },
+    "yes": "Sí",
+    "no": "No",
+    "scaleHint": "0 = nada, 10 = mucho.",
+    "chart": {
+      "mood": "Ánimo del día",
+      "avg7": "Media de 7 días",
+      "anxiety": "Ansiedad"
+    },
+    "medication": "Tomé la medicación"
+  },
+  "pro": {
+    "title": "Tarjeta diaria · {name}",
+    "description": "Lo que el paciente registró en el portal, con patrones para llevar a la sesión. Asociación no es causa.",
+    "exportCsv": "Exportar CSV",
+    "print": "Imprimir o guardar PDF",
+    "risk": {
+      "title": "Una respuesta que requiere atención",
+      "description": "En el PHQ-9, el paciente marcó el ítem 9 (pensar que estaría mejor muerto o en lastimarse). Se le mostraron los contactos de crisis. Evalúa el riesgo y contáctalo según tu protocolo.",
+      "item": "{date}: ítem 9 respondido como \"{answer}\"",
+      "review": "Registrar conducta",
+      "noteLabel": "Conducta (opcional)",
+      "notePlaceholder": "Ej.: llamé al paciente, evalué el riesgo, acordamos una sesión extra."
+    },
+    "waitingConsent": "El paciente aún no aceptó la tarjeta diaria en el portal. Verá la invitación la próxima vez que entre.",
+    "noPortal": "El paciente aún no usa el portal. Dale acceso en \"Abrir portal del paciente\" para que complete la tarjeta.",
+    "periodLabel": "Período",
+    "period": "Últimos {days} días",
+    "summary": {
+      "days": "Días registrados",
+      "daysValue": "{count} de {total}",
+      "mood": "Ánimo medio",
+      "lowDays": "Días con ánimo bajo",
+      "sleep": "Sueño medio",
+      "hours": "{hours} h",
+      "medication": "Medicación",
+      "medicationValue": "{count} de {total} días"
+    },
+    "chartTitle": "Ánimo a lo largo del tiempo",
+    "chartDescription": "Puntos: cada día. Línea gruesa: media de los últimos 7 días registrados.",
+    "empty": "Aún no hay registros en este período.",
+    "pixels": {
+      "title": "Ánimo en píxeles ({weeks} semanas)",
+      "description": "Cada cuadrado es un día; cuanto más intenso, mejor el ánimo.",
+      "aria": "{count} de {total} días registrados en las últimas semanas",
+      "low": "Peor",
+      "high": "Mejor"
+    },
+    "patterns": {
+      "title": "Patrones",
+      "description": "Asociaciones en los datos del período, para explorar con el paciente. No indican causa.",
+      "sleepNotEnough": "Sueño × ánimo: se necesitan al menos {min} días con sueño y ánimo registrados (hay {count}).",
+      "sleep_none": "Sueño × ánimo: sin tendencia clara en {n} días (r = {r}).",
+      "sleep_weak": "Sueño × ánimo: tendencia débil y {direction} en {n} días (r = {r}).",
+      "sleep_moderate": "Sueño × ánimo: tendencia moderada y {direction} en {n} días (r = {r}).",
+      "sleep_strong": "Sueño × ánimo: tendencia marcada y {direction} en {n} días (r = {r}). Vale la pena explorarla con el paciente.",
+      "positive": "positiva (más sueño, mejor ánimo)",
+      "negative": "negativa (más sueño, peor ánimo)",
+      "activity": "{activity}: ánimo medio {with} en los {days} días con la actividad y {without} en los días sin ella.",
+      "activityNotEnough": "Actividades: se necesitan al menos {min} días con y {min} sin cada actividad para comparar.",
+      "emotions": "Emociones más frecuentes"
+    },
+    "instruments": {
+      "title": "Escalas de cribado",
+      "description": "Puntuaciones y rangos de gravedad. Apoyan la evaluación clínica, no la sustituyen, y no son pruebas psicológicas.",
+      "none": "Aún no hay respuestas. El cuestionario aparece en el portal cuando vence.",
+      "off": "Ningún cuestionario activado para este paciente.",
+      "date": "Fecha",
+      "name": "Cuestionario",
+      "score": "Puntuación",
+      "band": "Rango",
+      "item9": "Ítem 9",
+      "conduct": "Conducta registrada por {name} el {date}"
+    },
+    "answers": {
+      "title": "Tus preguntas",
+      "archived": "{label} (eliminada)"
+    },
+    "notesTitle": "Notas del paciente",
+    "setup": {
+      "title": "Personalizar la tarjeta",
+      "description": "Elige una plantilla o ajusta ítem por ítem. Menos ítems suele significar más registros.",
+      "templates": "Plantillas",
+      "items": "Ítems del check-in",
+      "itemsHint": "El ánimo siempre está activo; los demás son opcionales para el paciente.",
+      "questions": "Preguntas propias (hasta {max})",
+      "questionsHint": "Ej.: \"¿Hiciste la respiración 4-7-8?\" (sí/no) o \"¿Cuánto te afectó la preocupación hoy?\" (0 a 10). Las preguntas propias no generan alertas: para el riesgo, usa el PHQ-9. Editar una pregunta crea otra; las respuestas antiguas se guardan.",
+      "questionPlaceholder": "Texto de la pregunta",
+      "questionLabel": "Pregunta {n}",
+      "questionType": "Tipo de la pregunta {n}",
+      "instruments": "Cuestionarios validados",
+      "instrumentsHint": "Aparecen en el portal cuando vencen. El PHQ-9 incluye el ítem sobre lastimarse: con respuesta mayor que cero, el paciente ve los contactos de crisis y tú recibes la alerta en la parte superior del sistema.",
+      "itemsCount": "{count} ítems",
+      "every": "Frecuencia",
+      "everyDays": "Cada {days} días",
+      "save": "Guardar tarjeta",
+      "riskAck": "Entiendo que Salutti no monitorea en tiempo real y que evaluaré las alertas del PHQ-9 según mi protocolo de riesgo."
+    },
+    "items": {
+      "anxiety": "Ansiedad",
+      "sleep": "Sueño (horas)",
+      "energy": "Energía",
+      "emotions": "Emociones",
+      "activities": "Actividades",
+      "notes": "Nota libre",
+      "medication": "Medicación (sí/no)"
+    },
+    "questionTypes": {
+      "scale": "Escala 0 a 10",
+      "yesno": "Sí o no",
+      "number": "Número",
+      "text": "Texto corto"
+    },
+    "templates": {
+      "basico": {
+        "name": "Básico",
+        "description": "Ánimo, ansiedad, sueño y nota."
+      },
+      "ansiedade": {
+        "name": "Ansiedad",
+        "description": "Emociones, actividades y GAD-7."
+      },
+      "humor": {
+        "name": "Ánimo",
+        "description": "Energía, sueño, actividades y PHQ-9."
+      },
+      "bem_estar": {
+        "name": "Bienestar",
+        "description": "Sueño, actividades y WHO-5."
+      },
+      "personalizado": {
+        "name": "Personalizado",
+        "description": "Ajustado ítem por ítem."
+      }
+    },
+    "templateApplied": "Plantilla \"{name}\" aplicada.",
+    "setupSaved": "Tarjeta guardada.",
+    "riskReviewed": "Marcado como visto.",
+    "errors": {
+      "generic": "No funcionó. Inténtalo de nuevo.",
+      "riskAckRequired": "Para activar el PHQ-9, confirma que evaluarás las alertas según tu protocolo de riesgo."
+    },
+    "chartAria": "Gráfico del ánimo: {count} días registrados, ánimo medio {avg} de 5, {low} días con ánimo bajo.",
+    "printFooter": "Autoinforme del paciente, generado por Salutti el {date}. No es un documento psicológico.",
+    "templateNeedsAck": "El PHQ-9 se añade cuando marques la confirmación del protocolo de riesgo abajo y guardes.",
+    "csv": {
+      "date": "Fecha",
+      "mood": "Ánimo (1 a 5)",
+      "anxiety": "Ansiedad (1 a 5)",
+      "energy": "Energía (1 a 5)",
+      "sleep": "Sueño (horas)",
+      "medication": "Medicación",
+      "emotions": "Emociones",
+      "activities": "Actividades",
+      "archived": "{label} (eliminada)",
+      "note": "Nota"
+    }
+  },
+  "revoke": {
+    "title": "Dejar de usar la tarjeta diaria",
+    "description": "Dejarás de ver la tarjeta y los cuestionarios. Lo que ya registraste sigue con quien te atiende. Puedes volver cuando quieras.",
+    "submit": "Dejar de usar"
+  },
+  "alerts": {
+    "title": "Tarjeta diaria:",
+    "description": "una respuesta requiere atención y no tiene conducta registrada.",
+    "patient": "{name} ({count})",
+    "more": "y {count} más"
+  }
+}

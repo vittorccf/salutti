@@ -1,5 +1,6 @@
 "use server";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -23,6 +24,19 @@ import {
 } from "@/lib/portal-auth";
 import { MESSAGE_MAX } from "@/lib/portal";
 import { moduleEnabled } from "@/lib/areas";
+import {
+  ACTIVITIES,
+  type DiaryItem,
+  diarySetup,
+  EMOTION_KEYS,
+  instrumentDue,
+  INSTRUMENTS,
+  isInstrument,
+  MAX_EMOTIONS,
+  parseAnswer,
+  scoreInstrument,
+  TEMPLATES,
+} from "@/lib/diary";
 import { getTranslations } from "@/i18n/server";
 import type { FormResult } from "@/components/forms/action-form";
 
@@ -165,29 +179,126 @@ export async function changePasswordAction(_prev: FormResult, fd: FormData): Pro
   return { ok: t("passwordChanged") };
 }
 
-// Check-in do dia (humor obrigatório; ansiedade, sono e nota opcionais).
+// Configuração do cartão do paciente logado (sem linha = modelo básico).
+// Versão do texto de aceite (vai para a auditoria junto com a data).
+const DIARY_CONSENT_VERSION = "2026-10";
+
+async function diaryFor(access: { patientId: string }) {
+  return diarySetup(await db.diaryConfig.findUnique({ where: { patientId: access.patientId } }));
+}
+
+// Aceite do cartão diário: finalidade, "não é lido em tempo real" e onde buscar ajuda. Sem ele, não há registro.
+export async function diaryConsentAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
+  const access = await requirePortalAction();
+  if (!moduleEnabled(access.patient.workspace, "cartao_diario")) return err("generic");
+  if (fd.get("accept") !== "on") return err("diaryConsentRequired");
+  const now = new Date();
+  const base = TEMPLATES.basico;
+  await db.diaryConfig.upsert({
+    where: { patientId: access.patientId },
+    create: { patientId: access.patientId, workspaceId: access.patient.workspaceId, items: [...base.items], instruments: [], patientConsentAt: now },
+    update: { patientConsentAt: now },
+  });
+  await recordAudit({ workspaceId: access.patient.workspaceId, userId: null, action: "portal.diary-consent", entity: "Patient", entityId: access.patientId, metadata: { version: DIARY_CONSENT_VERSION } });
+  revalidatePath("/portal");
+  redirect("/portal");
+}
+
+// Parar de usar o cartão (consentimento revogável): os registros já feitos continuam com quem atende, como parte do
+// prontuário; novos registros só com novo aceite.
+export async function diaryRevokeAction(_prev: FormResult, _fd: FormData): Promise<FormResult> {
+  const access = await requirePortalAction();
+  await db.diaryConfig.updateMany({ where: { patientId: access.patientId }, data: { patientConsentAt: null } });
+  await recordAudit({ workspaceId: access.patient.workspaceId, userId: null, action: "portal.diary-revoke", entity: "Patient", entityId: access.patientId });
+  revalidatePath("/portal");
+  redirect("/portal");
+}
+
+// Check-in do dia: humor obrigatório; os demais itens só se o profissional ligou para este paciente.
 export async function checkinAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   const access = await requirePortalAction();
   if (!moduleEnabled(access.patient.workspace, "cartao_diario")) return err("generic");
+  const setup = await diaryFor(access);
+  if (!setup.patientConsentAt) return err("diaryConsentRequired");
+  const on = (i: DiaryItem) => setup.items.includes(i);
   const mood = Number(str(fd, "mood"));
   if (!Number.isInteger(mood) || mood < 1 || mood > 5) return err("moodRequired");
-  const anxietyRaw = str(fd, "anxiety");
-  const anxiety = anxietyRaw ? Number(anxietyRaw) : null;
-  if (anxiety !== null && !(Number.isInteger(anxiety) && anxiety >= 1 && anxiety <= 5)) return err("generic");
-  const sleepRaw = str(fd, "sleepHours").replace(",", ".");
+  const level = (key: string) => {
+    const v = str(fd, key);
+    if (!v) return null;
+    const n = Number(v);
+    return Number.isInteger(n) && n >= 1 && n <= 5 ? n : undefined;
+  };
+  const anxiety = on("anxiety") ? level("anxiety") : null;
+  const energy = on("energy") ? level("energy") : null;
+  if (anxiety === undefined || energy === undefined) return err("generic");
+  const sleepRaw = on("sleep") ? str(fd, "sleepHours").replace(",", ".") : "";
   const sleepHours = sleepRaw ? Number(sleepRaw) : null;
   if (sleepHours !== null && !(sleepHours >= 0 && sleepHours <= 24)) return err("sleepInvalid");
-  const notes = str(fd, "notes").slice(0, 1000) || null;
+  const emotions = on("emotions") ? [...new Set(fd.getAll("emotions").map(String))].filter((e) => EMOTION_KEYS.includes(e)).slice(0, MAX_EMOTIONS) : [];
+  const activities = on("activities") ? [...new Set(fd.getAll("activities").map(String))].filter((a) => (ACTIVITIES as readonly string[]).includes(a)) : [];
+  const answers: Record<string, number | boolean | string> = {};
+  for (const q of setup.questions) {
+    const a = parseAnswer(q.type, str(fd, `q_${q.id}`));
+    if (a !== null) answers[q.id] = a;
+  }
+  const notes = on("notes") ? str(fd, "notes").slice(0, 1000) || null : null;
+  const med = str(fd, "medication");
+  const medication = on("medication") ? (med === "sim" ? true : med === "nao" ? false : null) : null;
   const date = parseDateOnly(dateKeySP());
+  // Só grava os itens ligados: se o profissional desligou um item no meio do dia, o que já foi registrado fica.
+  const data = {
+    mood,
+    ...(on("anxiety") ? { anxiety } : {}),
+    ...(on("energy") ? { energy } : {}),
+    ...(on("sleep") ? { sleepHours } : {}),
+    ...(on("medication") ? { medication } : {}),
+    ...(on("emotions") ? { emotions } : {}),
+    ...(on("activities") ? { activities } : {}),
+    ...(on("notes") ? { notes } : {}),
+    ...(setup.questions.length ? { answers: Object.keys(answers).length ? answers : Prisma.DbNull } : {}),
+  };
   await db.dailyCard.upsert({
     where: { patientId_date: { patientId: access.patientId, date } },
-    create: { patientId: access.patientId, workspaceId: access.patient.workspaceId, date, mood, anxiety, sleepHours, notes },
-    update: { mood, anxiety, sleepHours, notes },
+    create: { patientId: access.patientId, workspaceId: access.patient.workspaceId, date, ...data },
+    update: data,
   });
   revalidatePath("/portal");
   const t = await getTranslations("portal.week");
   // Humor baixo: além do "salvo", lembra que o registro não é lido na hora e onde buscar ajuda.
   return { ok: mood <= 2 ? `${t("checkinSaved")} ${t("checkinLow")}` : t("checkinSaved") };
+}
+
+// Questionário (PHQ-9, GAD-7, WHO-5) quando vence. PHQ-9 item 9 > 0: o paciente vai para a tela de apoio e o
+// profissional recebe o destaque até marcar como visto (não é atendimento de emergência).
+export async function instrumentAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
+  const access = await requirePortalAction();
+  if (!moduleEnabled(access.patient.workspace, "cartao_diario")) return err("generic");
+  const setup = await diaryFor(access);
+  const id = str(fd, "instrument");
+  if (!setup.patientConsentAt || !isInstrument(id) || !setup.instruments.includes(id)) return err("generic");
+  const answers = Array.from({ length: INSTRUMENTS[id].items }, (_, i) => {
+    const v = str(fd, `i${i + 1}`);
+    return v === "" ? NaN : Number(v);
+  });
+  const result = scoreInstrument(id, answers);
+  if (!result) return err("instrumentIncomplete");
+  // Trava por paciente + questionário: dois cliques ou duas abas não criam duas respostas (nem dois alertas).
+  const created = await db.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`instrument:${access.patientId}:${id}`}))`;
+    const last = await tx.instrumentResponse.findFirst({ where: { patientId: access.patientId, instrument: id }, orderBy: { createdAt: "desc" }, select: { createdAt: true } });
+    if (!instrumentDue(last?.createdAt ?? null, setup.instrumentEveryDays)) return false;
+    await tx.instrumentResponse.create({
+      data: { workspaceId: access.patient.workspaceId, patientId: access.patientId, instrument: id, answers, score: result.score, band: result.band, riskFlag: result.risk },
+    });
+    return true;
+  });
+  if (!created) return err("instrumentNotDue");
+  await recordAudit({ workspaceId: access.patient.workspaceId, userId: null, action: "portal.instrument", entity: "Patient", entityId: access.patientId, metadata: { instrument: id } });
+  revalidatePath("/portal");
+  if (result.risk) redirect("/portal?apoio=1");
+  const t = await getTranslations("diary.instrument");
+  return { ok: t("saved") };
 }
 
 // Confirmar presença ou pedir remarcação de uma sessão futura (o consultório vê na agenda e no portal).

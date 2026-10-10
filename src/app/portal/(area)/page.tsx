@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CalendarPlus, CheckCircle2, ExternalLink, FileText, ListTodo, MapPin, MessagesSquare, StickyNote, Video } from "lucide-react";
 import { db } from "@/lib/db";
 import { getPortalSession } from "@/lib/portal-auth";
@@ -16,17 +17,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckinForm } from "../_components/checkin-form";
+import { DiarySection, SupportCard } from "../_components/diary-section";
 import { respondSessionAction, toggleTaskAction } from "../_actions";
 
-export default async function PortalWeekPage() {
-  const access = (await getPortalSession())!;
+export default async function PortalWeekPage({ searchParams }: { searchParams: { apoio?: string } }) {
+  // O layout já redireciona sem sessão, mas a página renderiza em paralelo: sem sessão, vai para o login.
+  const access = await getPortalSession();
+  if (!access) redirect("/portal/entrar");
   const { patient } = access;
   const now = new Date();
   const today = dateKeySP();
   const [t, f, label] = await Promise.all([getTranslations("portal.week"), getFormat(), getTranslations("common.labels").then(labeler)]);
 
-  const [sessions, highlights, cards, charges, unread] = await Promise.all([
+  const [sessions, highlights, charges, unread] = await Promise.all([
     db.appointment.findMany({
       where: { patientId: patient.id, workspaceId: patient.workspaceId, endsAt: { gte: now }, status: { not: "cancelled" } },
       include: { professional: { select: { fullName: true } } },
@@ -38,7 +41,6 @@ export default async function PortalWeekPage() {
       orderBy: [{ doneAt: { sort: "asc", nulls: "first" } }, { createdAt: "desc" }],
       take: 20,
     }),
-    db.dailyCard.findMany({ where: { patientId: patient.id, date: { gte: parseDateOnly(addDaysKey(today, -6)) } }, orderBy: { date: "asc" } }),
     db.charge.findMany({
       where: { patientId: patient.id, workspaceId: patient.workspaceId, status: { in: ["pending", "overdue"] } },
       include: { paymentLink: true },
@@ -50,11 +52,6 @@ export default async function PortalWeekPage() {
   const next = sessions[0];
   const nextUrl = safeUrl(next?.meetingUrl);
   const rest = sessions.slice(1);
-  const todayCard = cards.find((c) => dateKeySP(c.date) === today);
-  const week = Array.from({ length: 7 }, (_, i) => {
-    const key = addDaysKey(today, i - 6);
-    return { key, card: cards.find((c) => dateKeySP(c.date) === key) };
-  });
   const platform = (url: string) => {
     const name = meetingPlatform(url);
     return !name || name === "Videochamada" ? t("videoCall") : name;
@@ -69,6 +66,8 @@ export default async function PortalWeekPage() {
         <h1 className="text-display">{t("hello", { name: patient.fullName.split(" ")[0] })}</h1>
         <p className="text-muted-foreground">{next ? t("summaryNext", { when: when(daysUntil), time: f.time(next.startsAt) }) : t("summaryNone")}</p>
       </div>
+
+      {searchParams.apoio && moduleEnabled(patient.workspace, "cartao_diario") ? <SupportCard /> : null}
 
       {unread > 0 ? (
         <Link href="/portal/mensagens" className="flex items-center gap-3 rounded-xl border border-brand/30 bg-accent/60 p-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -151,37 +150,7 @@ export default async function PortalWeekPage() {
         </Card>
       )}
 
-      {moduleEnabled(patient.workspace, "cartao_diario") ? (
-        <>
-{/* Check-in de 30 segundos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("checkinTitle")}</CardTitle>
-          <CardDescription>{t("checkinDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <CheckinForm
-            current={todayCard ? { mood: todayCard.mood, anxiety: todayCard.anxiety, sleepHours: todayCard.sleepHours, notes: todayCard.notes } : null}
-            moodLabels={[1, 2, 3, 4, 5].map((n) => label("mood", n))}
-          />
-          <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("last7")}</p>
-            <ol className="grid grid-cols-7 gap-1.5">
-              {week.map(({ key, card }) => (
-                <li key={key} className="flex flex-col items-center gap-1">
-                  <div className="flex h-16 w-full items-end overflow-hidden rounded-md bg-muted" aria-hidden>
-                    <div className="w-full rounded-md bg-brand/80" style={{ height: card ? `${card.mood * 20}%` : "0%" }} />
-                  </div>
-                  <span className="text-[11px] text-muted-foreground">{f.weekdayShort(`${key}T12:00:00Z`)}</span>
-                  <span className="sr-only">{card ? `${f.date(`${key}T12:00:00Z`)}: ${label("mood", card.mood)}` : `${f.date(`${key}T12:00:00Z`)}: ${t("noCheckin")}`}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </CardContent>
-      </Card>
-        </>
-      ) : null}
+      {moduleEnabled(patient.workspace, "cartao_diario") ? <DiarySection patientId={patient.id} /> : null}
 
       {/* Destaques da semana publicados pelo profissional */}
       <section aria-labelledby="highlights" className="space-y-3">

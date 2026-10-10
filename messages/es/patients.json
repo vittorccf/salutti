@@ -98,7 +98,8 @@
     "portalActive": "Portal activo: el paciente entra con CPF y contraseña.",
     "portalInvited": "Invitación enviada, esperando que el paciente cree la contraseña.",
     "portalOpen": "Abrir portal del paciente",
-    "odontogram": "Odontograma"
+    "odontogram": "Odontograma",
+    "diaryOpen": "Tarjeta diaria"
   },
   "errors": {
     "fullNameRequired": "Ingresa el nombre completo.",

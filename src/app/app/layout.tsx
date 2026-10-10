@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { WorkspaceSwitcher } from "./_components/workspace-switcher";
 import { SidebarNav } from "./_components/sidebar-nav";
+import { RiskAlertBanner } from "./_components/risk-alert-banner";
 import { portalPendingCount } from "@/lib/portal";
 import { db } from "@/lib/db";
 import { UserMenu } from "./_components/user-menu";
@@ -151,6 +152,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </header>
         <TermsUpdateBanner termsVersion={ctx.user.termsVersion} />
+        <RiskAlertBanner ctx={ctx} />
         <div className="p-4 md:p-6">{children}</div>
       </main>
       {/* O suporte não abre chamado em nome do cliente. */}

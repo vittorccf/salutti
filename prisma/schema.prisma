@@ -114,6 +114,8 @@ model Workspace {
   treatmentItems  TreatmentItem[]
   labOrders       LabOrder[]
   recalls         Recall[]
+  diaryConfigs    DiaryConfig[]
+  instrumentResponses InstrumentResponse[]
   notifications   NotificationLog[]
   insurancePlans  InsurancePlan[]
   tissBatches     TissBatch[]
@@ -232,6 +234,8 @@ model Patient {
   treatmentPlans TreatmentPlan[]
   labOrders     LabOrder[]
   recalls       Recall[]
+  diaryConfig   DiaryConfig?
+  instrumentResponses InstrumentResponse[]
   portalAccess  PatientPortalAccess?
   portalMessages PortalMessage[]
   portalHighlights PortalHighlight[]
@@ -741,6 +745,11 @@ model DailyCard {
   mood         Int      // 1..5
   sleepHours   Float?
   anxiety      Int?     // 1..5
+  energy       Int?     // 1..5
+  medication   Boolean? // "tomei a medicação" (item opcional)
+  emotions     String[] @default([]) // chaves de src/lib/diary.ts (EMOTIONS)
+  activities   String[] @default([]) // chaves de ACTIVITIES
+  answers      Json?    // perguntas próprias do profissional: { [questionId]: number | boolean | string }
   notes        String?
   createdAt    DateTime @default(now())
 
@@ -894,6 +903,49 @@ model Recall {
   patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, status, dueDate])
+}
+
+// Cartão diário personalizado por paciente (src/lib/diary.ts). Sem linha: modelo "básico" e sem questionários.
+model DiaryConfig {
+  id                  String    @id @default(cuid())
+  workspaceId         String
+  patientId           String    @unique
+  template            String    @default("basico")
+  items               String[]  // anxiety, sleep, energy, emotions, activities, notes (humor sempre)
+  questions           Json      @default("[]") // [{ id, label, type: scale | yesno | number | text }]
+  instruments         String[]  // phq9, gad7, who5
+  instrumentEveryDays Int       @default(14)
+  // Aceite do paciente no portal (finalidade, "não é lido em tempo real", onde buscar ajuda).
+  patientConsentAt    DateTime?
+  // Profissional confirmou ter protocolo de risco ao ligar o PHQ-9 (o Salutti não monitora em tempo real).
+  riskProtocolAckAt   DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+// Respostas aos questionários (PHQ-9, GAD-7, WHO-5). riskFlag: PHQ-9 item 9 > 0, até o profissional marcar como visto.
+model InstrumentResponse {
+  id          String    @id @default(cuid())
+  workspaceId String
+  patientId   String
+  instrument  String
+  answers     Int[]
+  score       Int
+  band        String
+  riskFlag    Boolean   @default(false)
+  reviewedAt  DateTime?
+  reviewedById String?
+  reviewNote  String?   // conduta registrada pelo profissional
+  createdAt   DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, instrument, createdAt])
+  @@index([workspaceId, riskFlag, reviewedAt])
 }
 
 // ----------------------- NOTIFICAÇÕES (WhatsApp mock) ---------------

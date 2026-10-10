@@ -281,6 +281,9 @@ export default async function PatientPortalAdminPage({ params }: { params: Promi
             <CardHeader>
               <CardTitle>{t("checkinsTitle")}</CardTitle>
               <CardDescription>{avgMood !== null ? t("checkinsAvg", { count: cards.length, avg: f.number(Math.round(avgMood * 10) / 10) }) : t("noCheckins")}</CardDescription>
+              <Link href={`/app/pacientes/${patient.id}/cartao`} className="text-sm font-medium text-brand underline-offset-4 hover:underline">
+                {t("diaryOpen")}
+              </Link>
             </CardHeader>
             {cards.length ? (
               <CardContent className="p-0">

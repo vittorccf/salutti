@@ -84,6 +84,9 @@ test("portal do paciente: convite, criar senha, semana, check-in, mensagens, tar
   await p.getByLabel("Comentário sobre a tarefa").fill("Consegui em 2 dias");
   await p.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(p.getByText("Tarefa marcada como feita.")).toBeVisible();
+  // Cartão diário: aceite antes do primeiro registro.
+  await p.getByLabel("Entendi e quero usar o cartão diário.").check();
+  await p.getByRole("button", { name: "Começar" }).click();
   await p.getByText("Bem", { exact: true }).click();
   await p.getByRole("button", { name: "Registrar" }).click();
   await expect(p.getByText("Registro salvo. Obrigado por contar.")).toBeVisible();
