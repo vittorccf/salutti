@@ -21,6 +21,8 @@ export type LibraryTemplate = {
 const sono: AnamnesisQuestion = { key: "sono", label: "Qualidade do sono", type: "select", options: ["Boa", "Regular", "Ruim"] };
 const medicacoes: AnamnesisQuestion = { key: "medicacoes", label: "Medicações em uso", type: "text" };
 
+const sn = ["Sim", "Não"];
+
 export const ANAMNESIS_LIBRARY: LibraryTemplate[] = [
   {
     slug: "psicologia-geral",
@@ -224,29 +226,99 @@ export const ANAMNESIS_LIBRARY: LibraryTemplate[] = [
       ],
     },
   },
+  // Odontologia (Res. CFO 174/92: identificação, história clínica, exame e plano). Itens que mudam a conduta:
+  // alergia (anestésico, látex, antibiótico), sangramento e anticoagulantes, bisfosfonatos (osteonecrose em extração e
+  // implante), endocardite/prótese valvar (profilaxia antibiótica), radioterapia de cabeça e pescoço e gestação.
   {
     slug: "odontologia",
     name: "Anamnese odontológica",
     specialty: "odonto",
-    description: "Histórico de saúde, alergias e hábitos de higiene bucal.",
-    defaultFor: ["odonto", "ubs"],
+    description: "Queixa, saúde geral com os riscos que mudam a conduta (sangramento, bisfosfonatos, endocardite), alergias e hábitos.",
+    defaultFor: ["odonto", "ubs", "odonto_clinico", "odonto_ortodontia", "odonto_implantodontia", "odonto_endodontia", "odonto_periodontia", "odonto_protese", "odonto_clinica"],
     schema: {
       sections: [
         {
-          title: "Histórico",
+          title: "Queixa",
           questions: [
             { key: "queixa", label: "Queixa principal", type: "textarea" },
-            { key: "alergias", label: "Alergias (inclusive anestésicos)", type: "text" },
-            { key: "medicamentos", label: "Medicamentos contínuos", type: "text" },
-            { key: "condicoes", label: "Diabetes, hipertensão, cardiopatia ou gestação", type: "textarea" },
+            { key: "historia", label: "História da queixa (desde quando, dor, sensibilidade)", type: "textarea" },
+            { key: "ultimaConsulta", label: "Última consulta ao dentista", type: "text" },
+          ],
+        },
+        {
+          title: "Saúde geral",
+          questions: [
+            { key: "tratamentoMedico", label: "Está em tratamento médico? Qual?", type: "text" },
+            { key: "medicamentos", label: "Medicamentos em uso (nome e dose)", type: "textarea" },
+            { key: "alergias", label: "Alergias (anestésico, látex, antibiótico, outros)", type: "text" },
+            { key: "reacaoAnestesia", label: "Já teve reação à anestesia local (desmaio, taquicardia, alergia)?", type: "select", options: sn },
+            { key: "anticoagulante", label: "Usa anticoagulante ou antiagregante (varfarina, AAS, clopidogrel, rivaroxabana)?", type: "select", options: sn },
+            { key: "sangramento", label: "Já sangrou muito após extração ou corte?", type: "select", options: sn },
+            { key: "bisfosfonato", label: "Usa ou já usou bisfosfonato ou denosumabe (osteoporose, câncer)?", type: "select", options: sn },
+            { key: "cardiaco", label: "Problema cardíaco, prótese valvar ou endocardite prévia?", type: "select", options: sn },
+            { key: "marcapasso", label: "Usa marcapasso ou desfibrilador implantado?", type: "select", options: sn },
+            { key: "pressao", label: "Hipertensão", type: "select", options: ["Não", "Sim, controlada", "Sim, sem controle"] },
+            { key: "diabetes", label: "Diabetes", type: "select", options: ["Não", "Sim, controlada", "Sim, sem controle"] },
+            { key: "radioterapia", label: "Já fez radioterapia de cabeça e pescoço?", type: "select", options: sn },
+            { key: "gestacao", label: "Gestante ou amamentando? (se sim, semanas)", type: "text" },
+            { key: "outras", label: "Outras doenças (hepatite, HIV, epilepsia, asma, renais)", type: "textarea" },
           ],
         },
         {
           title: "Hábitos",
           questions: [
-            { key: "higiene", label: "Hábitos de higiene bucal", type: "textarea" },
-            { key: "fumante", label: "Fumante?", type: "select", options: ["Sim", "Não", "Ex-fumante"] },
-            { key: "bruxismo", label: "Range ou aperta os dentes?", type: "select", options: ["Sim", "Não", "Não sabe"] },
+            { key: "higiene", label: "Escovação e fio dental (vezes por dia)", type: "text" },
+            { key: "gengiva", label: "Sangramento na gengiva ao escovar?", type: "select", options: sn },
+            { key: "fumante", label: "Fumante?", type: "select", options: ["Não", "Sim", "Ex-fumante"] },
+            { key: "bruxismo", label: "Range ou aperta os dentes?", type: "select", options: ["Não", "Sim", "Não sabe"] },
+            { key: "atm", label: "Dor ou estalo na articulação da mandíbula?", type: "select", options: sn },
+          ],
+        },
+        {
+          title: "Na consulta",
+          questions: [
+            { key: "pressaoAferida", label: "Pressão arterial aferida (mmHg)", type: "text" },
+            { key: "declaracao", label: "Declaro que as informações acima são verdadeiras", type: "select", options: ["Sim, declaro"] },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    slug: "odontopediatria",
+    name: "Anamnese de odontopediatria",
+    specialty: "odonto",
+    description: "Com o responsável: saúde, alimentação, hábitos (chupeta, dedo, mamadeira) e comportamento na consulta.",
+    defaultFor: ["odonto_odontopediatria"],
+    schema: {
+      sections: [
+        {
+          title: "Responsável e queixa",
+          questions: [
+            { key: "responsavel", label: "Responsável que acompanha (nome e parentesco)", type: "text" },
+            { key: "peso", label: "Peso (kg), para a dose máxima de anestésico", type: "text" },
+            { key: "queixa", label: "Motivo da consulta", type: "textarea" },
+          ],
+        },
+        {
+          title: "Saúde",
+          questions: [
+            { key: "alergias", label: "Alergias (anestésico, látex, antibiótico, alimentos)", type: "text" },
+            { key: "medicamentos", label: "Medicamentos em uso", type: "text" },
+            { key: "condicoes", label: "Doenças, internações ou cirurgias", type: "textarea" },
+            { key: "cardiaco", label: "Cardiopatia ou sopro?", type: "select", options: sn },
+            { key: "trauma", label: "Já teve queda ou batida nos dentes? Quando?", type: "text" },
+          ],
+        },
+        {
+          title: "Hábitos",
+          questions: [
+            { key: "amamentacao", label: "Amamentação no peito (até quando)", type: "text" },
+            { key: "chupeta", label: "Chupeta, dedo ou mamadeira (até quando)", type: "text" },
+            { key: "acucar", label: "Açúcar e lanches entre as refeições", type: "select", options: ["Raramente", "Às vezes", "Todos os dias"] },
+            { key: "escovacao", label: "Quem escova e quantas vezes ao dia", type: "text" },
+            { key: "fluor", label: "Creme dental com flúor?", type: "select", options: ["Sim", "Não", "Não sabe"] },
+            { key: "comportamento", label: "Como costuma reagir a consultas (medo, choro, tranquilo)", type: "text" },
           ],
         },
       ],
@@ -434,9 +506,12 @@ export const ANAMNESIS_LIBRARY: LibraryTemplate[] = [
   },
 ];
 
-// Modelos oferecidos a um consultório: os de estética na Salutti Estética, os demais na Salutti.
+// Modelos oferecidos a um consultório: os de estética na Salutti Estética, os de odontologia na Salutti Odonto e os
+// demais na Salutti (que mantém a anamnese odontológica para quem já usava o segmento "Odontologia").
 export const libraryFor = (area: string) =>
-  ANAMNESIS_LIBRARY.filter((t) => (t.specialty === "estetica") === (area === "estetica"));
+  ANAMNESIS_LIBRARY.filter((t) =>
+    area === "estetica" ? t.specialty === "estetica" : area === "odonto" ? t.specialty === "odonto" : t.specialty !== "estetica" && t.slug !== "odontopediatria",
+  );
 
 export const libraryTemplate = (slug: string) => ANAMNESIS_LIBRARY.find((t) => t.slug === slug);
 

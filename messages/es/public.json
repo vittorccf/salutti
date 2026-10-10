@@ -50,7 +50,8 @@
     },
     "footer": "Salutti · ERP para quienes cuidan la salud mental ·",
     "contact": "Escríbenos:",
-    "esteticaLink": "¿Trabajas en estética? Conoce Salutti Estética"
+    "esteticaLink": "¿Trabajas en estética? Conoce Salutti Estética",
+    "odontoLink": "¿Trabajas en odontología? Conoce Salutti Odonto"
   },
   "pay": {
     "title": "Pago · {workspace}",
@@ -149,5 +150,70 @@
     "otherDocs": "Otros documentos",
     "terms": "Términos de Uso",
     "privacy": "Política de Privacidad"
+  },
+  "odonto": {
+    "metaDescription": "Odontograma, plan de tratamiento y presupuesto por diente, prótesis, revisiones, agenda y finanzas para dentistas y clínicas dentales.",
+    "login": "Entrar",
+    "tryFree": "Probar gratis",
+    "badge": "Salutti Odonto · en prueba",
+    "headline": "Toda la consulta, del odontograma al cobro, <hl>sin planillas</hl>.",
+    "subtitle": "Odontograma en numeración FDI, plan de tratamiento que se vuelve presupuesto, cuotas con enlace de pago, laboratorio de prótesis con plazos y revisiones de mantenimiento. Para quien atiende solo y para clínicas.",
+    "ctaCreate": "Crear cuenta gratis",
+    "ctaLogin": "Ya tengo cuenta",
+    "fineprint": "Prueba gratis, sin tarjeta. Tus datos son tuyos (LGPD).",
+    "sampleLabel": "Ejemplo de odontograma",
+    "sampleCaption": "Ejemplo: 16 a tratar, 36 en tratamiento, 46 ausente, 24 con implante, 11 y 26 restaurados.",
+    "features": {
+      "odontogram": {
+        "title": "Odontograma",
+        "desc": "Dentición permanente y temporal, caras e historial por diente."
+      },
+      "plan": {
+        "title": "Plan de tratamiento",
+        "desc": "Procedimientos por diente y cara, de tu tabla, con código TUSS para seguros."
+      },
+      "budget": {
+        "title": "Presupuesto que se vuelve cobro",
+        "desc": "Al aprobarlo, las cuotas entran en Cobros con Pix o boleto. Imprímelo para que el paciente lo firme."
+      },
+      "lab": {
+        "title": "Prótesis en el laboratorio",
+        "desc": "Envío, prueba, retorno e instalación, con plazo y aviso de atraso."
+      },
+      "recall": {
+        "title": "Revisiones de mantenimiento",
+        "desc": "Profilaxis, periodontal y ortodoncia: a quién llamar y cuándo, con WhatsApp listo."
+      },
+      "schedule": {
+        "title": "Agenda y recordatorios",
+        "desc": "Agenda por dentista, recordatorios y confirmación por el portal del paciente."
+      },
+      "records": {
+        "title": "Historia clínica y anamnesis",
+        "desc": "Anamnesis con los riesgos que cambian la conducta: anticoagulantes, bifosfonatos, endocarditis."
+      },
+      "finance": {
+        "title": "Finanzas",
+        "desc": "Cobros, cuentas por pagar, recibos e informes de la consulta."
+      }
+    },
+    "differentiators": {
+      "fdi": {
+        "title": "Hecho en el idioma del dentista",
+        "desc": "Numeración FDI, caras MOD y código TUSS: el sistema habla como escribes en la historia clínica."
+      },
+      "approve": {
+        "title": "Del presupuesto a la cuota en un clic",
+        "desc": "El plan aprobado genera los cobros; el procedimiento concluido actualiza el odontograma y programa la revisión."
+      },
+      "team": {
+        "title": "Para consulta y clínica",
+        "desc": "Cada dentista ve sus pacientes; recepción y finanzas trabajan sin abrir la historia clínica."
+      }
+    },
+    "disclaimer": "Salutti Odonto es una herramienta de gestión. Diagnóstico, plan y conducta son del dentista. La publicidad debe seguir el Código de Ética Odontológica.",
+    "footer": "¿Ya usas Salutti Odonto?",
+    "contact": "Habla con nosotros:",
+    "otherArea": "Conoce Salutti para salud mental"
   }
 }

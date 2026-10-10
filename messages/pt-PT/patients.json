@@ -97,7 +97,8 @@
     "rights": "Para exercer os 9 direitos do titular (acesso, portabilidade, eliminação, etc.), abra o ecrã <link>LGPD</link>.",
     "portalActive": "Portal ativo: o paciente entra com CPF e palavra-passe.",
     "portalInvited": "Convite enviado, a aguardar que o paciente crie a palavra-passe.",
-    "portalOpen": "Abrir portal do paciente"
+    "portalOpen": "Abrir portal do paciente",
+    "odontogram": "Odontograma"
   },
   "errors": {
     "fullNameRequired": "Indique o nome completo.",

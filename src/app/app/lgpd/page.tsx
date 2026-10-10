@@ -84,6 +84,15 @@ async function anonymizeAction(formData: FormData) {
     },
   });
   ensureAffected(anonymized);
+  // Odonto: retornos pendentes não têm mais a quem chamar; textos livres (que podem citar nome ou telefone) saem.
+  // O odontograma, os procedimentos e os valores ficam: são prontuário e contabilidade.
+  await db.$transaction([
+    db.recall.updateMany({ where: { patientId, workspaceId: ctx.workspace.id, status: { in: ["pendente", "agendado"] } }, data: { status: "cancelado" } }),
+    db.recall.updateMany({ where: { patientId, workspaceId: ctx.workspace.id }, data: { note: null } }),
+    db.toothRecord.updateMany({ where: { patientId, workspaceId: ctx.workspace.id }, data: { note: null } }),
+    db.treatmentPlan.updateMany({ where: { patientId, workspaceId: ctx.workspace.id }, data: { title: null, notes: null } }),
+    db.labOrder.updateMany({ where: { patientId, workspaceId: ctx.workspace.id }, data: { notes: null } }),
+  ]);
   await media.remove(before?.photoId);
   await removeClinicalPhotos(ctx.workspace.id, patientId);
   await recordAudit({

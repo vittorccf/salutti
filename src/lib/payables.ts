@@ -193,7 +193,7 @@ export function livroCaixa(months: LivroCaixaMonth[]) {
 // Perfil do consultório para o plano de contas padrão: psicologia (área "mental"), odontologia (segmento odonto) ou estética.
 export type CategoryProfile = "psicologia" | "odonto" | "estetica";
 export const categoryProfile = (area: string, segment: string | null | undefined): CategoryProfile =>
-  area === "estetica" ? "estetica" : segment === "odonto" ? "odonto" : "psicologia";
+  area === "estetica" ? "estetica" : area === "odonto" || segment === "odonto" ? "odonto" : "psicologia";
 
 // Plano de contas padrão. "deductible" é só a sugestão para o Livro-Caixa (despesa de custeio de quem é pessoa física):
 // marcadas as que a Receita aceita de forma explícita; nas discutíveis fica "não" e o profissional confirma com o contador.

@@ -26,6 +26,11 @@ export const GET = async (req: Request) => {
       invoices: true,
       consentRecords: true,
       dailyCards: true,
+      // Salutti Odonto: odontograma, planos com itens e parcelas, prótese e retornos.
+      toothRecords: true,
+      treatmentPlans: { include: { items: true, charges: { select: { id: true, amount: true, dueDate: true, status: true, installment: true } } } },
+      labOrders: true,
+      recalls: true,
       // Portal do paciente: mensagens, destaques e o acesso (sem o hash da senha nem o token).
       portalMessages: { orderBy: { createdAt: "asc" } },
       portalHighlights: true,

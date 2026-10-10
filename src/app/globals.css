@@ -157,6 +157,70 @@
     --shadow-card: 0 0 0 1px rgba(203, 185, 236, 0.06), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
   }
 
+  /* Salutti Odonto (artifact "Salutti Odonto"): o mesmo DS 2.0 vestido de azul (azul gelo, cobalto, marinho).
+     Vale dentro de qualquer elemento com data-area="odonto". Só tokens mudam; números de dente em Geist Mono. */
+  [data-area="odonto"] {
+    --background: 210 57% 97%;
+    --foreground: 213 42% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 42% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 42% 9%;
+    --primary: 213 42% 9%;
+    --primary-foreground: 0 0% 100%;
+    --brand: 212 74% 40%;
+    --brand-foreground: 0 0% 100%;
+    --secondary: 210 53% 94%;
+    --secondary-foreground: 213 42% 9%;
+    --muted: 210 53% 94%;
+    --muted-foreground: 212 21% 38%;
+    --accent: 210 65% 93%;
+    --accent-foreground: 212 73% 35%;
+    --border: 210 40% 90%;
+    --input: 211 17% 52%;
+    --ring: 212 74% 40%;
+    --primary-strong: var(--brand);
+    --brand-ink: 213 42% 9%;
+    --brand-ice: 204 70% 87%;
+    --brand-cobalt: 212 74% 40%;
+    --brand-navy: 212 52% 28%;
+    --odonto-tag: 204 70% 87%;
+    --odonto-tag-foreground: 209 69% 23%;
+    --gradient-brand: linear-gradient(45deg, #0a1018 0%, #23466e 45%, #8cc3ee 75%, #eeb59a 100%);
+    --gradient-brand-light: linear-gradient(45deg, #e6f1fb 0%, #c6e2f5 40%, #dbe9f7 70%, #f8d6c8 100%);
+    --gradient-glow: radial-gradient(60% 55% at 50% 0%, rgba(198, 226, 245, 0.9) 0%, rgba(244, 248, 252, 0) 100%);
+    --gradient-saluttin: linear-gradient(135deg, #9cc9ef 0%, #eea58c 100%);
+    --shadow-card: 0 1px 2px 0 rgba(14, 23, 34, 0.06);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  .dark [data-area="odonto"], .dark[data-area="odonto"] {
+    --background: 214 41% 7%;
+    --foreground: 212 52% 94%;
+    --card: 216 38% 10%;
+    --card-foreground: 212 52% 94%;
+    --popover: 216 38% 10%;
+    --popover-foreground: 212 52% 94%;
+    --primary: 212 52% 94%;
+    --primary-foreground: 214 41% 7%;
+    --brand: 207 72% 77%;
+    --brand-foreground: 214 41% 7%;
+    --secondary: 214 34% 13%;
+    --secondary-foreground: 212 52% 94%;
+    --muted: 214 34% 13%;
+    --muted-foreground: 211 21% 67%;
+    --accent: 214 41% 13%;
+    --accent-foreground: 208 73% 85%;
+    --border: 213 30% 17%;
+    --input: 213 19% 45%;
+    --ring: 207 72% 77%;
+    --destructive-foreground: 214 41% 7%;
+    --success-foreground: 214 41% 7%;
+    --warning-foreground: 214 41% 7%;
+    --gradient-glow: radial-gradient(60% 55% at 50% 0%, rgba(27, 99, 179, 0.32) 0%, rgba(10, 16, 24, 0) 100%);
+    --shadow-card: 0 0 0 1px rgba(156, 201, 239, 0.06), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
+  }
+
   * { @apply border-border; }
   body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: "rlig" 1, "calt" 1; }
   h1, h2, h3 { @apply font-display; }
@@ -180,5 +244,24 @@
   [data-area="estetica"] .text-display { font-family: var(--font-cormorant), ui-serif, Georgia, serif; font-size: 34px; line-height: 40px; font-weight: 500; letter-spacing: -0.005em; }
   [data-area="estetica"] .text-hero { font-family: var(--font-cormorant), ui-serif, Georgia, serif; font-weight: 500; letter-spacing: -0.01em; }
   [data-area="estetica"] .text-accent-serif { font-weight: 400; }
+  /* Odonto: número de dente (FDI) e códigos (TUSS) em Geist Mono, como no design system. */
+  .font-tooth { font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  /* Odontograma (Salutti Odonto): dente com número FDI; a cor do status nunca vem sozinha (rótulo e legenda). */
+  .tooth-cell { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 36px; border-radius: 6px; border: 1px solid hsl(var(--border)); background: hsl(var(--card)); color: hsl(var(--foreground)); font: 500 12px/1 var(--font-geist-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  a.tooth-cell, button.tooth-cell { cursor: pointer; transition: box-shadow .15s; }
+  a.tooth-cell:hover, button.tooth-cell:hover { box-shadow: inset 0 0 0 1px hsl(var(--brand)); }
+  .tooth-cell[aria-current="true"] { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); }
+  .tooth-cell--carie { border-color: transparent; background: color-mix(in srgb, hsl(var(--destructive)) 14%, hsl(var(--card))); color: hsl(var(--destructive-strong)); }
+  .tooth-cell--extracao { border-color: hsl(var(--destructive)); border-style: dashed; color: hsl(var(--destructive-strong)); }
+  .tooth-cell--tratamento { border-color: transparent; background: color-mix(in srgb, hsl(var(--warning)) 14%, hsl(var(--card))); color: hsl(var(--warning-strong)); }
+  .tooth-cell--restaurado { border-color: transparent; background: color-mix(in srgb, hsl(var(--brand)) 18%, hsl(var(--card))); color: hsl(var(--brand)); }
+  .tooth-cell--ausente { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); text-decoration: line-through; }
+  .tooth-cell--implante { border-style: dashed; border-color: hsl(var(--brand)); color: hsl(var(--brand)); }
+  .tooth-cell--fratura { border-color: hsl(var(--destructive)); color: hsl(var(--destructive-strong)); border-width: 2px; }
+  .tooth-cell--raiz_residual { background: hsl(var(--muted)); color: hsl(var(--destructive-strong)); border-color: hsl(var(--destructive)); }
+  .tooth-cell--selado { border-color: hsl(var(--success)); color: hsl(var(--success-strong)); }
+  .tooth-cell--endodontia { border-color: transparent; background: hsl(var(--brand)); color: hsl(var(--brand-foreground)); }
+  .tooth-cell--coroa { border-color: hsl(var(--brand)); border-width: 2px; color: hsl(var(--brand)); background: color-mix(in srgb, hsl(var(--brand)) 10%, hsl(var(--card))); }
+  .tooth-cell--incluso { border-style: dashed; color: hsl(var(--muted-foreground)); }
   .border-saluttin { border: 1px solid transparent; background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box, var(--gradient-saluttin) border-box; }
 }

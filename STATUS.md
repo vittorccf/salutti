@@ -1,8 +1,29 @@
 # Status — salutti-app
 
-> Última atualização deste arquivo: 2026-10-08. A seção "Lista de espera" é a mais recente; as demais ficam como histórico.
+> Última atualização deste arquivo: 2026-10-08. A seção "Salutti Odonto" é a mais recente; as demais ficam como histórico.
 
 
+
+## Salutti Odonto (2026-10-10) — branch `feat/area-odonto`
+
+- Terceira área (`area = "odonto"`):
+  - marca azul do design system "Salutti Odonto" (selo em Geist Mono);
+  - páginas `/odonto`, `/odonto/login` e `/odonto/cadastro` com 7 especialidades;
+  - profissões dentista, TSB e ASB; conselho CRO;
+  - anamneses odontológica e de odontopediatria.
+- Módulo `odontograma`:
+  - odontograma FDI (permanente e decídua, 13 situações, faces);
+  - planos/orçamentos por dente com TUSS; a aprovação gera as parcelas em Cobranças;
+  - realizado vira evolução no prontuário, atualiza o dente e agenda o retorno;
+  - orçamento impresso com CRO-UF;
+  - tabela de procedimentos (37 sugeridos) e retornos.
+- Módulo `protese`: ordens de serviço do laboratório com fluxo, prazo, atraso e OS impressa.
+- Revisado por qualidade, advogado do diabo e um dentista:
+  - travas contra corrida entre editar e aprovar;
+  - cancelamento bloqueado com trabalho feito ou parcela paga;
+  - tabela e aprovação só para quem administra as finanças;
+  - escopo do dentista também nas ações.
+- Pendente: GTO (TISS odontológico), repasse ao dentista, periograma. Detalhes: `docs/ODONTO.md`.
 ## Lista de espera (2026-10-10) — branch `feat/lista-espera` (depois do #44)
 
 - `/app/lista-espera`: métricas, abas, "Abriu uma vaga?" por dia/turno/modalidade, WhatsApp discreto, registrar contato,

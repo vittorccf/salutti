@@ -30,6 +30,12 @@ const cormorant = localFont({
   display: "swap",
 });
 
+// Salutti Odonto: número do dente (FDI) e códigos TUSS em Geist Mono 500 (@fontsource/geist-mono 5.2.5, OFL).
+const geistMono = localFont({
+  src: [{ path: "./fonts/geist-mono-latin-500-normal.woff2", weight: "500", style: "normal" }],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common.meta");
   return { title: "Salutti", description: t("description") };
@@ -58,7 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     ),
   };
   return (
-    <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable} ${cormorant.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={`${geist.variable} ${serif.variable} ${cormorant.variable} ${geistMono.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>{children}</ThemeProvider>

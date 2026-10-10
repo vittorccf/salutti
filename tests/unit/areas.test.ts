@@ -5,7 +5,8 @@ import { segmentAfterMigration, segmentAllowed } from "@/lib/account";
 describe("áreas", () => {
   it("área desconhecida cai na Salutti (mental)", () => {
     expect(areaOf(undefined)).toBe("mental");
-    expect(areaOf("odonto")).toBe("mental");
+    expect(areaOf("odonto")).toBe("odonto");
+    expect(areaOf("dentista")).toBe("mental");
     expect(areaOf("estetica")).toBe("estetica");
   });
 

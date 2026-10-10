@@ -108,6 +108,12 @@ model Workspace {
   auditLogs       AuditLog[]
   aiInsights      AiInsight[]
   dailyCards      DailyCard[]
+  dentalProcedures DentalProcedure[]
+  toothRecords    ToothRecord[]
+  treatmentPlans  TreatmentPlan[]
+  treatmentItems  TreatmentItem[]
+  labOrders       LabOrder[]
+  recalls         Recall[]
   notifications   NotificationLog[]
   insurancePlans  InsurancePlan[]
   tissBatches     TissBatch[]
@@ -174,6 +180,9 @@ model Professional {
   workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   appointments  Appointment[]
   clinicalNotes ClinicalNote[]
+  treatmentPlans TreatmentPlan[]
+  treatmentItems TreatmentItem[]
+  labOrders     LabOrder[]
 
   @@index([workspaceId])
 }
@@ -219,6 +228,10 @@ model Patient {
   charges       Charge[]
   consentRecords ConsentRecord[]
   dailyCards    DailyCard[]
+  toothRecords  ToothRecord[]
+  treatmentPlans TreatmentPlan[]
+  labOrders     LabOrder[]
+  recalls       Recall[]
   portalAccess  PatientPortalAccess?
   portalMessages PortalMessage[]
   portalHighlights PortalHighlight[]
@@ -443,6 +456,9 @@ model Charge {
   paidAt          DateTime?
   externalId      String?     // id no gateway (Asaas/Stripe)
   pixCopyPaste    String?     // payload PIX simulado
+  // Parcela de um orçamento odontológico aprovado (Salutti Odonto): plano e número da parcela.
+  treatmentPlanId String?
+  installment     Int?
   createdAt       DateTime    @default(now())
 
   workspace       Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -451,9 +467,11 @@ model Charge {
   paymentLink     PaymentLink?
   invoice         Invoice?
   receipt         Receipt?
+  treatmentPlan   TreatmentPlan? @relation(fields: [treatmentPlanId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, dueDate])
   @@index([workspaceId, status])
+  @@index([treatmentPlanId])
 }
 
 model PaymentLink {
@@ -730,6 +748,152 @@ model DailyCard {
   patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@unique([patientId, date])
+}
+
+// ----------------------- ODONTOLOGIA (Salutti Odonto) ---------------
+// Regras em src/lib/odonto.ts. Dentes na numeração FDI (Res. CFO 174/92): 11–48 permanentes, 51–85 decíduos.
+
+// Tabela de procedimentos do consultório (preço, código TUSS, se é por dente e o que acontece com o dente ao concluir).
+model DentalProcedure {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  name         String
+  // prevencao | dentistica | endodontia | periodontia | cirurgia | protese | implantodontia | ortodontia | odontopediatria | estetica | radiologia | outro
+  specialty    String   @default("dentistica")
+  tussCode     String?
+  price        Float?
+  perTooth     Boolean  @default(true)
+  // Situação do dente ao concluir: restaurado | ausente | implante | tratado (nulo = não muda o odontograma).
+  toothResult  String?
+  // Retorno de manutenção sugerido ao concluir (ex.: profilaxia 6, manutenção periodontal 3).
+  returnMonths Int?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  items        TreatmentItem[]
+
+  @@index([workspaceId, active])
+}
+
+// Odontograma: a situação atual de cada dente registrado (dente sem linha = hígido).
+model ToothRecord {
+  id          String   @id @default(cuid())
+  workspaceId String
+  patientId   String
+  tooth       Int
+  // higido | carie | tratamento | restaurado | ausente | implante | extracao
+  status      String
+  faces       String?  // faces afetadas em sigla (M, D, O/I, V, L/P)
+  note        String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, tooth])
+  @@index([workspaceId])
+}
+
+// Plano de tratamento e orçamento (o mesmo documento: em estudo → aprovado → concluído; ou recusado/cancelado).
+model TreatmentPlan {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  patientId      String
+  professionalId String?
+  number         Int       // sequencial por consultório, para falar com o paciente ("orçamento 12")
+  title          String?
+  status         String    @default("em_estudo") // em_estudo | aprovado | recusado | concluido | cancelado
+  discount       Float     @default(0)
+  installments   Int       @default(1)
+  firstDueDate   DateTime?
+  validUntil     DateTime?
+  notes          String?
+  approvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient        Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional   Professional?   @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  items          TreatmentItem[]
+  charges        Charge[]
+
+  @@unique([workspaceId, number])
+  @@index([workspaceId, status])
+  @@index([patientId])
+}
+
+model TreatmentItem {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  planId         String
+  procedureId    String?
+  name           String
+  tussCode       String?
+  tooth          Int?
+  faces          String?
+  price          Float
+  toothResult    String?
+  returnMonths   Int?
+  status         String    @default("planejado") // planejado | realizado | cancelado
+  doneAt         DateTime?
+  professionalId String?
+  position       Int       @default(0)
+  createdAt      DateTime  @default(now())
+
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  plan           TreatmentPlan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  procedure      DentalProcedure? @relation(fields: [procedureId], references: [id], onDelete: SetNull)
+  professional   Professional?    @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+
+  @@index([planId])
+}
+
+// Trabalho enviado ao laboratório de prótese (ordem de serviço): envio, prova, retorno e instalação, com prazo.
+model LabOrder {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  patientId      String
+  professionalId String?
+  lab            String
+  work           String    // coroa, ponte, PPR, prótese total, placa, provisório...
+  teeth          String?   // dentes ou região ("11, 21", "arcada superior")
+  shade          String?   // cor (escala Vita, ex.: A2)
+  status         String    @default("enviado") // a_enviar | enviado | em_prova | recebido | instalado | refazer | cancelado
+  sentAt         DateTime?
+  dueAt          DateTime?
+  receivedAt     DateTime?
+  cost           Float?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient        Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, status])
+}
+
+// Retorno de manutenção (profilaxia, manutenção periodontal, ortodôntica, revisão): quem chamar e quando.
+model Recall {
+  id          String    @id @default(cuid())
+  workspaceId String
+  patientId   String
+  dueDate     DateTime
+  reason      String    // profilaxia | periodontal | ortodontia | revisao | outro
+  status      String    @default("pendente") // pendente | agendado | feito | cancelado
+  planId      String?
+  contactedAt DateTime?
+  note        String?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status, dueDate])
 }
 
 // ----------------------- NOTIFICAÇÕES (WhatsApp mock) ---------------

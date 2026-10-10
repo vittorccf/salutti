@@ -50,7 +50,8 @@
     },
     "footer": "Salutti · ERP para quem cuida da saúde mental ·",
     "contact": "Fale com a gente:",
-    "esteticaLink": "Trabalha com estética? Conheça a Salutti Estética"
+    "esteticaLink": "Trabalha com estética? Conheça a Salutti Estética",
+    "odontoLink": "Trabalha com odontologia? Conheça a Salutti Odonto"
   },
   "pay": {
     "title": "Pagamento · {workspace}",
@@ -149,5 +150,70 @@
     "otherDocs": "Outros documentos",
     "terms": "Termos de Uso",
     "privacy": "Política de Privacidade"
+  },
+  "odonto": {
+    "metaDescription": "Odontograma, plano de tratamento e orçamento por dente, prótese, retornos, agenda e financeiro para dentistas e clínicas odontológicas.",
+    "login": "Entrar",
+    "tryFree": "Testar grátis",
+    "badge": "Salutti Odonto · em teste",
+    "headline": "O consultório inteiro, do odontograma ao recebimento, <hl>sem planilha</hl>.",
+    "subtitle": "Odontograma na numeração FDI, plano de tratamento que vira orçamento, parcelas com link de pagamento, laboratório de prótese com prazo e retornos de manutenção. Para quem atende sozinho e para clínicas.",
+    "ctaCreate": "Criar conta grátis",
+    "ctaLogin": "Já tenho conta",
+    "fineprint": "Teste grátis, sem cartão. Seus dados são seus (LGPD).",
+    "sampleLabel": "Exemplo de odontograma",
+    "sampleCaption": "Exemplo: 16 a tratar, 36 em tratamento, 46 ausente, 24 com implante, 11 e 26 restaurados.",
+    "features": {
+      "odontogram": {
+        "title": "Odontograma",
+        "desc": "Dentição permanente e decídua, faces em sigla e histórico por dente, como pede a Res. CFO 174/92."
+      },
+      "plan": {
+        "title": "Plano de tratamento",
+        "desc": "Procedimentos por dente e face, da sua tabela, com código TUSS para o convênio."
+      },
+      "budget": {
+        "title": "Orçamento que vira cobrança",
+        "desc": "Aprovou, as parcelas entram em Cobranças com Pix ou boleto. Imprima para o paciente assinar."
+      },
+      "lab": {
+        "title": "Prótese no laboratório",
+        "desc": "Envio, prova, retorno e instalação, com prazo e aviso de atraso."
+      },
+      "recall": {
+        "title": "Retornos de manutenção",
+        "desc": "Profilaxia, periodontal e ortodontia: quem chamar e quando, com WhatsApp pronto."
+      },
+      "schedule": {
+        "title": "Agenda e lembretes",
+        "desc": "Agenda por dentista, lembretes e confirmação pelo portal do paciente."
+      },
+      "records": {
+        "title": "Prontuário e anamnese",
+        "desc": "Anamnese com os riscos que mudam a conduta: anticoagulantes, bisfosfonatos, endocardite."
+      },
+      "finance": {
+        "title": "Financeiro",
+        "desc": "Recebimentos, contas a pagar, recibos e relatórios do consultório."
+      }
+    },
+    "differentiators": {
+      "fdi": {
+        "title": "Feito na linguagem do dentista",
+        "desc": "Numeração FDI, faces MOD e código TUSS: o sistema fala como você escreve no prontuário."
+      },
+      "approve": {
+        "title": "Do orçamento à parcela em um clique",
+        "desc": "Plano aprovado gera as cobranças; procedimento concluído atualiza o odontograma e agenda o retorno."
+      },
+      "team": {
+        "title": "Para consultório e clínica",
+        "desc": "Cada dentista vê os próprios pacientes; recepção e financeiro trabalham sem abrir o prontuário."
+      }
+    },
+    "disclaimer": "A Salutti Odonto é uma ferramenta de gestão. Diagnóstico, plano e conduta são do cirurgião-dentista. Divulgação no consultório deve seguir o Código de Ética Odontológica.",
+    "footer": "Já usa a Salutti Odonto?",
+    "contact": "Fale com a gente:",
+    "otherArea": "Conheça a Salutti para saúde mental"
   }
 }
