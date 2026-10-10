@@ -17,6 +17,7 @@ import { formatters } from "@/i18n/format";
 import { labeler } from "@/i18n/labels";
 import { CheckCircle2, FileSignature, MessageSquareText, Receipt as ReceiptIcon } from "lucide-react";
 import { isPastDue } from "@/lib/dates";
+import { receitaSaudeApplies } from "@/lib/tax";
 import { ensureAffected } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
@@ -102,11 +103,13 @@ async function issueReceiptAction(formData: FormData) {
         receiptNumber: num,
         amount: charge.amount,
         receitaSaudeId: rs.receitaSaudeId,
-        receitaSaudeStatus: rs.receitaSaudeStatus,
+        // Receita Saúde é do profissional pessoa física; consultório PJ emite NFS-e.
+        receitaSaudeStatus: receitaSaudeApplies(ctx.workspace.area, ctx.workspace.taxRegime) ? rs.receitaSaudeStatus : null,
       },
     });
   }
-  if (!charge.invoice) {
+  // NFS-e é do consultório com CNPJ (Simples ou presumido); o profissional pessoa física usa recibo e Receita Saúde.
+  if (!charge.invoice && ctx.workspace.taxRegime !== "pf") {
     const seq = await db.invoice.count({ where: { workspaceId: ctx.workspace.id } });
     const num = `NFS${String(seq + 1).padStart(5, "0")}`;
     const issued = await nfse.issue({
@@ -182,11 +185,11 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
               <MessageSquareText className="h-4 w-4" aria-hidden /> {t("sendReminder")}
             </Button>
           </form>
-          {charge.status === "paid" && (!charge.receipt || !charge.invoice) ? (
+          {charge.status === "paid" && (!charge.receipt || (!charge.invoice && ctx.workspace.taxRegime !== "pf")) ? (
             <form action={issueReceiptAction}>
               <input type="hidden" name="id" value={charge.id} />
               <Button type="submit">
-                <FileSignature className="h-4 w-4" aria-hidden /> {t("issue")}
+                <FileSignature className="h-4 w-4" aria-hidden /> {ctx.workspace.taxRegime === "pf" ? t("issueReceipt") : t("issue")}
               </Button>
             </form>
           ) : null}
@@ -243,9 +246,12 @@ export default async function ChargeDetailPage({ params }: { params: Promise<{ i
                 <p className="font-medium flex items-center gap-2">
                   <ReceiptIcon className="h-4 w-4 text-brand" /> {t("receipt", { number: charge.receipt.receiptNumber })}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("receitaSaude")} <StatusBadge kind="receitaSaude" status={charge.receipt.receitaSaudeStatus} /> · {charge.receipt.receitaSaudeId}
-                </p>
+                {charge.receipt.receitaSaudeStatus ? (
+                  <p className="text-xs text-muted-foreground">
+                    {t("receitaSaude")} <StatusBadge kind="receitaSaude" status={charge.receipt.receitaSaudeStatus} />
+                    {charge.receipt.receitaSaudeId ? ` · ${charge.receipt.receitaSaudeId}` : null}
+                  </p>
+                ) : null}
               </div>
             ) : (
               <p className="text-muted-foreground">{t("noReceipt")}</p>

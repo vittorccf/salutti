@@ -48,6 +48,11 @@ export async function PatientFields({ patient, plans }: { patient?: Patient | nu
           <Input id="responsibleName" name="responsibleName" defaultValue={p?.responsibleName ?? ""} />
         </div>
         <div className="space-y-1">
+          <Label htmlFor="responsibleCpf">{t("responsibleCpf")}</Label>
+          <Input id="responsibleCpf" name="responsibleCpf" defaultValue={p?.responsibleCpf ?? ""} placeholder="000.000.000-00" inputMode="numeric" aria-describedby="responsibleCpf-hint" />
+          <p id="responsibleCpf-hint" className="text-xs text-muted-foreground">{t("responsibleCpfHint")}</p>
+        </div>
+        <div className="space-y-1">
           <Label htmlFor="emergencyContact">{t("emergencyContact")}</Label>
           <Input id="emergencyContact" name="emergencyContact" defaultValue={p?.emergencyContact ?? ""} placeholder={t("emergencyContactPlaceholder")} />
         </div>

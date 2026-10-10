@@ -78,6 +78,12 @@ model Workspace {
   // área de atendimento: solo_psicologo, solo_psicanalista, clinica, ubs, odonto
   segment         String         @default("solo_psicologo")
   cnpj            String?
+  // Perfil fiscal (src/lib/tax.ts): pf (carnê-leão e Receita Saúde) | simples | presumido; CPF do titular do carnê-leão,
+  // código de ocupação do Carnê-Leão Web (255 = psicólogo) e dependentes para a dedução mensal.
+  taxRegime       String         @default("pf")
+  taxCpf          String?
+  taxOccupation   String?
+  taxDependents   Int            @default(0)
   // CNES do estabelecimento (TISS); sem CNES as guias usam 9999999, como manda a ANS.
   cnes            String?
   // Endereço do consultório (CEP preenche rua, bairro, cidade e UF).
@@ -199,6 +205,8 @@ model Patient {
   birthDate     DateTime?
   pronouns      String?
   responsibleName String?
+  // CPF de quem paga quando não é o paciente (menor): pagador no recibo e no CSV da Receita Saúde.
+  responsibleCpf String?
   emergencyContact String?
   address       String?
   // Endereço estruturado (CEP preenche rua, bairro, cidade e UF). "address" fica para dados antigos.

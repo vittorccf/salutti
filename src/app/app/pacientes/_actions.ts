@@ -8,6 +8,7 @@ import { requirePermission } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 import { parseDateOnly } from "@/lib/dates";
+import { formatCpf, isValidCpf } from "@/lib/cpf";
 import { assertInsurancePlan, assertInWorkspace } from "@/lib/tenant";
 import { ContactError, readAddress, validEmail, validPhone } from "@/lib/contact-validation";
 import type { FormResult } from "@/components/forms/action-form";
@@ -30,6 +31,7 @@ const schema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "birthDateInvalid").optional().or(z.literal("")),
   pronouns: text(40),
   responsibleName: text(120),
+  responsibleCpf: text(20),
   emergencyContact: text(160),
   notes: text(2000),
   insurancePlanId: z.string().optional(),
@@ -42,6 +44,7 @@ async function readPatient(formData: FormData, workspaceId: string, previous: Pr
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) throw new PatientFormError(parsed.error.issues[0].message);
   const d = parsed.data;
+  if (d.responsibleCpf && !isValidCpf(d.responsibleCpf)) throw new PatientFormError("responsibleCpfInvalid");
   if (d.insurancePlanId) await assertInsurancePlan(workspaceId, d.insurancePlanId);
   // O select de convênio só aparece quando há planos; sem ele, o convênio atual fica como está.
   const insurance = formData.has("insurancePlanId")
@@ -58,6 +61,7 @@ async function readPatient(formData: FormData, workspaceId: string, previous: Pr
     birthDate: d.birthDate ? parseDateOnly(d.birthDate) : null,
     pronouns: d.pronouns || null,
     responsibleName: d.responsibleName || null,
+    responsibleCpf: d.responsibleCpf ? formatCpf(d.responsibleCpf) : null,
     emergencyContact: d.emergencyContact || null,
     notes: d.notes || null,
     ...insurance,

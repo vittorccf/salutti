@@ -215,8 +215,8 @@
       "refunded": "Reembolsado"
     },
     "receitaSaude": {
-      "queued": "En cola",
-      "sent": "Esperando confirmación",
+      "queued": "Por enviar",
+      "sent": "Exportado (CSV)",
       "confirmed": "Confirmado",
       "error": "Falló"
     },

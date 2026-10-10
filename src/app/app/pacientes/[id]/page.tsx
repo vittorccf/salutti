@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireContext } from "@/lib/auth";
-import { canSeeClinical, requirePermission } from "@/lib/permissions";
+import { can, canManagePayables, canSeeClinical, requirePermission } from "@/lib/permissions";
 
 const CLINICAL_CONSENT_PURPOSES = new Set(["procedimento", "foto_clinica", "foto_divulgacao"]);
 import { db } from "@/lib/db";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { CalendarPlus, FilePlus2, Pencil, Receipt as ReceiptIcon, ShieldCheck, Smartphone, Smile } from "lucide-react";
+import { CalendarPlus, FileText, FilePlus2, Pencil, Receipt as ReceiptIcon, ShieldCheck, Smartphone, Smile } from "lucide-react";
 import { differenceInYears } from "date-fns";
 import { chargeDisplayStatus } from "@/lib/labels";
 import { getFormat, getTranslations } from "@/i18n/server";
@@ -135,6 +135,14 @@ export default async function PatientPage({
             <Button variant="outline" asChild>
               <Link href={`/app/pacientes/${patient.id}/odontograma`}>
                 <Smile className="h-4 w-4" /> {t("odontogram")}
+              </Link>
+            </Button>
+          ) : null}
+          {can(ctx, "fiscal.ver") && canManagePayables(ctx) && !ctx.support ? (
+            <Button variant="outline" asChild>
+              <Link href={`/impressao/informe/${patient.id}`} target="_blank">
+                <FileText className="h-4 w-4" aria-hidden /> {t("yearReport")}
+                <span className="sr-only"> {t("newTab")}</span>
               </Link>
             </Button>
           ) : null}
